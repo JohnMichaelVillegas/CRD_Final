@@ -1,0 +1,460 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Staff Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-bg-dark {
+      background-color: var(--theme-color-dark) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-hover:hover {
+      filter: brightness(0.95);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(
+        135deg,
+        var(--theme-color),
+        var(--theme-color-dark)
+      );
+    }
+
+  </style>
+
+</head>
+
+
+<body class="bg-slate-100">
+
+
+  <!-- TOP NAVIGATION -->
+
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+        CRD Staff Panel
+      </h1>
+
+
+      <div class="flex items-center gap-3">
+
+
+        <div class="text-right hidden sm:block">
+
+          <p class="text-sm font-semibold text-slate-800">
+
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+
+          </p>
+
+          <p class="text-xs text-slate-500">
+            Staff
+          </p>
+
+        </div>
+
+
+        <!-- USER PROFILE PICTURE -->
+
+<div
+  class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border"
+>
+
+  {% if request.user.userprofile.image %}
+
+    <img
+      src="{{ request.user.userprofile.image.url }}"
+      alt="Profile Picture"
+      class="w-full h-full object-cover"
+    >
+
+  {% else %}
+
+    {{ request.user.username|first|upper }}
+
+  {% endif %}
+
+</div>
+
+
+        <!-- LOGOUT -->
+
+        <form method="POST" action="{% url 'logout' %}">
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+
+  
+  <!-- SIDEBAR -->
+
+  <aside
+    class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white overflow-y-auto"
+  >
+
+    <div class="px-4">
+
+      <!-- LOGGED IN CARD -->
+
+      <div class="mb-6 p-4 rounded-2xl theme-bg">
+
+        <p class="text-xs text-green-100">
+          Logged in as
+        </p>
+
+        <h2 class="text-sm font-bold">
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+        </h2>
+
+        <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+          CRD Case Management System
+        </p>
+
+      </div>
+
+      <ul class="space-y-2">
+  <!-- Dashboard -->
+  <li>
+    <a href="{% if request.user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'staff_dashboard' %}{% endif %}"
+       class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">
+      Dashboard
+    </a>
+  </li>
+
+  <!-- Staff and Admin pages -->
+  {% if request.user.is_superuser or "student_records" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Records</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "student_archive" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_archive' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_archive' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Archive</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "case_view" in request.user.userprofile.permissions or "case_record" in request.user.userprofile.permissions or "case_full" in request.user.userprofile.permissions or "case_create" in request.user.userprofile.permissions or "case_information" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'case_record' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'case_record' or request.resolver_match.url_name == 'case_record_details' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Case Record</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "report_dashboard" in request.user.userprofile.permissions or "case_report" in request.user.userprofile.permissions or "print_reports" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'generate_reports' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'generate_reports' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Generate Reports</a></li>
+  {% endif %}
+
+  <!-- Admin-only pages -->
+  {% if request.user.is_superuser %}
+  <li><a href="{% url 'offense_master_list' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'offense_master_list' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Offense Master List</a></li>
+  <li><a href="{% url 'archive_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'archive_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Archive Records</a></li>
+  <li><a href="{% url 'user_management' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'user_management' or request.resolver_match.url_name == 'add_user' or request.resolver_match.url_name == 'edit_user' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">User Management</a></li>
+  <li><a href="{% url 'audit_log' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'audit_log' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Audit Logs</a></li>
+  <li><a href="{% url 'unlock_account' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'unlock_account' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Unlock Account</a></li>
+  {% endif %}
+
+  <!-- Settings: show if at least one Settings permission is assigned -->
+  {% if request.user.is_superuser or "settings_login_background" in request.user.userprofile.permissions or "settings_theme_color" in request.user.userprofile.permissions or "settings_student_api_url" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'settings' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'settings' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Settings</a></li>
+  {% endif %}
+</ul>
+
+    </div>
+
+  </aside>
+
+
+
+
+  <!-- MAIN -->
+
+  <main class="sm:ml-64 p-6 mt-16">
+
+    <div class="max-w-7xl mx-auto space-y-4">
+
+
+      <!-- HERO -->
+
+      <div class="rounded-2xl hero-gradient p-4 md:p-5 text-white shadow">
+
+        <h2 class="text-2xl font-bold tracking-tight">
+
+          Welcome,
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+
+        </h2>
+
+        <p class="mt-1 text-white/80 text-sm">
+
+          Overview of active cases and recent updates.
+
+        </p>
+
+      </div>
+
+
+
+      <!-- STAT CARDS -->
+
+      <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+
+
+        <!-- CASES TO MONITOR -->
+
+        <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+          <p class="text-slate-500 text-sm">
+            Cases to Monitor
+          </p>
+
+          <h3 class="text-3xl font-bold text-slate-800 mt-2">
+
+            {{ cases_to_monitor }}
+
+          </h3>
+
+          <p class="text-amber-600 text-sm mt-2">
+            Active cases
+          </p>
+
+        </div>
+
+
+
+        <!-- RECENT UPDATES -->
+
+        <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+          <p class="text-slate-500 text-sm">
+            Recent Updates
+          </p>
+
+          <h3 class="text-3xl font-bold text-slate-800 mt-2">
+
+            {{ recent_updates }}
+
+          </h3>
+
+          <p class="text-teal-600 text-sm mt-2">
+            Cases reported in the last 7 days
+          </p>
+
+        </div>
+
+
+
+        <!-- PENDING REVIEWS -->
+
+        <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+          <p class="text-slate-500 text-sm">
+            Pending Reviews
+          </p>
+
+          <h3 class="text-3xl font-bold text-slate-800 mt-2">
+
+            {{ pending_reviews }}
+
+          </h3>
+
+          <p class="text-rose-600 text-sm mt-2">
+            Cases under review
+          </p>
+
+        </div>
+
+      </div>
+
+      <!-- RECENT CASE UPDATES -->
+
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+        <div class="flex items-start justify-between gap-4 mb-4 flex-wrap">
+
+          <div>
+
+            <h3 class="text-xl font-bold text-slate-800">
+              Recent Case Updates
+            </h3>
+
+            <p class="text-slate-500 mt-1 text-sm">
+              Latest case records from the database
+            </p>
+
+          </div>
+
+        </div>
+
+
+
+        {% if recent_cases %}
+
+        <div class="overflow-x-auto">
+
+          <table class="w-full text-left text-sm">
+
+            <thead class="theme-bg text-white">
+
+              <tr>
+
+                <th class="px-4 py-3 font-bold">
+                  Case #
+                </th>
+
+                <th class="px-4 py-3 font-bold">
+                  Student
+                </th>
+
+                <th class="px-4 py-3 font-bold">
+                  Offense
+                </th>
+
+                <th class="px-4 py-3 font-bold">
+                  Status
+                </th>
+
+                <th class="px-4 py-3 font-bold">
+                  Date
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody class="divide-y divide-slate-200">
+
+              {% for case in recent_cases %}
+
+              <tr class="hover:bg-slate-50">
+
+                <td class="px-4 py-3 font-medium">
+                  {{ case.case_number }}
+                </td>
+
+                <td class="px-4 py-3">
+
+                  {{ case.student.first_name }}
+                  {{ case.student.last_name }}
+
+                </td>
+
+                <td class="px-4 py-3">
+                  {{ case.offense.offense_name }}
+                </td>
+
+                <td class="px-4 py-3">
+
+                  {% if case.status == "Resolved" %}
+
+                    <span class="px-2 py-1 rounded-lg bg-green-100 text-green-700">
+                      Resolved
+                    </span>
+
+                  {% elif case.status == "Pending" %}
+
+                    <span class="px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700">
+                      Pending
+                    </span>
+
+                  {% else %}
+
+                    <span class="px-2 py-1 rounded-lg bg-blue-100 text-blue-700">
+                      Under Review
+                    </span>
+
+                  {% endif %}
+
+                </td>
+
+                <td class="px-4 py-3">
+                  {{ case.date_reported|date:"M. d, Y" }}
+                </td>
+
+              </tr>
+
+              {% endfor %}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+        {% else %}
+
+        <div class="text-center py-8">
+
+          <p class="text-slate-500">
+            No case records found.
+          </p>
+
+        </div>
+
+        {% endif %}
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+</body>
+
+</html>

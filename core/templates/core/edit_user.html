@@ -1,0 +1,826 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Edit User</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-hover:hover {
+      filter: brightness(0.95);
+    }
+
+    body {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #1e293b;
+    }
+
+    input, select, button {
+      font: inherit;
+    }
+
+    input[type="checkbox"] {
+      accent-color: var(--theme-color);
+      flex: 0 0 auto;
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+    }
+
+    label {
+      line-height: 1.5;
+    }
+
+    .section-heading {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #475569;
+      margin-bottom: 0.85rem;
+    }
+
+    .permission-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      background: #fff;
+      min-height: 48px;
+    }
+
+    .permission-option:hover {
+      border-color: var(--theme-color);
+      background: #f8fafc;
+    }
+
+    .permission-option strong {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .permission-option .description {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: #64748b;
+    }
+
+    @media (max-width: 640px) {
+      .page-content { padding: 1rem; }
+      .form-card { padding: 1rem; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 antialiased">
+
+  <!-- TOP NAVIGATION -->
+
+<nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+  <div class="px-4 py-3 flex justify-between items-center">
+
+    <h1 class="text-xl font-bold text-slate-800">
+      CRD Admin Panel
+    </h1>
+
+    <div class="flex items-center gap-3">
+
+      <div class="text-right hidden sm:block">
+
+        <p class="text-sm font-semibold text-slate-800">
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+        </p>
+
+        <p class="text-xs text-slate-500">
+          Admin
+        </p>
+
+      </div>
+
+      <!-- USER PROFILE PICTURE -->
+
+      <div class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border">
+
+        {% if request.user.userprofile.image %}
+
+          <img
+            src="{{ request.user.userprofile.image.url }}"
+            alt="Profile Picture"
+            class="w-full h-full object-cover"
+          >
+
+        {% else %}
+
+          {{ request.user.username|first|upper }}
+
+        {% endif %}
+
+      </div>
+
+      <!-- LOGOUT -->
+
+      <form method="POST" action="{% url 'logout' %}">
+
+        {% csrf_token %}
+
+        <button
+          type="submit"
+          class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+        >
+          Logout
+        </button>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</nav>
+
+  <!-- SIDEBAR -->
+
+<aside
+  class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white"
+>
+
+  <div class="px-4">
+
+    <!-- LOGGED IN CARD -->
+
+    <div class="mb-6 p-4 rounded-2xl theme-bg">
+
+      <p class="text-xs text-green-100">
+        Logged in as
+      </p>
+
+      <h2 class="text-sm font-bold">
+        {{ request.user.userprofile.full_name|default:request.user.username }}
+      </h2>
+
+      <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+        CRD Case Management System
+      </p>
+
+    </div>
+
+    <ul class="space-y-2">
+
+      <li>
+        <a
+          href="{% url 'admin_dashboard' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Dashboard
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'student_records' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Student Records
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'student_archive' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Student Archive
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'case_record' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Case Record
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'generate_reports' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Generate Reports
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'offense_master_list' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Offense Master List
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'archive_records' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Archive Records
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'user_management' %}"
+          class="block p-3 rounded-xl text-white theme-bg"
+        >
+          User Management
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'audit_log' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Audit Logs
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'unlock_account' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Unlock Account
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="{% url 'settings' %}"
+          class="block p-3 rounded-xl hover:bg-slate-800"
+        >
+          Settings
+        </a>
+      </li>
+
+    </ul>
+
+  </div>
+
+</aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="sm:ml-64 p-6 mt-16">
+    <div class="max-w-5xl mx-auto">
+
+      <!-- HEADER -->
+<div class="rounded-xl p-5 text-white shadow-sm mb-4 theme-bg">
+    <h1 class="text-2xl font-bold">Edit User</h1>
+    <p class="mt-1 text-sm text-green-100">
+        Update the selected user account and manage its assigned permissions.
+    </p>
+</div>
+
+      <!-- MESSAGES -->
+      {% if messages %}
+        <div class="mb-5 space-y-2">
+          {% for message in messages %}
+            <div class="p-3 rounded-xl text-sm
+              {% if message.tags == 'error' %}
+                bg-red-100 text-red-700
+              {% else %}
+                bg-green-100 text-green-700
+              {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- FORM -->
+      <div class="bg-white rounded-xl shadow-sm border theme-border p-5 form-card">
+
+        <form method="POST" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <!-- PROFILE PICTURE -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Profile Picture
+            </label>
+
+            <div class="flex items-center gap-5">
+
+              <div class="w-24 h-24 rounded-full border-2 theme-border overflow-hidden bg-slate-100 flex items-center justify-center">
+
+                {% if profile.image %}
+                  <img
+                    id="profilePreview"
+                    src="{{ profile.image.url }}"
+                    class="w-full h-full object-cover"
+                    alt="Current profile picture"
+                  >
+                  <div id="profileInitial" class="hidden text-3xl font-bold theme-text">
+                    {{ account.username|first|upper }}
+                  </div>
+                {% else %}
+                  <div id="profileInitial" class="text-3xl font-bold theme-text">
+                    {{ account.username|first|upper }}
+                  </div>
+                  <img
+                    id="profilePreview"
+                    class="hidden w-full h-full object-cover"
+                    alt="Profile picture preview"
+                  >
+                {% endif %}
+
+              </div>
+
+              <div>
+                <label
+                  for="image"
+                  class="inline-block px-4 py-2 text-white rounded-xl theme-bg theme-hover cursor-pointer"
+                >
+                  Choose File
+                </label>
+
+                <input
+                  type="file"
+                  id="image"
+                  name="image"
+                  accept="image/*"
+                  class="hidden"
+                >
+
+                <p id="fileName" class="text-sm text-slate-500 mt-2">
+                  No new picture selected.
+                </p>
+
+                <p class="text-xs text-slate-400 mt-1">
+                  Select a new profile picture if needed.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- USER INFORMATION -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+
+    <!-- USERNAME -->
+    <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Username
+        </label>
+
+        <input
+            type="text"
+            value="{{ account.username }}"
+            disabled
+            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-slate-100 text-slate-500 text-sm"
+        >
+
+        <p class="text-xs text-slate-500 mt-1">
+            Username cannot be changed.
+        </p>
+    </div>
+
+    <!-- FIRST NAME -->
+    <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+            First Name
+        </label>
+
+        <input
+            type="text"
+            name="first_name"
+            value="{{ account.first_name }}"
+            required
+            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
+        >
+    </div>
+
+    <!-- LAST NAME -->
+    <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Last Name
+        </label>
+
+        <input
+            type="text"
+            name="last_name"
+            value="{{ account.last_name }}"
+            required
+            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
+        >
+    </div>
+
+    <!-- ROLE -->
+    <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Role
+        </label>
+
+        <select
+            id="role"
+            name="role"
+            required
+            onchange="toggleStaffPermissions()"
+            {% if account.is_superuser %}disabled{% endif %}
+            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
+        >
+            <option value="Staff" {% if not account.is_superuser %}selected{% endif %}>
+                Staff
+            </option>
+
+            <option value="Administrator" {% if account.is_superuser %}selected{% endif %}>
+                Administrator
+            </option>
+        </select>
+
+        {% if account.is_superuser %}
+            <input type="hidden" name="role" value="Administrator">
+            <p class="text-xs text-amber-700 mt-2">
+                Administrator accounts cannot be demoted here.
+            </p>
+        {% else %}
+            <p class="text-xs text-slate-500 mt-2">
+                Administrators have full access. Staff access is based on assigned permissions.
+            </p>
+        {% endif %}
+    </div>
+
+</div>
+
+          <!-- ACCOUNT STATUS -->
+          <div class="mb-5 max-w-full md:max-w-[calc(50%-0.625rem)]">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Account Status
+            </label>
+
+            <select
+              name="is_active"
+              required
+              {% if account.is_superuser %}disabled{% endif %}
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
+            >
+              <option value="True" {% if account.is_active %}selected{% endif %}>
+                Active
+              </option>
+
+              <option value="False" {% if not account.is_active %}selected{% endif %}>
+                Inactive
+              </option>
+            </select>
+
+            {% if account.is_superuser %}
+              <input type="hidden" name="is_active" value="True">
+              <p class="text-xs text-amber-700 mt-2">
+                Administrator accounts cannot be deactivated here.
+              </p>
+            {% else %}
+              <p class="text-xs text-slate-500 mt-2">
+                Inactive accounts cannot log in.
+              </p>
+            {% endif %}
+          </div>
+
+          <!-- STAFF PERMISSIONS -->
+          <div id="staffPermissions" class="mb-6 border border-slate-200 rounded-xl p-5 bg-slate-50">
+
+            <h2 class="text-sm font-semibold text-slate-800 mb-2">
+              Staff Permissions
+            </h2>
+
+            <p class="text-xs text-slate-500 mb-4">
+              Dashboard access is mandatory. Select the additional functions this Staff account can access.
+            </p>
+
+            <!-- MANDATORY DASHBOARD -->
+            <div class="mb-5 rounded-xl bg-slate-50 border border-slate-200 p-3">
+              <label class="permission-option">
+                <input type="checkbox" checked disabled class="w-4 h-4">
+                <span class="text-sm font-medium text-slate-700">
+                  Dashboard — Always Available
+                </span>
+              </label>
+            </div>
+
+            <!-- STUDENT RECORDS -->
+            <h3 class="section-heading">
+              Student Records
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="student_records"
+                  class="w-4 h-4"
+                  {% if "student_records" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  Student Records — View
+                </span>
+              </label>
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="student_archive"
+                  class="w-4 h-4"
+                  {% if "student_archive" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  Student Archive — View Only
+                </span>
+              </label>
+
+            </div>
+
+            <!-- CASE RECORD ACCESS -->
+            <h3 class="section-heading">
+              Case Record Access
+            </h3>
+
+            <p class="text-xs text-slate-500 mb-3">
+              Select each Case Record function separately. You can enable or remove functions independently.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="case_view"
+                  class="w-4 h-4 mt-1"
+                  {% if "case_view" in profile.permissions or "case_record" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  <strong>View Only</strong>
+                  <span class="description">
+                    View case records without creating or editing them.
+                  </span>
+                </span>
+              </label>
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="case_full"
+                  class="w-4 h-4 mt-1"
+                  {% if "case_full" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  <strong>Full Access</strong>
+                  <span class="description">
+                    View, create, and edit case records.
+                  </span>
+                </span>
+              </label>
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="case_create"
+                  class="w-4 h-4 mt-1"
+                  {% if "case_create" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  <strong>View and Create</strong>
+                  <span class="description">
+                    View existing cases and create new ones, without editing existing case details.
+                  </span>
+                </span>
+              </label>
+
+            </div>
+
+            <!-- REPORT ACCESS -->
+            <h3 class="section-heading">
+              Reports
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="report_dashboard"
+                  class="w-4 h-4"
+                  {% if "report_dashboard" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  View Report Dashboard and Charts
+                </span>
+              </label>
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="case_report"
+                  class="w-4 h-4"
+                  {% if "case_report" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  View Case Reports and Records
+                </span>
+              </label>
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="print_reports"
+                  class="w-4 h-4"
+                  {% if "print_reports" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  Print Selected Case Reports
+                </span>
+              </label>
+
+            </div>
+
+            <!-- SETTINGS ACCESS -->
+            <h3 class="section-heading">
+              System Settings
+            </h3>
+
+            <div class="space-y-3">
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="settings_login_background"
+                  class="w-4 h-4"
+                  {% if "settings_login_background" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  Change Login Background
+                </span>
+              </label>
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="settings_theme_color"
+                  class="w-4 h-4"
+                  {% if "settings_theme_color" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  Change Theme Color
+                </span>
+              </label>
+
+              <label class="permission-option">
+                <input
+                  type="checkbox"
+                  name="permissions"
+                  value="settings_student_api_url"
+                  class="w-4 h-4"
+                  {% if "settings_student_api_url" in profile.permissions %}checked{% endif %}
+                >
+                <span class="text-sm text-slate-700">
+                  Change Student API URL
+                </span>
+              </label>
+
+            </div>
+
+            <!-- ADMIN-ONLY FEATURES -->
+            <div class="mt-5 border-t border-slate-200 pt-4">
+              <p class="text-xs text-slate-500">
+                Offense Master List, Archive Records, Audit Logs, Unlock Account, and User Management remain restricted to the Main Admin.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- PASSWORD -->
+          <div class="mb-6">
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              New Password
+            </label>
+
+            <input
+              type="password"
+              name="password"
+              minlength="8"
+              autocomplete="new-password"
+              placeholder="Leave blank to keep current password"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
+            >
+
+            <p class="text-xs text-slate-500 mt-1">
+              Only enter a password if you want to change it.
+            </p>
+          </div>
+
+          <!-- BUTTONS -->
+<div class="flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-5">
+
+    <a
+        href="{% url 'user_management' %}"
+        class="px-5 py-2.5 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 text-sm font-medium"
+    >
+        Cancel
+    </a>
+
+    <button
+        type="submit"
+        class="px-5 py-2.5 text-white rounded-lg theme-bg theme-hover text-sm font-medium"
+    >
+        Save Changes
+    </button>
+
+</div>
+
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- PROFILE PICTURE AND PERMISSIONS SCRIPT -->
+  <script>
+    const imageInput = document.getElementById("image");
+    const fileName = document.getElementById("fileName");
+    const profilePreview = document.getElementById("profilePreview");
+    const profileInitial = document.getElementById("profileInitial");
+
+    imageInput.addEventListener("change", function () {
+      if (this.files && this.files[0]) {
+        const file = this.files[0];
+
+        fileName.textContent = file.name;
+
+        const reader = new FileReader();
+
+        reader.onload = function (event) {
+          profilePreview.src = event.target.result;
+          profilePreview.classList.remove("hidden");
+
+          if (profileInitial) {
+            profileInitial.classList.add("hidden");
+          }
+        };
+
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function toggleStaffPermissions() {
+      const role = document.getElementById("role").value;
+      const permissions = document.getElementById("staffPermissions");
+
+      permissions.style.display =
+        role === "Staff" ? "block" : "none";
+    }
+
+    toggleStaffPermissions();
+  </script>
+
+</body>
+</html>

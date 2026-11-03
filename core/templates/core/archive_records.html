@@ -1,0 +1,801 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Archive Records</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+    }
+
+  </style>
+
+</head>
+
+
+<body class="bg-slate-100">
+
+
+  <!-- TOP NAVIGATION -->
+
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+        CRD Admin Panel
+      </h1>
+
+
+      <div class="flex items-center gap-3">
+
+        <div class="text-right hidden sm:block">
+
+          <p class="text-sm font-semibold text-slate-800">
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+          </p>
+
+          <p class="text-xs text-slate-500">
+            Admin
+          </p>
+
+        </div>
+
+
+        <!-- USER PROFILE PICTURE -->
+
+<div
+  class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border"
+>
+
+  {% if request.user.userprofile.image %}
+
+    <img
+      src="{{ request.user.userprofile.image.url }}"
+      alt="Profile Picture"
+      class="w-full h-full object-cover"
+    >
+
+  {% else %}
+
+    {{ request.user.username|first|upper }}
+
+  {% endif %}
+
+</div>
+
+
+        <!-- LOGOUT -->
+
+        <form method="POST" action="{% url 'logout' %}">
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+
+   <!-- SIDEBAR -->
+  <aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white">
+
+    <div class="px-4">
+
+      <!-- LOGGED IN CARD -->
+      <div class="mb-6 p-4 rounded-2xl theme-bg">
+
+        <p class="text-xs text-green-100">
+          Logged in as
+        </p>
+
+        <h2 class="text-sm font-bold">
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+        </h2>
+
+        <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+          CRD Case Management System
+        </p>
+
+      </div>
+
+      <ul class="space-y-2">
+
+        <!-- DASHBOARD -->
+        <li>
+          <a
+            href="{% url 'admin_dashboard' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Dashboard
+          </a>
+        </li>
+
+        <!-- STUDENT RECORDS -->
+        <li>
+          <a
+            href="{% url 'student_records' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Student Records
+          </a>
+        </li>
+
+        <li>
+  <a
+    href="{% url 'student_archive' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Student Archive
+  </a>
+</li>
+
+
+        <!-- CASE RECORD -->
+        <li>
+          <a
+            href="{% url 'case_record' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Case Record
+          </a>
+        </li>
+
+        <!-- GENERATE REPORTS -->
+        <li>
+          <a
+            href="{% url 'generate_reports' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Generate Reports
+          </a>
+        </li>
+
+        <!-- OFFENSE MASTER LIST -->
+        <li>
+          <a
+            href="{% url 'offense_master_list' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Offense Master List
+          </a>
+        </li>
+
+        <!-- ACTIVE PAGE: ARCHIVE RECORDS -->
+        <li>
+          <a
+            href="{% url 'archive_records' %}"
+            class="block p-3 rounded-xl text-white theme-bg"
+          >
+            Archive Records
+          </a>
+        </li>
+
+        <!-- USER MANAGEMENT -->
+        <li>
+          <a
+            href="{% url 'user_management' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            User Management
+          </a>
+        </li>
+
+        <!-- AUDIT LOGS -->
+        <li>
+          <a
+            href="{% url 'audit_log' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Audit Logs
+          </a>
+        </li>
+
+        <!-- UNLOCK ACCOUNT -->
+        <li>
+          <a
+            href="{% url 'unlock_account' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Unlock Account
+          </a>
+        </li>
+
+        <!-- SETTINGS -->
+        <li>
+          <a
+            href="{% url 'settings' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Settings
+          </a>
+        </li>
+
+      </ul>
+    </div>
+  </aside>
+
+
+  <!-- MAIN CONTENT -->
+
+  <main class="sm:ml-64 p-6 mt-16">
+
+
+    <div class="max-w-6xl mx-auto">
+
+
+      <!-- THEME PAGE HEADER -->
+
+      <div
+        class="rounded-3xl p-6 text-white shadow-lg mb-6 theme-bg"
+      >
+
+        <h1 class="text-3xl font-bold">
+          Archive Records
+        </h1>
+
+        <p class="mt-2 text-green-100">
+          Manage completed case records that are ready for archiving.
+        </p>
+
+      </div>
+
+
+
+      <!-- MESSAGES -->
+
+      {% if messages %}
+
+        {% for message in messages %}
+
+          <div
+            class="mb-4 p-4 rounded-xl
+            {% if message.tags == 'error' %}
+              bg-red-100 text-red-800 border border-red-300
+            {% else %}
+              bg-green-100 text-green-800 border border-green-300
+            {% endif %}"
+          >
+
+            {{ message }}
+
+          </div>
+
+        {% endfor %}
+
+      {% endif %}
+
+
+
+      <!-- ACTIVE CASE RECORDS -->
+
+      <div class="bg-white rounded-3xl shadow border theme-border p-6">
+
+
+        <!-- TABLE HEADER -->
+
+        <div class="mb-4">
+
+          <h2 class="text-xl font-bold text-slate-800">
+            Case Records
+          </h2>
+
+          <p class="text-sm text-slate-500">
+            Select completed records that need to be archived.
+          </p>
+
+        </div>
+
+
+
+        <!-- SEARCH -->
+
+        <div class="mb-4">
+
+          <input
+            type="text"
+            id="archiveSearch"
+            placeholder="Search case ID, student ID, name, program, or violation..."
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+          >
+
+        </div>
+
+
+
+        <!-- TABLE -->
+
+        <div class="overflow-x-auto">
+
+          <table class="w-full text-sm text-left">
+
+
+            <thead
+              class="text-white theme-bg"
+            >
+
+              <tr>
+
+                <th class="px-4 py-3">
+                  Case ID
+                </th>
+
+                <th class="px-4 py-3">
+                  Student ID
+                </th>
+
+                <th class="px-4 py-3">
+                  Name
+                </th>
+
+                <th class="px-4 py-3">
+                  Program
+                </th>
+
+                <th class="px-4 py-3">
+                  Violation
+                </th>
+
+                <th class="px-4 py-3">
+                  Status
+                </th>
+
+                <th class="px-4 py-3">
+                  Date
+                </th>
+
+                <th class="px-4 py-3">
+                  Action
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+
+            <tbody id="archiveTableBody">
+
+
+              {% for record in case_records %}
+
+
+                <tr class="border-b hover:bg-slate-50">
+
+
+                  <td class="px-4 py-3 font-medium">
+                    {{ record.case_number }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.student.student_id }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+
+                    {{ record.student.first_name }}
+                    {{ record.student.last_name }}
+
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.student.course }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.offense.offense_name }}
+                  </td>
+
+
+                  <!-- STATUS -->
+
+                  <td class="px-4 py-3">
+
+                    {% if record.status == "Resolved" %}
+
+                      <span
+                        class="px-2 py-1 rounded-lg bg-green-100 text-green-700"
+                      >
+                        Resolved
+                      </span>
+
+                    {% elif record.status == "Pending" %}
+
+                      <span
+                        class="px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700"
+                      >
+                        Pending
+                      </span>
+
+                    {% else %}
+
+                      <span
+                        class="px-2 py-1 rounded-lg bg-blue-100 text-blue-700"
+                      >
+                        Under Review
+                      </span>
+
+                    {% endif %}
+
+                  </td>
+
+
+                  <!-- DATE -->
+
+                  <td class="px-4 py-3">
+                    {{ record.date_reported|date:"M. d, Y" }}
+                  </td>
+
+
+                  <!-- ACTION -->
+
+                  <td class="px-4 py-3">
+
+                    {% if record.status == "Resolved" %}
+
+                      <form method="POST">
+
+                        {% csrf_token %}
+
+                        <input
+                          type="hidden"
+                          name="action"
+                          value="archive"
+                        >
+
+                        <input
+                          type="hidden"
+                          name="case_id"
+                          value="{{ record.id }}"
+                        >
+
+                        <button
+                          type="submit"
+                          class="px-3 py-2 text-sm text-white rounded-xl hover:opacity-90 theme-bg"
+                        >
+                          Archive
+                        </button>
+
+                      </form>
+
+                    {% else %}
+
+                      <span class="text-slate-400">
+                        Not Ready
+                      </span>
+
+                    {% endif %}
+
+                  </td>
+
+
+                </tr>
+
+
+              {% empty %}
+
+
+                <tr>
+
+                  <td
+                    colspan="8"
+                    class="px-4 py-8 text-center text-slate-500"
+                  >
+
+                    No case records found in the database.
+
+                  </td>
+
+                </tr>
+
+
+              {% endfor %}
+
+
+            </tbody>
+
+
+          </table>
+
+        </div>
+
+
+      </div>
+
+
+
+      <!-- ARCHIVED RECORDS -->
+
+      <div class="bg-white rounded-3xl shadow border theme-border p-6 mt-6">
+
+
+        <div class="mb-4">
+
+          <h2 class="text-xl font-bold text-slate-800">
+            Archived Records
+          </h2>
+
+          <p class="text-sm text-slate-500">
+            View or restore case records that have already been archived.
+          </p>
+
+        </div>
+
+
+
+        <div class="overflow-x-auto">
+
+          <table class="w-full text-sm text-left">
+
+
+            <thead
+              class="text-white theme-bg"
+            >
+
+              <tr>
+
+                <th class="px-4 py-3">
+                  Case ID
+                </th>
+
+                <th class="px-4 py-3">
+                  Student ID
+                </th>
+
+                <th class="px-4 py-3">
+                  Name
+                </th>
+
+                <th class="px-4 py-3">
+                  Program
+                </th>
+
+                <th class="px-4 py-3">
+                  Violation
+                </th>
+
+                <th class="px-4 py-3">
+                  Status
+                </th>
+
+                <th class="px-4 py-3">
+                  Date Reported
+                </th>
+
+                <th class="px-4 py-3">
+                  Archived Date
+                </th>
+
+                <th class="px-4 py-3">
+                  Action
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+
+            <tbody>
+
+
+              {% for record in archived_records %}
+
+
+                <tr class="border-b hover:bg-slate-50">
+
+
+                  <td class="px-4 py-3 font-medium">
+                    {{ record.case_id }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.student_id }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.student_name }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.course }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.offense }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+
+                    <span
+                      class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700"
+                    >
+                      {{ record.status }}
+                    </span>
+
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.date_reported|date:"M. d, Y" }}
+                  </td>
+
+
+                  <td class="px-4 py-3">
+                    {{ record.archived_at|date:"M. d, Y" }}
+                  </td>
+
+
+                  <!-- RESTORE -->
+
+                  <td class="px-4 py-3">
+
+                    <form method="POST">
+
+                      {% csrf_token %}
+
+                      <input
+                        type="hidden"
+                        name="action"
+                        value="restore"
+                      >
+
+                      <input
+                        type="hidden"
+                        name="archived_id"
+                        value="{{ record.id }}"
+                      >
+
+                      <button
+                        type="submit"
+                        class="px-3 py-2 text-sm text-white rounded-xl bg-blue-600 hover:bg-blue-700"
+                      >
+                        Restore
+                      </button>
+
+                    </form>
+
+                  </td>
+
+
+                </tr>
+
+
+              {% empty %}
+
+
+                <tr>
+
+                  <td
+                    colspan="9"
+                    class="px-4 py-8 text-center text-slate-500"
+                  >
+
+                    No archived records found.
+
+                  </td>
+
+                </tr>
+
+
+              {% endfor %}
+
+
+            </tbody>
+
+
+          </table>
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+  </main>
+
+
+
+  <!-- SEARCH -->
+
+  <script>
+
+    document
+      .getElementById("archiveSearch")
+      .addEventListener("keyup", function() {
+
+        let searchValue =
+          this.value.toLowerCase();
+
+        let rows =
+          document.querySelectorAll(
+            "#archiveTableBody tr"
+          );
+
+
+        rows.forEach(function(row) {
+
+          let rowText =
+            row.textContent.toLowerCase();
+
+
+          if (rowText.includes(searchValue)) {
+
+            row.style.display = "";
+
+          } else {
+
+            row.style.display = "none";
+
+          }
+
+        });
+
+      });
+
+  </script>
+
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"
+  ></script>
+
+
+</body>
+
+</html>

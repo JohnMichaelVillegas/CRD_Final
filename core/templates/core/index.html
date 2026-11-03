@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>CRD Case Management System - Login</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: {{ settings.theme_color|default:"#166534" }};
+      --login-bg-image: url("{% if settings.login_background %}{{ settings.login_background.url }}{% else %}/static/core/crd.png{% endif %}");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background-image: var(--login-bg-image);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-color: var(--theme-color-dark);
+    }
+
+    /* Main layout: place login card on the right */
+    .login-page-container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      width: 100%;
+      min-height: 100vh;
+      padding: 32px 7%;
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 460px;
+      margin: 0;
+    }
+
+    /* Login card */
+    .login-card {
+      width: 100%;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+    }
+
+    .login-header {
+      padding: 28px 28px 16px;
+      text-align: center;
+    }
+
+    .login-content {
+      padding: 8px 28px 28px;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .login-form input {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      padding: 12px;
+      font-size: 14px;
+      color: #0f172a;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .login-form input:focus {
+      border-color: var(--theme-color);
+      box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.15);
+    }
+
+    .login-form label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .password-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .password-wrapper input {
+      padding-right: 48px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 100%;
+      padding: 0;
+      color: #64748b;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+
+    .password-toggle:hover {
+      color: #0f172a;
+    }
+
+    .sign-in-button {
+      display: block;
+      width: 100%;
+      padding: 13px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--theme-color);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: filter 0.2s ease;
+    }
+
+    .sign-in-button:hover {
+      filter: brightness(0.92);
+    }
+
+    .activate-account-link {
+      display: block;
+      margin-top: 12px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .demo-accounts {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .demo-account {
+      padding: 10px 12px;
+      color: #475569;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+    }
+
+    .demo-account strong {
+      color: #334155;
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .error-message {
+      padding: 12px;
+      color: #b91c1c;
+      font-size: 13px;
+      font-weight: 500;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+    }
+
+    .login-footer {
+      margin-top: 20px;
+      color: white;
+      font-size: 12px;
+      text-align: center;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Responsive layout for phones and tablets */
+    @media (max-width: 768px) {
+      body {
+        background-attachment: scroll;
+      }
+
+      .login-page-container {
+        justify-content: center;
+        padding: 24px 16px;
+      }
+
+      .login-wrapper {
+        max-width: 460px;
+      }
+
+      .login-header {
+        padding: 24px 20px 14px;
+      }
+
+      .login-content {
+        padding: 8px 20px 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="login-page-container">
+    <div class="login-wrapper">
+
+      <section class="login-card">
+
+        <!-- Header -->
+        <div class="login-header">
+
+          <div class="theme-bg mx-auto flex h-20 w-20 items-center justify-center rounded-2xl shadow-lg">
+            <svg class="h-10 w-10 text-white"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="1.8"
+                 viewBox="0 0 24 24"
+                 aria-hidden="true">
+              <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 14l9-5-9-5-9 5 9 5z">
+              </path>
+
+              <path stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 14l6.16-3.422A12.083 12.083 0 0112 20.055a12.083 12.083 0 01-6.16-9.477L12 14z">
+              </path>
+            </svg>
+          </div>
+
+          <h1 class="mt-5 text-2xl font-bold text-slate-800">
+            Welcome Back
+          </h1>
+
+          <p class="mt-2 text-sm text-slate-500">
+            Sign in to the CRD Case Management System
+          </p>
+
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-content">
+
+          <form method="POST" action="" class="login-form">
+            {% csrf_token %}
+
+            <!-- Username -->
+            <div>
+              <label for="username">Username</label>
+
+              <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
+                autocomplete="username"
+                required
+              >
+            </div>
+
+            <!-- Password -->
+            <div>
+              <label for="password">Password</label>
+
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  required
+                >
+
+                <button
+                  type="button"
+                  id="togglePassword"
+                  class="password-toggle"
+                  aria-label="Show password"
+                  aria-pressed="false"
+                >
+                  <svg class="h-5 w-5"
+                       fill="none"
+                       stroke="currentColor"
+                       stroke-width="1.8"
+                       viewBox="0 0 24 24"
+                       aria-hidden="true">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                    </path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Error Message -->
+            {% if error %}
+              <div class="error-message" role="alert">
+                {{ error }}
+              </div>
+            {% endif %}
+
+            <!-- Sign In Button -->
+            <button type="submit" class="sign-in-button">
+              Sign In
+            </button>
+
+          </form>
+
+          <div class="activate-account-link">
+  <a
+    href="{% url 'activate_account' %}"
+    class="text-sm font-semibold hover:underline"
+    style="color: var(--theme-color);"
+  >
+    Activate Your Account
+  </a>
+</div>
+
+          <!-- Demo Accounts -->
+          <div class="demo-accounts">
+
+            <p class="mb-3 text-xs font-semibold text-slate-500">
+              Demo Accounts
+            </p>
+
+            <div class="grid gap-2">
+
+              <div class="demo-account">
+                <strong>Username:</strong> admin
+                <br>
+                <strong>Password:</strong> testpassword
+              </div>
+
+              <div class="demo-account">
+                <strong>Username:</strong> staff
+                <br>
+                <strong>Password:</strong> testpassword123
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <p class="login-footer">
+        © 2026 CRD Case Management System
+      </p>
+
+    </div>
+  </main>
+
+  <!-- Password Visibility -->
+  <script>
+    const passwordInput = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+
+    togglePassword.addEventListener("click", function () {
+      const isPasswordHidden = passwordInput.type === "password";
+
+      passwordInput.type = isPasswordHidden ? "text" : "password";
+
+      togglePassword.setAttribute(
+        "aria-label",
+        isPasswordHidden ? "Hide password" : "Show password"
+      );
+
+      togglePassword.setAttribute(
+        "aria-pressed",
+        String(isPasswordHidden)
+      );
+    });
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+</body>
+</html>
+```

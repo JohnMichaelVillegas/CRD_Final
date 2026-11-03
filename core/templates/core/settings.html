@@ -1,0 +1,1110 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>System Settings</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-hover:hover {
+      filter: brightness(0.95);
+    }
+
+  </style>
+
+</head>
+
+
+<body class="bg-slate-100">
+
+
+  <!-- TOP NAVIGATION -->
+
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+        {% if request.user.is_superuser %}CRD Admin Panel{% else %}CRD Staff Panel{% endif %}
+      </h1>
+
+
+      <div class="flex items-center gap-3">
+
+
+        <div class="text-right hidden sm:block">
+
+          <p class="text-sm font-semibold text-slate-800">
+
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+
+          </p>
+
+          <p class="text-xs text-slate-500">
+            {% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}
+          </p>
+
+        </div>
+
+
+        <!-- USER PROFILE PICTURE -->
+
+        <div
+          class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border"
+        >
+
+          {% if request.user.userprofile.image %}
+
+            <img
+              src="{{ request.user.userprofile.image.url }}"
+              alt="Profile Picture"
+              class="w-full h-full object-cover"
+            >
+
+          {% else %}
+
+            {{ request.user.username|first|upper }}
+
+          {% endif %}
+
+        </div>
+
+
+        <!-- LOGOUT -->
+
+        <form method="POST" action="{% url 'logout' %}">
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- SIDEBAR -->
+
+  <aside
+    class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white"
+  >
+
+    <div class="px-4">
+
+
+      <!-- LOGGED IN CARD -->
+
+      <div
+        class="mb-6 p-4 rounded-2xl theme-bg"
+      >
+
+        <p class="text-xs text-green-100">
+          Logged in as
+        </p>
+
+        <h2 class="text-sm font-bold">
+
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+
+        </h2>
+
+        <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+          CRD Case Management System
+        </p>
+
+      </div>
+
+
+
+      <ul class="space-y-2">
+
+        <!-- Dashboard -->
+
+        <li>
+          <a
+            href="{% if request.user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'staff_dashboard' %}{% endif %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Dashboard
+          </a>
+        </li>
+
+
+        <!-- Staff and Admin pages -->
+
+        {% if request.user.is_superuser or "student_records" in request.user.userprofile.permissions %}
+
+        <li>
+          <a
+            href="{% url 'student_records' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Student Records
+          </a>
+        </li>
+
+        {% endif %}
+
+
+        {% if request.user.is_superuser or "student_archive" in request.user.userprofile.permissions %}
+
+        <li>
+          <a
+            href="{% url 'student_archive' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_archive' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Student Archive
+          </a>
+        </li>
+
+        {% endif %}
+
+
+        {% if request.user.is_superuser or "case_view" in request.user.userprofile.permissions or "case_record" in request.user.userprofile.permissions or "case_full" in request.user.userprofile.permissions or "case_create" in request.user.userprofile.permissions or "case_information" in request.user.userprofile.permissions %}
+
+        <li>
+          <a
+            href="{% url 'case_record' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'case_record' or request.resolver_match.url_name == 'case_record_details' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Case Record
+          </a>
+        </li>
+
+        {% endif %}
+
+
+        {% if request.user.is_superuser or "report_dashboard" in request.user.userprofile.permissions or "case_report" in request.user.userprofile.permissions or "print_reports" in request.user.userprofile.permissions %}
+
+        <li>
+          <a
+            href="{% url 'generate_reports' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'generate_reports' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Generate Reports
+          </a>
+        </li>
+
+        {% endif %}
+
+
+        <!-- Admin-only pages -->
+
+        {% if request.user.is_superuser %}
+
+        <li>
+          <a
+            href="{% url 'offense_master_list' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'offense_master_list' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Offense Master List
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="{% url 'archive_records' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'archive_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Archive Records
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="{% url 'user_management' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'user_management' or request.resolver_match.url_name == 'add_user' or request.resolver_match.url_name == 'edit_user' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            User Management
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="{% url 'audit_log' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'audit_log' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Audit Logs
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="{% url 'unlock_account' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'unlock_account' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Unlock Account
+          </a>
+        </li>
+
+        {% endif %}
+
+
+        <!-- Settings -->
+
+        {% if request.user.is_superuser or "settings_login_background" in request.user.userprofile.permissions or "settings_theme_color" in request.user.userprofile.permissions or "settings_student_api_url" in request.user.userprofile.permissions %}
+
+        <li>
+          <a
+            href="{% url 'settings' %}"
+            class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'settings' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}"
+          >
+            Settings
+          </a>
+        </li>
+
+        {% endif %}
+
+      </ul>
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- MAIN CONTENT -->
+
+  <main class="sm:ml-64 p-6 mt-16">
+
+    <div class="max-w-6xl mx-auto">
+
+
+      <!-- PAGE HEADER -->
+
+      <div
+        class="rounded-3xl p-6 text-white shadow-lg mb-6 theme-bg"
+      >
+
+        <h1 class="text-3xl font-bold">
+          System Settings
+        </h1>
+
+        <p class="mt-2 text-green-100">
+          Manage system appearance and configuration.
+        </p>
+
+      </div>
+
+
+
+      <!-- MESSAGES -->
+
+      {% if messages %}
+
+        {% for message in messages %}
+
+          <div
+            class="mb-4 p-4 rounded-xl bg-green-100 text-green-800 border border-green-300"
+          >
+
+            {{ message }}
+
+          </div>
+
+        {% endfor %}
+
+      {% endif %}
+
+
+
+      <!-- SETTINGS CARD -->
+
+      <div class="bg-white rounded-3xl shadow border theme-border p-6">
+
+
+        <div class="mb-5">
+
+          <h2 class="text-xl font-bold text-slate-800">
+            System Configuration
+          </h2>
+
+          <p class="text-sm text-slate-500">
+            Update the appearance and system configuration settings.
+          </p>
+
+        </div>
+
+
+
+        <form
+          method="POST"
+          enctype="multipart/form-data"
+          class="space-y-6"
+        >
+
+          {% csrf_token %}
+
+
+          {% if can_change_login_background %}
+
+          <!-- LOGIN BACKGROUND -->
+
+          <div>
+
+            <h3 class="text-lg font-bold text-slate-800 mb-2">
+              Login Background
+            </h3>
+
+            <p class="text-sm text-slate-500 mb-3">
+              Upload an image to use as the login page background.
+            </p>
+
+
+            {% if settings.login_background %}
+
+              <div class="mb-4">
+
+                <p class="text-sm font-semibold text-slate-700 mb-2">
+                  Current Background
+                </p>
+
+                <img
+                  src="{{ settings.login_background.url }}"
+                  class="w-64 h-32 object-cover rounded-xl border border-slate-200"
+                >
+
+              </div>
+
+            {% endif %}
+
+
+            <!-- CUSTOM FILE UPLOAD -->
+
+            <div
+              class="flex items-center gap-3 w-full border border-slate-300 rounded-xl p-2 bg-slate-50"
+            >
+
+              <input
+                type="file"
+                name="login_background"
+                id="loginBackground"
+                accept="image/*"
+                class="hidden"
+                onchange="showLoginFileName(this)"
+              >
+
+
+              <label
+                for="loginBackground"
+                class="inline-flex items-center gap-2 px-5 py-3 theme-bg text-white rounded-xl theme-hover font-semibold shadow-sm cursor-pointer whitespace-nowrap"
+              >
+
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M12 16V4m0 0L8 8m4-4l4 4M5 20h14"
+                  />
+
+                </svg>
+
+                Choose File
+
+              </label>
+
+
+              <span
+                id="loginFileName"
+                class="text-sm text-slate-500 truncate"
+              >
+                No file chosen
+              </span>
+
+            </div>
+
+
+            <p class="text-xs text-slate-500 mt-2">
+              Choose an image file for the login background.
+            </p>
+
+          </div>
+
+          {% endif %}
+
+
+          {% if can_change_theme_color %}
+
+          <!-- THEME COLOR -->
+
+          <div>
+
+            <h3 class="text-lg font-bold text-slate-800 mb-2">
+              Theme Color
+            </h3>
+
+            <p class="text-sm text-slate-500 mb-3">
+              Set the main color used by the system.
+            </p>
+
+
+            <div class="flex items-center gap-3">
+
+              <input
+                type="color"
+                name="theme_color"
+                value="{{ settings.theme_color }}"
+                class="w-14 h-12 rounded-lg cursor-pointer"
+              >
+
+              <input
+                type="text"
+                name="theme_color"
+                value="{{ settings.theme_color }}"
+                class="border border-slate-300 rounded-xl px-4 py-3 w-48"
+                placeholder="#15803d"
+              >
+
+            </div>
+
+          </div>
+
+          {% endif %}
+
+
+          {% if can_change_student_api_url %}
+
+          <!-- STUDENT API -->
+
+          <div>
+
+            <h3 class="text-lg font-bold text-slate-800 mb-2">
+              Student API URL
+            </h3>
+
+            <p class="text-sm text-slate-500 mb-3">
+              Enter the API URL used to retrieve student information.
+            </p>
+
+
+            <input
+              type="url"
+              name="student_api_url"
+              value="{{ settings.student_api_url }}"
+              placeholder="https://example.com/api/students"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3"
+            >
+
+          </div>
+
+          {% endif %}
+
+
+          {% if can_change_login_background or can_change_theme_color or can_change_student_api_url %}
+
+          <!-- SAVE -->
+
+          <div class="pt-4 border-t border-slate-200">
+
+            <button
+              type="submit"
+              class="theme-bg theme-hover text-white font-semibold px-6 py-3 rounded-xl shadow-sm"
+            >
+              Save Settings
+            </button>
+
+          </div>
+
+          {% endif %}
+
+        </form>
+
+      </div>
+
+
+
+      <!-- MOCK OBDMS STUDENT DATA -->
+
+      {% if is_main_admin or can_change_student_api_url %}
+
+      <div class="bg-white rounded-3xl shadow border border-slate-200 p-6 mt-6">
+
+
+        <!-- SECTION HEADER -->
+
+        <div class="mb-6">
+
+          <h2 class="text-xl font-bold text-slate-800">
+            Student Records Integration
+          </h2>
+
+          <p class="text-sm text-slate-500 mt-1">
+            Manage the retrieval and importing of student records through the Student API.
+          </p>
+
+        </div>
+
+
+
+        <!-- STEP 1: UPLOAD EXCEL FILE -->
+
+        <div class="border border-slate-200 rounded-2xl p-5 mb-5">
+
+          <div class="flex items-start gap-3 mb-4">
+
+            <div class="w-9 h-9 rounded-full theme-bg text-white flex items-center justify-center font-bold shrink-0">
+              1
+            </div>
+
+            <div>
+
+              <h3 class="text-lg font-bold text-slate-800">
+                Upload Student Data
+              </h3>
+
+              <p class="text-sm text-slate-500 mt-1">
+                Select the Excel workbook that contains the student records used by the mock API.
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          <!-- CURRENT FILE -->
+
+          {% if settings.obdms_student_file %}
+
+          <div class="mb-4 p-4 rounded-xl bg-green-50 border border-green-200">
+
+            <p class="text-sm font-semibold text-green-700">
+              Currently Uploaded File
+            </p>
+
+            <p class="text-sm text-green-800 mt-1 break-all">
+              {{ settings.obdms_student_file.name }}
+            </p>
+
+          </div>
+
+          {% else %}
+
+          <div class="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
+
+            <p class="text-sm text-slate-600">
+              No student Excel file has been uploaded yet.
+            </p>
+
+          </div>
+
+          {% endif %}
+
+
+
+          <!-- UPLOAD FORM -->
+
+          <form
+            method="POST"
+            action="{% url 'upload_obdms_students' %}"
+            enctype="multipart/form-data"
+            class="space-y-4"
+          >
+
+            {% csrf_token %}
+
+            <div>
+
+              <label class="block text-sm font-semibold text-slate-700 mb-2">
+                Select Student Excel File
+              </label>
+
+
+              <!-- CUSTOM FILE UPLOAD -->
+
+              <div
+                class="flex items-center gap-3 w-full border border-slate-300 rounded-xl p-2 bg-slate-50"
+              >
+
+                <input
+                  type="file"
+                  name="obdms_student_file"
+                  id="obdmsStudentFile"
+                  accept=".xlsx"
+                  required
+                  class="hidden"
+                  onchange="showObdmsFileName(this)"
+                >
+
+                <label
+                  for="obdmsStudentFile"
+                  class="inline-flex items-center gap-2 px-5 py-3 theme-bg text-white rounded-xl theme-hover font-semibold shadow-sm cursor-pointer whitespace-nowrap"
+                >
+
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-5 h-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 16V4m0 0L8 8m4-4l4 4M5 20h14"
+                    />
+
+                  </svg>
+
+                  Choose File
+
+                </label>
+
+
+                <span
+                  id="obdmsFileName"
+                  class="text-sm text-slate-500 truncate"
+                >
+                  No file chosen
+                </span>
+
+              </div>
+
+
+              <p class="text-xs text-slate-500 mt-2">
+                Accepted format: .xlsx. The workbook must contain a Students worksheet with the required column headers.
+              </p>
+
+            </div>
+
+
+            <button
+              type="submit"
+              class="theme-bg theme-hover text-white font-semibold px-6 py-3 rounded-xl shadow-sm"
+            >
+              Upload Excel File
+            </button>
+
+          </form>
+
+        </div>
+
+
+
+        <!-- STEP 2: RETRIEVE STUDENTS -->
+
+        <div class="border border-slate-200 rounded-2xl p-5 mb-5">
+
+          <div class="flex items-start gap-3 mb-4">
+
+            <div class="w-9 h-9 rounded-full theme-bg text-white flex items-center justify-center font-bold shrink-0">
+              2
+            </div>
+
+            <div>
+
+              <h3 class="text-lg font-bold text-slate-800">
+                Retrieve Student Records
+              </h3>
+
+              <p class="text-sm text-slate-500 mt-1">
+                Connect to the configured Student API URL and retrieve the available student information.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+
+            <p class="text-sm text-blue-800">
+              <strong>Note:</strong> Make sure your Excel file has been uploaded before retrieving student records.
+            </p>
+
+          </div>
+
+
+          <form
+            method="POST"
+            action="{% url 'retrieve_students_from_api' %}"
+          >
+
+            {% csrf_token %}
+
+            <button
+              type="submit"
+              class="theme-bg theme-hover text-white font-semibold px-6 py-3 rounded-xl shadow-sm"
+            >
+              Retrieve Students
+            </button>
+
+          </form>
+
+        </div>
+
+
+
+        <!-- STEP 3: REVIEW AND IMPORT -->
+
+        <div class="border border-slate-200 rounded-2xl p-5">
+
+          <div class="flex items-start gap-3 mb-5">
+
+            <div class="w-9 h-9 rounded-full theme-bg text-white flex items-center justify-center font-bold shrink-0">
+              3
+            </div>
+
+            <div>
+
+              <h3 class="text-lg font-bold text-slate-800">
+                Review and Import Students
+              </h3>
+
+              <p class="text-sm text-slate-500 mt-1">
+                Review the retrieved student information before saving the records to the PostgreSQL database.
+              </p>
+
+            </div>
+
+          </div>
+
+
+
+          {% if student_api_preview %}
+
+
+          <!-- RECORD COUNT -->
+
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+
+            <div>
+
+              <p class="text-sm font-semibold text-slate-800">
+                Retrieved Student Records
+              </p>
+
+              <p class="text-sm text-slate-500 mt-1">
+                {{ student_api_preview|length }} student records retrieved successfully.
+              </p>
+
+            </div>
+
+
+            <span class="px-4 py-2 rounded-full bg-green-100 text-green-700 text-sm font-semibold">
+              {{ student_api_preview|length }} Records
+            </span>
+
+          </div>
+
+
+
+          <!-- PREVIEW TABLE -->
+
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+
+            <table class="w-full text-sm text-left text-slate-600">
+
+              <thead class="bg-slate-100 text-slate-700 uppercase text-xs">
+
+                <tr>
+
+                  <th class="px-4 py-3 whitespace-nowrap">Student ID</th>
+                  <th class="px-4 py-3 whitespace-nowrap">First Name</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Middle Name</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Last Name</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Course</th>
+                  <th class="px-4 py-3 whitespace-nowrap">School</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Year Level</th>
+                  <th class="px-4 py-3 whitespace-nowrap">Sex</th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                {% for student in student_api_preview %}
+
+                <tr class="border-t border-slate-200 hover:bg-slate-50">
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.student_id }}
+                  </td>
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.first_name }}
+                  </td>
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.middle_name|default:"-" }}
+                  </td>
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.last_name }}
+                  </td>
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.course }}
+                  </td>
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.program }}
+                  </td>
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.year_level }}
+                  </td>
+
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    {{ student.sex|default:"-" }}
+                  </td>
+
+                </tr>
+
+                {% endfor %}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+
+
+          <!-- IMPORT INFORMATION -->
+
+          <div class="mt-5 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+
+            <p class="text-sm text-blue-800">
+              <strong>Before importing:</strong> Review the student details above. Existing Student IDs will be skipped to prevent duplicate records.
+            </p>
+
+          </div>
+
+
+
+          <!-- IMPORT FORM -->
+
+          <form
+            method="POST"
+            action="{% url 'import_students_from_api' %}"
+            class="mt-5"
+            onsubmit="return confirm('Are you sure you want to import these student records? Existing Student IDs will be skipped.');"
+          >
+
+            {% csrf_token %}
+
+            <button
+              type="submit"
+              class="theme-bg theme-hover text-white font-semibold px-6 py-3 rounded-xl shadow-sm"
+            >
+              Import Students
+            </button>
+
+          </form>
+
+
+
+          {% else %}
+
+
+
+          <!-- EMPTY PREVIEW -->
+
+          <div class="border border-dashed border-slate-300 rounded-xl p-8 text-center bg-slate-50">
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-10 h-10 mx-auto text-slate-400 mb-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 011.414 0L19 8.414A2 2 0 0119 10v9a2 2 0 01-2 2z"
+              />
+
+            </svg>
+
+
+            <p class="font-semibold text-slate-700">
+              No Student Records Retrieved Yet
+            </p>
+
+            <p class="text-sm text-slate-500 mt-1">
+              Complete Step 1 and Step 2 to display the student records here.
+            </p>
+
+          </div>
+
+
+          {% endif %}
+
+        </div>
+
+      </div>
+
+      {% endif %}
+
+
+    </div>
+
+  </main>
+
+
+
+  <!-- FILE NAME JAVASCRIPT -->
+
+  <script>
+
+    function showLoginFileName(input) {
+
+      const fileName =
+        document.getElementById("loginFileName");
+
+
+      if (!fileName) {
+        return;
+      }
+
+
+      if (input.files.length > 0) {
+
+        fileName.textContent =
+          input.files[0].name;
+
+
+        fileName.classList.remove(
+          "text-slate-500"
+        );
+
+
+        fileName.classList.add(
+          "text-slate-700",
+          "font-medium"
+        );
+
+      } else {
+
+        fileName.textContent =
+          "No file chosen";
+
+
+        fileName.classList.remove(
+          "text-slate-700",
+          "font-medium"
+        );
+
+
+        fileName.classList.add(
+          "text-slate-500"
+        );
+
+      }
+
+    }
+
+
+    function showObdmsFileName(input) {
+
+      const fileName =
+        document.getElementById("obdmsFileName");
+
+
+      if (!fileName) {
+        return;
+      }
+
+
+      if (input.files.length > 0) {
+
+        fileName.textContent =
+          input.files[0].name;
+
+
+        fileName.classList.remove(
+          "text-slate-500"
+        );
+
+
+        fileName.classList.add(
+          "text-slate-700",
+          "font-medium"
+        );
+
+      } else {
+
+        fileName.textContent =
+          "No file chosen";
+
+
+        fileName.classList.remove(
+          "text-slate-700",
+          "font-medium"
+        );
+
+
+        fileName.classList.add(
+          "text-slate-500"
+        );
+
+      }
+
+    }
+
+  </script>
+
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"
+  ></script>
+
+</body>
+
+</html>

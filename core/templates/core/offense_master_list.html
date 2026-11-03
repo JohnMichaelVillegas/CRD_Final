@@ -1,0 +1,1369 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Offense Master List</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+
+        :root {
+            --theme-color: {{ settings.theme_color|default:"#15803d" }};
+        }
+
+        .theme-bg {
+            background-color: var(--theme-color) !important;
+        }
+
+        .theme-border {
+            border-color: var(--theme-color) !important;
+        }
+
+        .theme-text {
+            color: var(--theme-color) !important;
+        }
+
+        .theme-ring:focus {
+            --tw-ring-color: var(--theme-color) !important;
+            border-color: var(--theme-color) !important;
+        }
+
+    </style>
+
+</head>
+
+
+<body class="bg-slate-100">
+
+
+    <!-- TOP NAVIGATION -->
+
+    <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+        <div class="px-4 py-3 flex justify-between items-center">
+
+            <h1 class="text-xl font-bold text-slate-800">
+
+                CRD Admin Panel
+
+            </h1>
+
+
+            <div class="flex items-center gap-3">
+
+
+                <div class="text-right hidden sm:block">
+
+                    <p class="text-sm font-semibold text-slate-800">
+
+                        {{ request.user.userprofile.full_name|default:request.user.username }}
+
+                    </p>
+
+                    <p class="text-xs text-slate-500">
+
+                        Admin
+
+                    </p>
+
+                </div>
+
+
+                <!-- USER PROFILE PICTURE -->
+
+<div
+  class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border"
+>
+
+  {% if request.user.userprofile.image %}
+
+    <img
+      src="{{ request.user.userprofile.image.url }}"
+      alt="Profile Picture"
+      class="w-full h-full object-cover"
+    >
+
+  {% else %}
+
+    {{ request.user.username|first|upper }}
+
+  {% endif %}
+
+</div>
+
+
+                <!-- LOGOUT -->
+
+                <form method="POST" action="{% url 'logout' %}">
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+                    >
+                        Logout
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- SIDEBAR -->
+
+    <aside
+        class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white"
+    >
+
+        <div class="px-4">
+
+
+            <!-- LOGGED IN CARD -->
+
+            <div
+                class="mb-6 p-4 rounded-2xl theme-bg"
+            >
+
+                <p class="text-xs text-green-100">
+                    Logged in as
+                </p>
+
+                <h2 class="text-sm font-bold">
+                    {{ request.user.userprofile.full_name|default:request.user.username }}
+                </h2>
+
+                <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+                    CRD Case Management System
+                </p>
+
+            </div>
+
+
+
+            <!-- SIDEBAR MENU -->
+
+            <ul class="space-y-2">
+
+
+                <!-- DASHBOARD -->
+
+                <li>
+
+                    <a
+                        href="{% url 'admin_dashboard' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Dashboard
+                    </a>
+
+                </li>
+
+
+
+                <!-- STUDENT RECORDS -->
+
+                <li>
+
+                    <a
+                        href="{% url 'student_records' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Student Records
+                    </a>
+
+                </li>
+
+                <li>
+  <a
+    href="{% url 'student_archive' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Student Archive
+  </a>
+</li>
+
+                <!-- CASE RECORD -->
+
+                <li>
+
+                    <a
+                        href="{% url 'case_record' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Case Record
+                    </a>
+
+                </li>
+
+                <!-- GENERATE REPORTS -->
+
+                <li>
+
+                    <a
+                        href="{% url 'generate_reports' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Generate Reports
+                    </a>
+
+                </li>
+
+
+                <!-- OFFENSE MASTER LIST -->
+
+                <li>
+
+                    <a
+                        href="{% url 'offense_master_list' %}"
+                        class="block p-3 rounded-xl text-white theme-bg"
+                    >
+                        Offense Master List
+                    </a>
+
+                </li>
+
+                <!-- ARCHIVE RECORDS -->
+
+                <li>
+
+                    <a
+                        href="{% url 'archive_records' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Archive Records
+                    </a>
+
+                </li>
+
+
+
+                <!-- USER MANAGEMENT -->
+
+                <li>
+
+                    <a
+                        href="{% url 'user_management' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        User Management
+                    </a>
+
+                </li>
+
+                <!-- AUDIT LOGS -->
+
+<li>
+  <a
+    href="{% url 'audit_log' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Audit Logs
+  </a>
+</li>
+
+                <!-- UNLOCK ACCOUNT -->
+
+                <li>
+
+                    <a
+                        href="{% url 'unlock_account' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Unlock Account
+                    </a>
+
+                </li>
+
+
+
+                <!-- SETTINGS -->
+
+                <li>
+
+                    <a
+                        href="{% url 'settings' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Settings
+                    </a>
+
+                </li>
+
+
+            </ul>
+
+        </div>
+
+    </aside>
+
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="sm:ml-64 p-6 mt-16">
+
+
+        <div class="max-w-6xl mx-auto">
+
+
+            <!-- THEME PAGE HEADER -->
+
+            <div
+                class="rounded-3xl p-6 text-white shadow-lg mb-6 theme-bg"
+            >
+
+                <h1 class="text-3xl font-bold">
+
+                    Offense Master List
+
+                </h1>
+
+                <p class="mt-2 text-green-100">
+
+                    Manage offense codes used in the CRD system.
+
+                </p>
+
+            </div>
+
+
+
+            <!-- SUCCESS MESSAGE -->
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div
+                        class="mb-4 p-4 rounded-xl bg-green-100 text-green-800 border border-green-300"
+                    >
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+
+            <!-- ADD / EDIT OFFENSE FORM -->
+
+            <div
+                class="bg-white rounded-3xl shadow border theme-border p-6 mb-6"
+            >
+
+
+                <div class="flex justify-between items-center mb-5">
+
+                    <div>
+
+                        <h2 class="text-xl font-bold text-slate-800">
+
+                            {% if edit_offense %}
+
+                                Edit Offense Code
+
+                            {% else %}
+
+                                Add Offense Code
+
+                            {% endif %}
+
+                        </h2>
+
+                        <p class="text-sm text-slate-500 mt-1">
+
+                            Enter the offense code information below.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- FORM -->
+
+                <form method="POST" id="offenseForm">
+
+                    {% csrf_token %}
+
+
+                    {% if edit_offense %}
+
+                        <input
+                            type="hidden"
+                            name="offense_id"
+                            value="{{ edit_offense.id }}"
+                        >
+
+                    {% endif %}
+
+
+
+                    <!-- OFFENSE CODE + NAME -->
+
+                    <div class="grid md:grid-cols-2 gap-4">
+
+
+                        <!-- OFFENSE CODE -->
+
+                        <div>
+
+                            <label class="block mb-2 text-sm font-medium text-slate-800">
+
+                                Offense Code
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="offense_code"
+                                value="{% if edit_offense %}{{ edit_offense.offense_code }}{% endif %}"
+                                placeholder="Enter offense code"
+                                required
+                                class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+                            >
+
+                        </div>
+
+
+
+                        <!-- OFFENSE NAME -->
+
+                        <div>
+
+                            <label class="block mb-2 text-sm font-medium text-slate-800">
+
+                                Offense Name
+
+                            </label>
+
+                            <input
+                                type="text"
+                                name="offense_name"
+                                value="{% if edit_offense %}{{ edit_offense.offense_name }}{% endif %}"
+                                placeholder="Enter offense name"
+                                required
+                                class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+                            >
+
+                        </div>
+
+
+                    </div>
+
+
+
+                    <!-- SEVERITY + STATUS -->
+
+                    <div class="grid md:grid-cols-2 gap-4 mt-4">
+
+
+                        <!-- SEVERITY -->
+
+                        <div>
+
+                            <label class="block mb-2 text-sm font-medium text-slate-800">
+
+                                Severity
+
+                            </label>
+
+                            <select
+                                name="severity"
+                                required
+                                class="w-full border border-slate-300 rounded-xl p-3"
+                            >
+
+                                <option value="">
+                                    Select severity
+                                </option>
+
+                                <option
+                                    value="Minor"
+                                    {% if edit_offense and edit_offense.severity == "Minor" %}selected{% endif %}
+                                >
+                                    Minor
+                                </option>
+
+                                <option
+                                    value="Major"
+                                    {% if edit_offense and edit_offense.severity == "Major" %}selected{% endif %}
+                                >
+                                    Major
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        <!-- STATUS -->
+
+                        <div>
+
+                            <label class="block mb-2 text-sm font-medium text-slate-800">
+
+                                Status
+
+                            </label>
+
+                            <select
+                                name="status"
+                                required
+                                class="w-full border border-slate-300 rounded-xl p-3"
+                            >
+
+                                <option
+                                    value="Active"
+                                    {% if edit_offense and edit_offense.status == "Active" %}selected{% endif %}
+                                >
+                                    Active
+                                </option>
+
+                                <option
+                                    value="Inactive"
+                                    {% if edit_offense and edit_offense.status == "Inactive" %}selected{% endif %}
+                                >
+                                    Inactive
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                    </div>
+
+                    
+<!-- ACCUMULATION SETTINGS -->
+<div class="mt-6 border border-slate-200 rounded-2xl p-5">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+            <h3 class="text-lg font-bold text-slate-800">
+                Accumulation Settings
+            </h3>
+
+            <p class="text-sm text-slate-500 mt-1">
+                Configure how repeated offenses are classified and handled.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            onclick="openAccumulationModal()"
+            class="px-4 py-2 rounded-xl text-white theme-bg hover:opacity-90"
+        >
+            Configure Rules
+        </button>
+    </div>
+
+    <div id="accumulationSummary" class="mt-4 text-sm text-slate-500">
+        No accumulation settings configured.
+    </div>
+</div>
+
+                    <!-- BUTTONS -->
+
+                    <div class="flex justify-end gap-3 mt-6">
+
+
+                        {% if edit_offense %}
+
+                            <a
+                                href="{% url 'offense_master_list' %}"
+                                class="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300"
+                            >
+                                Cancel
+                            </a>
+
+                        {% else %}
+
+                            <button
+                                type="reset"
+                                class="px-6 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300"
+                            >
+                                Clear
+                            </button>
+
+                        {% endif %}
+
+
+
+                        <button
+                            type="submit"
+                            class="px-6 py-3 text-white rounded-xl hover:opacity-90 theme-bg"
+                        >
+
+                            {% if edit_offense %}
+
+                                Update Offense Code
+
+                            {% else %}
+
+                                Save Offense Code
+
+                            {% endif %}
+
+                        </button>
+
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+
+
+            <!-- DATABASE OFFENSE RECORDS -->
+
+            <div
+                class="bg-white rounded-3xl shadow border theme-border p-6"
+            >
+
+
+                <!-- TABLE HEADER -->
+
+                <div class="mb-4">
+
+                    <h2 class="text-xl font-bold text-slate-800">
+
+                        Offense Master List
+
+                    </h2>
+
+                    <p class="text-sm text-slate-500">
+
+                        Records retrieved from PostgreSQL database
+
+                    </p>
+
+                </div>
+
+
+
+                <!-- SEARCH -->
+
+                <div class="mb-4">
+
+                    <input
+                        type="text"
+                        id="offenseSearch"
+                        placeholder="Search code, name, severity, accumulation rules, or status..."
+                        class="w-full border border-slate-300 rounded-xl p-3"
+                    >
+
+                </div>
+
+
+
+                <!-- TABLE -->
+
+                <div class="overflow-x-auto">
+
+                    <table class="w-full text-sm text-left">
+
+
+                        <!-- TABLE HEADER -->
+
+                        <thead
+                            class="text-white theme-bg"
+                        >
+
+                            <tr>
+
+                                <th class="px-4 py-3">
+                                    Offense Code
+                                </th>
+
+                                <th class="px-4 py-3">
+                                    Offense Name
+                                </th>
+
+                                <th class="px-4 py-3">
+                                    Severity
+                                </th>
+
+                                <th class="px-4 py-3">
+                                    Accumulation Rules
+                                </th>
+
+                                <th class="px-4 py-3">
+                                    Status
+                                </th>
+
+                                <th class="px-4 py-3">
+                                    Last Updated
+                                </th>
+
+                                <th class="px-4 py-3">
+                                    Actions
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <!-- TABLE BODY -->
+
+                        <tbody id="offenseTableBody">
+
+
+                            {% for offense in offenses %}
+
+                                <tr class="border-b hover:bg-slate-50">
+
+
+                                    <!-- OFFENSE CODE -->
+
+                                    <td class="px-4 py-3 font-medium">
+
+                                        {{ offense.offense_code }}
+
+                                    </td>
+
+
+
+                                    <!-- OFFENSE NAME -->
+
+                                    <td class="px-4 py-3">
+
+                                        {{ offense.offense_name }}
+
+                                    </td>
+
+                                    <!-- SEVERITY -->
+
+                                    <td class="px-4 py-3">
+
+                                        {% if offense.severity == "Major" %}
+
+                                            <span
+                                                class="px-2 py-1 rounded-lg bg-red-100 text-red-700"
+                                            >
+                                                Major
+                                            </span>
+
+                                        {% else %}
+
+                                            <span
+                                                class="px-2 py-1 rounded-lg bg-green-100 text-green-700"
+                                            >
+                                                Minor
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    
+
+<!-- ACCUMULATION RULES -->
+<td class="px-4 py-3">
+    {% for rule in offense.accumulation_rules.all %}
+        <div class="mb-2">
+            <span class="font-medium">
+                {{ rule.instance_range }}
+            </span>
+            → {{ rule.classification }}
+
+            {% if rule.action_note %}
+                <p class="mt-1 text-xs text-slate-500">
+                    {{ rule.action_note }}
+                </p>
+            {% endif %}
+        </div>
+    {% empty %}
+        <span class="text-slate-400">No rules</span>
+    {% endfor %}
+</td>
+
+                                    <!-- STATUS -->
+
+                                    <td class="px-4 py-3">
+
+                                        {% if offense.status == "Active" %}
+
+                                            <span
+                                                class="px-2 py-1 rounded-lg bg-green-100 text-green-700"
+                                            >
+                                                Active
+                                            </span>
+
+                                        {% else %}
+
+                                            <span
+                                                class="px-2 py-1 rounded-lg bg-slate-200 text-slate-700"
+                                            >
+                                                Inactive
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- LAST UPDATED -->
+
+                                    <td class="px-4 py-3">
+
+                                        {{ offense.last_updated|date:"M. d, Y" }}
+
+                                    </td>
+
+
+
+                                        
+<!-- ACTIONS -->
+<td class="px-4 py-3">
+    <div class="flex flex-col items-start gap-2">
+
+        <a
+            href="?edit={{ offense.id }}"
+            class="inline-flex min-w-[76px] justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        >
+            Edit
+        </a>
+
+        <form
+            method="POST"
+            onsubmit="return confirm('Are you sure you want to delete this offense code?');"
+        >
+            {% csrf_token %}
+
+            <input type="hidden" name="offense_id" value="{{ offense.id }}">
+            <input type="hidden" name="action" value="delete">
+
+            <button
+                type="submit"
+                class="inline-flex min-w-[76px] justify-center rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700"
+            >
+                Delete
+            </button>
+        </form>
+
+    </div>
+</td>
+
+
+
+                                    </tr>
+
+
+                                {% empty %}
+
+                                    <tr>
+
+                                        <td
+                                            colspan="7"
+                                            class="px-4 py-8 text-center text-slate-500"
+                                        >
+
+                                            No offense codes found in the database.
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+
+                            </tbody>
+
+
+                        </table>
+
+                    </div>
+
+
+                </div>
+
+
+            </div>
+
+        </main>
+
+    
+<!-- ACCUMULATION SETTINGS MODAL -->
+<div id="accumulationModal"
+     class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/50 p-4">
+
+    <div class="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
+
+        <div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-4">
+            <div>
+                <h2 class="text-xl font-bold text-slate-800">
+                    Accumulation Settings
+                </h2>
+                <p class="mt-1 text-sm text-slate-500">
+                    Choose how this offense should be handled and configure its rules.
+                </p>
+            </div>
+
+            <button type="button"
+                    onclick="closeAccumulationModal()"
+                    class="rounded-lg px-3 py-2 text-xl text-slate-500 hover:bg-slate-100">
+                &times;
+            </button>
+        </div>
+
+        
+<div class="mt-5">
+    <label class="mb-2 block text-sm font-semibold text-slate-800">
+        Accumulation Type
+    </label>
+
+    <div class="space-y-3">
+
+        <!-- ACCUMULATING OFFENSE -->
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:bg-slate-50">
+            <input
+                type="radio"
+                name="accumulation_type"
+                value="accumulating"
+                form="offenseForm"
+                {% if not edit_offense or edit_offense.accumulation_type == "accumulating" %}checked{% endif %}
+                class="mt-1"
+            >
+
+            <span>
+                <span class="block font-medium text-slate-800">
+                    Accumulating Offense
+                </span>
+
+                <span class="block text-sm text-slate-500">
+                    The action or classification depends on repeated occurrences.
+                </span>
+            </span>
+        </label>
+
+        <!-- DIRECT MINOR OFFENSE -->
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:bg-slate-50">
+            <input
+                type="radio"
+                name="accumulation_type"
+                value="direct_minor"
+                form="offenseForm"
+                {% if edit_offense and edit_offense.accumulation_type == "direct_minor" %}checked{% endif %}
+                class="mt-1"
+            >
+
+            <span>
+                <span class="block font-medium text-slate-800">
+                    Direct Minor Offense
+                </span>
+
+                <span class="block text-sm text-slate-500">
+                    Handle the offense directly as a minor offense.
+                </span>
+            </span>
+        </label>
+
+        <!-- DIRECT MAJOR OFFENSE -->
+        <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 p-4 hover:bg-slate-50">
+            <input
+                type="radio"
+                name="accumulation_type"
+                value="direct_major"
+                form="offenseForm"
+                {% if edit_offense and edit_offense.accumulation_type == "direct_major" %}checked{% endif %}
+                class="mt-1"
+            >
+
+            <span>
+                <span class="block font-medium text-slate-800">
+                    Direct Major Offense
+                </span>
+
+                <span class="block text-sm text-slate-500">
+                    Handle the offense directly as a major offense.
+                </span>
+            </span>
+        </label>
+
+    </div>
+</div>
+
+        
+<div id="accumulationRuleEditor" class="mt-6">
+
+    <div class="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+            <h3 class="font-bold text-slate-800">
+                Accumulation Rules
+            </h3>
+            <p class="mt-1 text-sm text-slate-500">
+                Configure the instance, classification, and action for each rule.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            onclick="resetAccumulationRules()"
+            class="rounded-xl border border-green-700 px-4 py-2 text-sm font-medium text-green-800 hover:bg-green-50"
+        >
+            ↻ Reset to Default
+        </button>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-slate-200">
+
+        <div class="grid min-w-[720px] grid-cols-[40px_1fr_1.3fr_1.5fr_36px] gap-2 bg-slate-100 p-3 text-xs font-semibold text-slate-700">
+            <span>#</span>
+            <span>Instance(s)</span>
+            <span>Classification</span>
+            <span>Additional Action / Note</span>
+            <span></span>
+        </div>
+
+        <div id="accumulationModalRules" class="min-w-[720px] divide-y divide-slate-200">
+
+            {% if edit_offense %}
+                {% for rule in edit_offense.accumulation_rules.all %}
+
+                    <div class="accumulation-modal-rule grid grid-cols-[40px_1fr_1.3fr_1.5fr_36px] items-center gap-2 p-3">
+
+                        <span class="rule-number rounded-full bg-green-100 px-2 py-2 text-center text-sm font-bold text-green-800">
+                            {{ forloop.counter }}
+                        </span>
+
+                        <select
+                            name="instance_range[]"
+                            form="offenseForm"
+                            data-selected="{{ rule.instance_range }}"
+                            class="instance-select w-full rounded-xl border border-slate-300 p-2 text-sm"
+                        ></select>
+
+                        <select
+                            name="classification[]"
+                            form="offenseForm"
+                            class="classification-select w-full rounded-xl border border-slate-300 p-2 text-sm"
+                        >
+                            <option value="Infraction" {% if rule.classification == "Infraction" %}selected{% endif %}>Infraction</option>
+                            <option value="Minor Offense" {% if rule.classification == "Minor Offense" %}selected{% endif %}>Minor Offense</option>
+                            <option value="Major Offense" {% if rule.classification == "Major Offense" %}selected{% endif %}>Major Offense</option>
+                        </select>
+
+                        <input
+                            type="text"
+                            name="action_note[]"
+                            form="offenseForm"
+                            value="{{ rule.action_note }}"
+                            placeholder="Additional action / note"
+                            class="w-full rounded-xl border border-slate-300 p-2 text-sm"
+                        >
+
+                        <button
+                            type="button"
+                            onclick="removeAccumulationRule(this)"
+                            class="rounded-lg p-2 text-red-600 hover:bg-red-50"
+                            title="Remove rule"
+                        >
+                            🗑
+                        </button>
+
+                    </div>
+
+                {% endfor %}
+            {% endif %}
+
+        </div>
+    </div>
+
+    <button
+        type="button"
+        onclick="addAccumulationRule()"
+        class="mt-4 rounded-xl border border-green-700 px-4 py-2 text-sm font-medium text-green-800 hover:bg-green-50"
+    >
+        + Add Rule
+    </button>
+
+    <p class="mt-4 rounded-xl bg-slate-50 p-3 text-xs text-slate-500">
+        Changes should apply to future cases only. Verify the configured rules against the applicable school policy.
+    </p>
+
+</div>
+
+        <div class="mt-6 flex flex-col-reverse justify-end gap-3 border-t border-slate-200 pt-4 sm:flex-row">
+            <button type="button"
+                    onclick="closeAccumulationModal()"
+                    class="rounded-xl bg-slate-200 px-5 py-3 text-slate-700 hover:bg-slate-300">
+                Cancel
+            </button>
+
+            <button type="button"
+                    onclick="saveAccumulationSettings()"
+                    class="rounded-xl px-5 py-3 text-white theme-bg hover:opacity-90">
+                Apply Settings
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+    <!-- SEARCH JAVASCRIPT -->
+
+    <script>
+
+        const offenseSearch =
+            document.getElementById("offenseSearch");
+
+
+        offenseSearch?.addEventListener(
+            "keyup",
+            function () {
+
+                let searchValue =
+                    this.value.toLowerCase();
+
+
+                let rows =
+                    document.querySelectorAll(
+                        "#offenseTableBody tr"
+                    );
+
+
+                rows.forEach(
+                    function (row) {
+
+                        let rowText =
+                            row.textContent.toLowerCase();
+
+
+                        if (
+                            rowText.includes(searchValue)
+                        ) {
+
+                            row.style.display = "";
+
+                        } else {
+
+                            row.style.display = "none";
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+        
+
+
+function openAccumulationModal() {
+    const modal = document.getElementById("accumulationModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+    updateAccumulationRuleVisibility();
+}
+
+function closeAccumulationModal() {
+    const modal = document.getElementById("accumulationModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+}
+
+function updateAccumulationRuleVisibility() {
+    const selected = document.querySelector(
+        'input[name="accumulation_type"]:checked'
+    );
+
+    const editor = document.getElementById("accumulationRuleEditor");
+
+    if (selected && editor) {
+        editor.style.display =
+            selected.value === "accumulating" ? "block" : "none";
+    }
+}
+
+function getInstanceOptions(selectedValue = "") {
+    const values = [];
+
+    for (let i = 1; i <= 20; i++) {
+        values.push(String(i));
+    }
+
+    for (let start = 1; start <= 20; start++) {
+        for (let end = start + 1; end <= 20; end++) {
+            values.push(`${start}-${end}`);
+        }
+    }
+
+    if (selectedValue && !values.includes(selectedValue)) {
+        values.push(selectedValue);
+    }
+
+    return `
+        <option value="">Select instance(s)</option>
+        ${values.map(value => `
+            <option value="${value}" ${value === selectedValue ? "selected" : ""}>
+                ${value.includes("-") ? value.replace("-", " – ") : value}
+            </option>
+        `).join("")}
+    `;
+}
+
+function escapeAttribute(value) {
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+function addAccumulationRule(range = "", classification = "Infraction", note = "") {
+    const container = document.getElementById("accumulationModalRules");
+    const row = document.createElement("div");
+
+    row.className =
+        "accumulation-modal-rule grid grid-cols-[40px_1fr_1.3fr_1.5fr_36px] items-center gap-2 p-3";
+
+    row.innerHTML = `
+        <span class="rule-number rounded-full bg-green-100 px-2 py-2 text-center text-sm font-bold text-green-800"></span>
+
+        <select name="instance_range[]" form="offenseForm"
+            class="instance-select w-full rounded-xl border border-slate-300 p-2 text-sm">
+            ${getInstanceOptions(range)}
+        </select>
+
+        <select name="classification[]" form="offenseForm"
+            class="classification-select w-full rounded-xl border border-slate-300 p-2 text-sm">
+            <option value="Infraction">Infraction</option>
+            <option value="Minor Offense">Minor Offense</option>
+            <option value="Major Offense">Major Offense</option>
+        </select>
+
+        <input type="text" name="action_note[]" form="offenseForm"
+            value="${escapeAttribute(note)}"
+            placeholder="Additional action / note"
+            class="w-full rounded-xl border border-slate-300 p-2 text-sm">
+
+        <button type="button" onclick="removeAccumulationRule(this)"
+            class="rounded-lg p-2 text-red-600 hover:bg-red-50"
+            title="Remove rule">🗑</button>
+    `;
+
+    row.querySelector(".classification-select").value = classification;
+    container.appendChild(row);
+    updateRuleNumbers();
+}
+
+function removeAccumulationRule(button) {
+    button.closest(".accumulation-modal-rule")?.remove();
+    updateRuleNumbers();
+}
+
+function updateRuleNumbers() {
+    document.querySelectorAll(
+        "#accumulationModalRules .rule-number"
+    ).forEach((number, index) => {
+        number.textContent = index + 1;
+    });
+}
+
+function resetAccumulationRules() {
+    if (!confirm("Replace the current rules with the default example rules?")) {
+        return;
+    }
+
+    const container = document.getElementById("accumulationModalRules");
+    container.innerHTML = "";
+
+    addAccumulationRule("1-3", "Infraction", "Written warning");
+    addAccumulationRule("4", "Minor Offense", "Formation program");
+    addAccumulationRule("5-6", "Infraction", "Written warning");
+    addAccumulationRule("7", "Minor Offense", "As applicable under CRD procedures");
+    addAccumulationRule("8", "Major Offense", "Process under major-offense procedures");
+}
+
+function saveAccumulationSettings() {
+    const selected = document.querySelector(
+        'input[name="accumulation_type"]:checked'
+    );
+
+    if (!selected) {
+        alert("Please select an accumulation type.");
+        return;
+    }
+
+    const rows = document.querySelectorAll(
+        "#accumulationModalRules .accumulation-modal-rule"
+    );
+
+    if (selected.value === "accumulating") {
+        if (rows.length === 0) {
+            alert("Add at least one accumulation rule.");
+            return;
+        }
+
+        for (const row of rows) {
+            if (
+                !row.querySelector(".instance-select").value ||
+                !row.querySelector(".classification-select").value
+            ) {
+                alert("Select an instance and classification for every rule.");
+                return;
+            }
+        }
+    }
+
+    const labels = {
+        accumulating: "Accumulating Infraction",
+        direct_minor: "Direct Minor Offense",
+        direct_major: "Direct Major Offense"
+    };
+
+    document.getElementById("accumulationSummary").textContent =
+        labels[selected.value] +
+        (selected.value === "accumulating"
+            ? ` — ${rows.length} rule(s) configured.`
+            : "");
+
+    closeAccumulationModal();
+}
+
+document.querySelectorAll(
+    'input[name="accumulation_type"]'
+).forEach(radio => {
+    radio.addEventListener("change", updateAccumulationRuleVisibility);
+});
+
+document.querySelectorAll(".instance-select").forEach(select => {
+    select.innerHTML = getInstanceOptions(select.dataset.selected || "");
+});
+
+updateRuleNumbers();
+updateAccumulationRuleVisibility();
+
+    </script>
+
+
+</body>
+</html>

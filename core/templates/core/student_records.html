@@ -1,0 +1,1657 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Student Records</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-bg-dark {
+      background-color: var(--theme-color-dark) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-hover:hover {
+      filter: brightness(0.95);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(
+        135deg,
+        var(--theme-color),
+        var(--theme-color-dark)
+      );
+    }
+
+  </style>
+
+</head>
+
+
+<body class="bg-slate-100">
+
+
+  <!-- TOP NAVIGATION -->
+
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+
+        {% if request.user.is_superuser %}
+          CRD Admin Panel
+        {% else %}
+          CRD Staff Panel
+        {% endif %}
+
+      </h1>
+
+
+      <div class="flex items-center gap-3">
+
+        <div class="text-right hidden sm:block">
+
+          <p class="text-sm font-semibold text-slate-800">
+
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+
+          </p>
+
+          <p class="text-xs text-slate-500">
+
+            {% if request.user.is_superuser %}
+              Admin
+            {% else %}
+              Staff
+            {% endif %}
+
+          </p>
+
+        </div>
+
+
+        <!-- USER PROFILE PICTURE -->
+
+<div
+  class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border"
+>
+
+  {% if request.user.userprofile.image %}
+
+    <img
+      src="{{ request.user.userprofile.image.url }}"
+      alt="Profile Picture"
+      class="w-full h-full object-cover"
+    >
+
+  {% else %}
+
+    {{ request.user.username|first|upper }}
+
+  {% endif %}
+
+</div>
+
+
+        <!-- LOGOUT -->
+
+        <form method="POST" action="{% url 'logout' %}">
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- SIDEBAR -->
+  <aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white">
+    <div class="px-4">
+
+      <!-- LOGGED IN CARD -->
+      <div class="mb-6 p-4 rounded-2xl theme-bg">
+        <p class="text-xs text-green-100">Logged in as</p>
+        <h2 class="text-sm font-bold">
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+        </h2>
+        <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+          CRD Case Management System
+        </p>
+      </div>
+
+      <ul class="space-y-2">
+  <!-- Dashboard -->
+  <li>
+    <a href="{% if request.user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'staff_dashboard' %}{% endif %}"
+       class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">
+      Dashboard
+    </a>
+  </li>
+
+  <!-- Staff and Admin pages -->
+  {% if request.user.is_superuser or "student_records" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Records</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "student_archive" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_archive' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_archive' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Archive</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "case_view" in request.user.userprofile.permissions or "case_record" in request.user.userprofile.permissions or "case_full" in request.user.userprofile.permissions or "case_create" in request.user.userprofile.permissions or "case_information" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'case_record' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'case_record' or request.resolver_match.url_name == 'case_record_details' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Case Record</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "report_dashboard" in request.user.userprofile.permissions or "case_report" in request.user.userprofile.permissions or "print_reports" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'generate_reports' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'generate_reports' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Generate Reports</a></li>
+  {% endif %}
+
+  <!-- Admin-only pages -->
+  {% if request.user.is_superuser %}
+  <li><a href="{% url 'offense_master_list' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'offense_master_list' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Offense Master List</a></li>
+  <li><a href="{% url 'archive_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'archive_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Archive Records</a></li>
+  <li><a href="{% url 'user_management' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'user_management' or request.resolver_match.url_name == 'add_user' or request.resolver_match.url_name == 'edit_user' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">User Management</a></li>
+  <li><a href="{% url 'audit_log' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'audit_log' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Audit Logs</a></li>
+  <li><a href="{% url 'unlock_account' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'unlock_account' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Unlock Account</a></li>
+  {% endif %}
+
+  <!-- Settings: show if at least one Settings permission is assigned -->
+  {% if request.user.is_superuser or "settings_login_background" in request.user.userprofile.permissions or "settings_theme_color" in request.user.userprofile.permissions or "settings_student_api_url" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'settings' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'settings' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Settings</a></li>
+  {% endif %}
+</ul>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="sm:ml-64 p-6 mt-16">
+    <div class="max-w-7xl mx-auto space-y-4">
+
+      <!-- HERO -->
+      <div class="rounded-2xl hero-gradient p-4 md:p-5 text-white shadow">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+
+          <div>
+            <h2 class="text-2xl font-bold tracking-tight">
+              Student Records
+            </h2>
+
+            <p class="mt-1 text-white/80 text-sm">
+              {% if request.user.is_superuser %}
+                View and manage student information stored in the system.
+              {% else %}
+                View student information stored in the system.
+              {% endif %}
+            </p>
+          </div>
+
+          {% if request.user.is_superuser %}
+          <button
+            type="button"
+            onclick="openAddStudentModal()"
+            class="px-5 py-3 theme-bg text-white rounded-xl theme-hover font-semibold shadow-sm"
+          >
+            + Add Student
+          </button>
+          {% endif %}
+
+        </div>
+      </div>
+
+
+      <!-- MESSAGES -->
+      {% if messages %}
+        {% for message in messages %}
+          {% if message.tags == "error" %}
+          <div class="p-4 rounded-xl bg-red-100 text-red-800 border border-red-300">
+            {{ message }}
+          </div>
+          {% else %}
+          <div class="p-4 rounded-xl bg-green-100 text-green-800 border border-green-300">
+            {{ message }}
+          </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+      <!-- STUDENT RECORDS -->
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+        <div class="flex items-start justify-between gap-4 mb-4 flex-wrap">
+          <div>
+            <h3 class="text-xl font-bold text-slate-800">
+              Student Records
+            </h3>
+            <p class="text-slate-500 mt-1 text-sm">
+              Records retrieved from PostgreSQL database
+            </p>
+          </div>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="mb-4">
+          <input
+            type="text"
+            id="studentSearch"
+            placeholder="Search student ID, name, program, or school..."
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+          >
+        </div>
+
+        <!-- TABLE -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="theme-bg text-white">
+              <tr>
+                <th class="px-4 py-3 font-bold">Student ID</th>
+                <th class="px-4 py-3 font-bold">Name</th>
+                <th class="px-4 py-3 font-bold">Program</th>
+                <th class="px-4 py-3 font-bold">School</th>
+                <th class="px-4 py-3 font-bold">Year Level</th>
+                <th class="px-4 py-3 font-bold">Status</th>
+                <th class="px-4 py-3 font-bold text-center">Action</th>
+              </tr>
+            </thead>
+
+            <tbody id="studentTableBody" class="divide-y divide-slate-200">
+              {% for student in students %}
+              <tr class="hover:bg-slate-50">
+
+                <td class="px-4 py-3 font-medium">
+                  {{ student.student_id }}
+                </td>
+
+                <td class="px-4 py-3">
+                  {{ student.first_name }}
+                  {% if student.middle_name %}
+                    {{ student.middle_name|first|upper }}.
+                  {% endif %}
+                  {{ student.last_name }}
+                </td>
+
+                <td class="px-4 py-3">{{ student.course }}</td>
+                <td class="px-4 py-3">{{ student.program|default:"" }}</td>
+                <td class="px-4 py-3">{{ student.year_level }}</td>
+
+                <td class="px-4 py-3">
+                  {% if student.status == "Graduated" %}
+                    <span class="inline-block px-2 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-semibold">Graduated</span>
+                  {% elif student.status == "AWOL" %}
+                    <span class="inline-block px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">AWOL</span>
+                    {% elif student.status == "LOA" %}
+                    <span class="inline-block px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">LOA</span>
+                  {% else %}
+                    <span class="inline-block px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">Active</span>
+                  {% endif %}
+                </td>
+
+                <!-- ACTIONS -->
+                <td class="px-4 py-3">
+                  <div class="flex justify-center items-center gap-2 flex-wrap">
+
+                    <!-- VIEW DETAILS -->
+                    <button
+                      type="button"
+                      class="view-student-button px-4 py-2 theme-bg text-white rounded-lg theme-hover font-medium"
+                      data-student-id="{{ student.student_id|escapejs }}"
+                      data-first-name="{{ student.first_name|escapejs }}"
+                      data-middle-name="{{ student.middle_name|default:''|escapejs }}"
+                      data-last-name="{{ student.last_name|escapejs }}"
+                      data-course="{{ student.course }}"
+                       data-program="{{ student.program|default:''|escapejs }}"
+                      data-year-level="{{ student.year_level|escapejs }}"
+  data-status="{{ student.status|default:'Active'|escapejs }}"
+  data-graduation-date="{{ student.graduation_date|date:'Y-m-d' }}"
+  data-sex="{{ student.sex|default:''|escapejs }}"
+  data-mother-name="{{ student.mother_name|default:''|escapejs }}"
+  data-mother-address="{{ student.mother_address|default:''|escapejs }}"
+  data-mother-email="{{ student.mother_email|default:''|escapejs }}"
+  data-mother-contact-no="{{ student.mother_contact_no|default:''|escapejs }}"
+  data-father-name="{{ student.father_name|default:''|escapejs }}"
+  data-father-address="{{ student.father_address|default:''|escapejs }}"
+  data-father-email="{{ student.father_email|default:''|escapejs }}"
+  data-father-contact-no="{{ student.father_contact_no|default:''|escapejs }}"
+  data-guardian-name="{{ student.guardian_name|default:''|escapejs }}"
+  data-guardian-address="{{ student.guardian_address|default:''|escapejs }}"
+  data-guardian-email="{{ student.guardian_email|default:''|escapejs }}"
+  data-guardian-contact-no="{{ student.guardian_contact_no|default:''|escapejs }}"
+  data-image="{% if student.image %}{{ student.image.url|escapejs }}{% endif %}"
+  >
+
+                      View Details
+                    </button>
+
+                    <!-- EDIT: ADMIN ONLY -->
+                    {% if request.user.is_superuser and student.status != "Graduated" %}
+                    <button
+                      type="button"
+                      class="edit-student-button px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                      data-id="{{ student.id }}"
+                      data-student-id="{{ student.student_id|escape }}"
+                      data-first-name="{{ student.first_name|escape }}"
+                      data-middle-name="{{ student.middle_name|default:''|escape }}"
+                      data-last-name="{{ student.last_name|escape }}"
+                      data-course="{{ student.course|escape }}"
+                      data-program="{{ student.program|default:''|escape }}"
+                      data-year-level="{{ student.year_level|escape }}"
+                      data-status="{{ student.status|default:'Active'|escape }}"
+                      data-graduation-date="{{ student.graduation_date|date:'Y-m-d' }}"
+                      data-sex="{{ student.sex|default:''|escape }}"
+                      data-mother-name="{{ student.mother_name|default:''|escape }}"
+                      data-mother-address="{{ student.mother_address|default:''|escape }}"
+                      data-mother-email="{{ student.mother_email|default:''|escape }}"
+                      data-mother-contact-no="{{ student.mother_contact_no|default:''|escape }}"
+                      data-father-name="{{ student.father_name|default:''|escape }}"
+                      data-father-address="{{ student.father_address|default:''|escape }}"
+                      data-father-email="{{ student.father_email|default:''|escape }}"
+                      data-father-contact-no="{{ student.father_contact_no|default:''|escape }}"
+                      data-guardian-name="{{ student.guardian_name|default:''|escape }}"
+                      data-guardian-address="{{ student.guardian_address|default:''|escape }}"
+                      data-guardian-email="{{ student.guardian_email|default:''|escape }}"
+                      data-guardian-contact-no="{{ student.guardian_contact_no|default:''|escape }}"
+                      data-image="{% if student.image %}{{ student.image.url|escapejs }}{% endif %}"
+                    >
+                      Edit
+                    </button>
+                    {% endif %}
+
+                  </div>
+                </td>
+              </tr>
+
+              {% empty %}
+              <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+                  No student records found.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ADD STUDENT MODAL -->
+  {% if request.user.is_superuser %}
+  <div
+    id="addStudentModal"
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+  >
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+
+      <!-- MODAL HEADER -->
+      <div class="flex items-center justify-between p-5 border-b">
+        <div>
+          <h3 class="text-xl font-bold text-slate-800">Add Student</h3>
+          <p class="text-sm text-slate-500 mt-1">
+            Enter the student's information below.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onclick="closeAddStudentModal()"
+          class="text-slate-400 hover:text-slate-700 text-2xl"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- FORM -->
+      <form
+        method="POST"
+        action="{% url 'student_records' %}"
+        enctype="multipart/form-data"
+        class="p-5 space-y-4"
+      >
+        {% csrf_token %}
+
+        <!-- STUDENT ID -->
+        <div>
+          <label for="student_id" class="block mb-2 text-sm font-medium text-slate-800">
+            Student ID
+          </label>
+          <input
+            type="text"
+            id="student_id"
+            name="student_id"
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            placeholder="Enter student ID"
+            required
+          >
+        </div>
+
+        <!-- NAME -->
+        <div class="grid md:grid-cols-3 gap-4">
+          <div>
+            <label for="first_name" class="block mb-2 text-sm font-medium text-slate-800">
+              First Name
+            </label>
+            <input
+              type="text"
+              id="first_name"
+              name="first_name"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              placeholder="Enter first name"
+              required
+            >
+          </div>
+
+          <div>
+            <label for="middle_name" class="block mb-2 text-sm font-medium text-slate-800">
+              Middle Name
+            </label>
+            <input
+              type="text"
+              id="middle_name"
+              name="middle_name"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              placeholder="Enter full middle name"
+            >
+          </div>
+
+          <div>
+            <label for="last_name" class="block mb-2 text-sm font-medium text-slate-800">
+              Last Name
+            </label>
+            <input
+              type="text"
+              id="last_name"
+              name="last_name"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              placeholder="Enter last name"
+              required
+            >
+          </div>
+        </div>
+
+        <!-- PROFILE PICTURE -->
+        <div>
+          <label for="image" class="block mb-2 text-sm font-medium text-slate-800">
+            Profile Picture
+          </label>
+
+          <div class="flex items-center gap-3 w-full border border-slate-300 rounded-xl p-2 bg-slate-50">
+            <input
+              name="image"
+              type="file"
+              id="image"
+              accept=".jpg,.jpeg,.png"
+              class="hidden"
+              onchange="showImageFileName(this)"
+            >
+
+            <label
+              for="image"
+              class="inline-flex items-center gap-2 px-5 py-3 theme-bg text-white rounded-xl theme-hover font-semibold shadow-sm cursor-pointer whitespace-nowrap"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 16V4m0 0L8 8m4-4l4 4M5 20h14"
+                />
+              </svg>
+              Choose File
+            </label>
+
+            <span id="imageFileName" class="text-sm text-slate-500 truncate">
+              No file chosen
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-500 mt-2">
+            Accepted files: JPG, JPEG, PNG
+          </p>
+        </div>
+
+        <!-- COURSE -->
+<div>
+  <label
+    for="course"
+    class="block mb-2 text-sm font-medium text-slate-800"
+  >
+    Course
+  </label>
+
+  <input
+    type="text"
+    id="course"
+    name="course"
+    class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+    placeholder="Example: BS - IS"
+    required
+  >
+</div>
+
+        <!-- YEAR LEVEL -->
+        <div>
+          <label for="year_level" class="block mb-2 text-sm font-medium text-slate-800">
+            Year Level
+          </label>
+          <select
+            id="year_level"
+            name="year_level"
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            required
+          >
+            <option value="">Select year level</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+            <option value="5">5th Year</option>
+            <option value="6">6th Year</option>
+            <option value="7">7th Year</option>
+          </select>
+        </div>
+
+        <!-- STUDENT STATUS -->
+        <div>
+          <label for="student_status" class="block mb-2 text-sm font-medium text-slate-800">
+            Student Status
+          </label>
+
+          <select
+            id="student_status"
+            name="status"
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            required
+          >
+            <option value="Active" selected>Active</option>
+            <option value="LOA">LOA</option>
+            <option value="AWOL">AWOL</option>
+          </select>
+        </div>
+
+        <!-- SCHOOL -->
+        <div>
+          <label for="program" class="block mb-2 text-sm font-medium text-slate-800">
+            School
+          </label>
+          <select
+            id="program"
+            name="program"
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            required
+          >
+            <option value="">Select school</option>
+            <option value="SMIT">SMIT</option>
+            <option value="SDEAS">SDEAS</option>
+            <option value="SMS">SMS</option>
+            <option value="SNMA">SNMA</option>
+            <option value="SED">SED</option>
+            <option value="SACP">SACP</option>
+            <option value="SHRIM">SHRIM</option>
+            <option value="SDG">SDG</option>
+            <option value="SPACE">SPACE</option>
+          </select>
+        </div>
+
+        <!-- SEX -->
+        <div>
+          <label for="sex" class="block mb-2 text-sm font-medium text-slate-800">
+            Sex
+          </label>
+          <select
+            name="sex"
+            id="sex"
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+          >
+            <option value="">Select sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- PARENT AND GUARDIAN INFORMATION -->
+        <h4 class="text-lg font-semibold text-slate-800 pt-3">
+          Parent and Guardian Information
+        </h4>
+
+        <div class="mb-4">
+          <label for="MotherName" class="block mb-1 text-sm font-medium text-slate-800">Mother Name</label>
+          <input type="text" id="MotherName" name="mother_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="MotherAddress" class="block mb-1 text-sm font-medium text-slate-800">Mother Address</label>
+          <input type="text" id="MotherAddress" name="mother_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="MotherEmail" class="block mb-1 text-sm font-medium text-slate-800">Mother Email</label>
+          <input type="email" id="MotherEmail" name="mother_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="MotherContactNo" class="block mb-1 text-sm font-medium text-slate-800">Mother Contact Number</label>
+          <input type="tel" id="MotherContactNo" name="mother_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="FatherName" class="block mb-1 text-sm font-medium text-slate-800">Father Name</label>
+          <input type="text" id="FatherName" name="father_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="FatherAddress" class="block mb-1 text-sm font-medium text-slate-800">Father Address</label>
+          <input type="text" id="FatherAddress" name="father_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="FatherEmail" class="block mb-1 text-sm font-medium text-slate-800">Father Email</label>
+          <input type="email" id="FatherEmail" name="father_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="FatherContactNo" class="block mb-1 text-sm font-medium text-slate-800">Father Contact Number</label>
+          <input type="tel" id="FatherContactNo" name="father_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="GuardianName" class="block mb-1 text-sm font-medium text-slate-800">Guardian Name</label>
+          <input type="text" id="GuardianName" name="guardian_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="GuardianAddress" class="block mb-1 text-sm font-medium text-slate-800">Guardian Address</label>
+          <input type="text" id="GuardianAddress" name="guardian_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="GuardianEmail" class="block mb-1 text-sm font-medium text-slate-800">Guardian Email</label>
+          <input type="email" id="GuardianEmail" name="guardian_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="GuardianContactNo" class="block mb-1 text-sm font-medium text-slate-800">Guardian Contact Number</label>
+          <input type="tel" id="GuardianContactNo" name="guardian_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="flex justify-end gap-3 pt-3">
+          <button
+            type="button"
+            onclick="closeAddStudentModal()"
+            class="px-5 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 font-medium"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="px-5 py-3 theme-bg text-white rounded-xl theme-hover font-medium shadow-sm"
+          >
+            Add Student
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+
+  <!-- EDIT STUDENT MODAL -->
+  {% if request.user.is_superuser %}
+  <div
+    id="editStudentModal"
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+  >
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+
+      <!-- MODAL HEADER -->
+      <div class="flex items-center justify-between px-5 py-4 border-b">
+        <h3 class="text-xl font-bold text-slate-800">
+          Edit Student
+        </h3>
+
+        <button
+          type="button"
+          id="closeEditStudentModal"
+          class="text-slate-400 hover:text-slate-700 text-2xl"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- EDIT FORM -->
+      <form
+        id="editStudentForm"
+        method="POST"
+        enctype="multipart/form-data"
+        class="p-5"
+      >
+        {% csrf_token %}
+
+        <!-- PROFILE PICTURE -->
+        <div class="mb-5">
+          <label class="block mb-2 text-sm font-medium text-slate-800">
+            Profile Picture
+          </label>
+
+          <div class="flex items-center gap-3">
+            <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+              <img
+                id="editStudentImage"
+                src=""
+                alt="Student Profile"
+                class="hidden w-full h-full object-cover"
+              >
+              <span id="editStudentNoImage" class="text-xs text-slate-400 text-center px-1">
+                No Image
+              </span>
+            </div>
+
+            <div>
+              <div class="flex items-center gap-2">
+                <input
+                  type="file"
+                  id="editStudentImageInput"
+                  name="image"
+                  accept=".jpg,.jpeg,.png"
+                  class="hidden"
+                >
+                <label
+                  for="editStudentImageInput"
+                  class="px-4 py-2 theme-bg text-white rounded-lg theme-hover font-medium cursor-pointer"
+                >
+                  Choose File
+                </label>
+                <span id="editStudentFileName" class="text-sm text-slate-500 truncate">
+                  No file chosen
+                </span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">
+                Choose a new image only if you want to change the current picture.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- STUDENT ID -->
+        <div class="mb-4">
+          <label for="editStudentID" class="block mb-1 text-sm font-medium text-slate-800">
+            Student ID
+          </label>
+          <input
+            type="text"
+            id="editStudentID"
+            name="student_id"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            required
+          >
+        </div>
+
+        <!-- FIRST NAME -->
+        <div class="mb-4">
+          <label for="editFirstName" class="block mb-1 text-sm font-medium text-slate-800">
+            First Name
+          </label>
+          <input
+            type="text"
+            id="editFirstName"
+            name="first_name"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            required
+          >
+        </div>
+
+        <!-- MIDDLE NAME -->
+        <div class="mb-4">
+          <label for="editMiddleName" class="block mb-1 text-sm font-medium text-slate-800">
+            Middle Name
+          </label>
+          <input
+            type="text"
+            id="editMiddleName"
+            name="middle_name"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            placeholder="Enter full middle name"
+          >
+        </div>
+
+        <!-- LAST NAME -->
+        <div class="mb-4">
+          <label for="editLastName" class="block mb-1 text-sm font-medium text-slate-800">
+            Last Name
+          </label>
+          <input
+            type="text"
+            id="editLastName"
+            name="last_name"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            required
+          >
+        </div>
+
+        <!-- PROGRAM -->
+        <div class="mb-4">
+          <label for="editCourse" class="block mb-1 text-sm font-medium text-slate-800">
+            Program
+          </label>
+          <input
+            type="text"
+            id="editCourse"
+            name="course"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            required
+          >
+        </div>
+
+        <!-- SCHOOL -->
+        <div class="mb-4">
+          <label for="editProgram" class="block mb-1 text-sm font-medium text-slate-800">
+            School
+          </label>
+          <select
+            id="editProgram"
+            name="program"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            required
+          >
+            <option value="">Select school</option>
+            <option value="SMIT">SMIT</option>
+            <option value="SDEAS">SDEAS</option>
+            <option value="SMS">SMS</option>
+            <option value="SNMA">SNMA</option>
+            <option value="SED">SED</option>
+            <option value="SACP">SACP</option>
+            <option value="SHRIM">SHRIM</option>
+            <option value="SDG">SDG</option>
+            <option value="SPACE">SPACE</option>
+          </select>
+        </div>
+
+        <!-- YEAR LEVEL -->
+        <div class="mb-4">
+          <label for="editYearLevel" class="block mb-1 text-sm font-medium text-slate-800">
+            Year Level
+          </label>
+          <select
+            id="editYearLevel"
+            name="year_level"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            required
+          >
+            <option value="">Select year level</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+            <option value="5">5th Year</option>
+            <option value="6">6th Year</option>
+            <option value="7">7th Year</option>
+          </select>
+        </div>
+
+        <!-- STUDENT STATUS -->
+        <div class="mb-4">
+          <label for="editStudentStatus" class="block mb-1 text-sm font-medium text-slate-800">
+            Student Status
+          </label>
+          <select
+            id="editStudentStatus"
+            name="status"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+            required
+          >
+            <option value="Active">Active</option>
+            <option value="LOA">LOA</option>
+            <option value="AWOL">AWOL</option>
+            <option value="Graduated">Graduated</option>
+          </select>
+        </div>
+
+        <!-- GRADUATION DATE -->
+        <div class="mb-4">
+          <label for="editGraduationDate" class="block mb-1 text-sm font-medium text-slate-800">
+            Graduation Date
+          </label>
+          <input
+            type="date"
+            id="editGraduationDate"
+            name="graduation_date"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+          >
+          <p class="text-xs text-slate-500 mt-1">
+            Required when the student status is Graduated.
+          </p>
+        </div>
+
+        <!-- SEX -->
+        <div class="mb-6">
+          <label for="editSex" class="block mb-1 text-sm font-medium text-slate-800">
+            Sex
+          </label>
+          <select
+            id="editSex"
+            name="sex"
+            class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring"
+          >
+            <option value="">Select sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+
+        <!-- PARENT AND GUARDIAN INFORMATION -->
+        <h4 class="text-lg font-semibold text-slate-800 pt-3">
+          Parent and Guardian Information
+        </h4>
+
+        <div class="mb-4">
+          <label for="editMotherName" class="block mb-1 text-sm font-medium text-slate-800">Mother Name</label>
+          <input type="text" id="editMotherName" name="mother_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editMotherAddress" class="block mb-1 text-sm font-medium text-slate-800">Mother Address</label>
+          <input type="text" id="editMotherAddress" name="mother_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editMotherEmail" class="block mb-1 text-sm font-medium text-slate-800">Mother Email</label>
+          <input type="email" id="editMotherEmail" name="mother_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editMotherContactNo" class="block mb-1 text-sm font-medium text-slate-800">Mother Contact Number</label>
+          <input type="tel" id="editMotherContactNo" name="mother_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editFatherName" class="block mb-1 text-sm font-medium text-slate-800">Father Name</label>
+          <input type="text" id="editFatherName" name="father_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editFatherAddress" class="block mb-1 text-sm font-medium text-slate-800">Father Address</label>
+          <input type="text" id="editFatherAddress" name="father_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editFatherEmail" class="block mb-1 text-sm font-medium text-slate-800">Father Email</label>
+          <input type="email" id="editFatherEmail" name="father_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editFatherContactNo" class="block mb-1 text-sm font-medium text-slate-800">Father Contact Number</label>
+          <input type="tel" id="editFatherContactNo" name="father_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editGuardianName" class="block mb-1 text-sm font-medium text-slate-800">Guardian Name</label>
+          <input type="text" id="editGuardianName" name="guardian_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editGuardianAddress" class="block mb-1 text-sm font-medium text-slate-800">Guardian Address</label>
+          <input type="text" id="editGuardianAddress" name="guardian_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editGuardianEmail" class="block mb-1 text-sm font-medium text-slate-800">Guardian Email</label>
+          <input type="email" id="editGuardianEmail" name="guardian_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <div class="mb-4">
+          <label for="editGuardianContactNo" class="block mb-1 text-sm font-medium text-slate-800">Guardian Contact Number</label>
+          <input type="tel" id="editGuardianContactNo" name="guardian_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+        </div>
+
+        <!-- EDIT BUTTONS -->
+        <div class="flex justify-end gap-2">
+          <button
+            type="button"
+            id="cancelEditStudent"
+            class="px-4 py-2 bg-slate-100 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-200 font-medium"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            class="px-4 py-2 theme-bg text-white rounded-lg theme-hover font-medium"
+          >
+            Save Changes
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- STUDENT DETAILS MODAL -->
+  <div
+    id="studentDetailsModal"
+    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+  >
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+
+      <!-- STUDENT DETAILS -->
+      <div class="p-6">
+
+        <!-- PROFILE PICTURE -->
+        <div class="flex justify-center mb-6">
+          <div
+            id="studentImageContainer"
+            class="w-24 h-24 rounded-full border-4 border-slate-200 overflow-hidden flex items-center justify-center bg-slate-100"
+          >
+            <img
+              id="studentDetailsImage"
+              src=""
+              alt="Student Profile Picture"
+              class="hidden w-full h-full object-cover"
+            >
+
+            <div id="noStudentImage" class="text-center text-slate-400 px-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-16 h-16 mx-auto mb-2"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="1.5"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0"
+                />
+              </svg>
+
+              <p class="text-sm">No Profile Picture</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- NAME -->
+        <div class="text-center mb-6">
+          <h4 id="studentDetailsName" class="text-xl font-bold text-slate-800">
+            Student Name
+          </h4>
+        </div>
+
+        <!-- STUDENT INFORMATION -->
+        <div class="space-y-3">
+
+          <div class="flex justify-between gap-4 border-b pb-3">
+            <span class="font-medium text-slate-500">Student ID</span>
+            <span id="studentDetailsID" class="font-semibold text-slate-800 text-right">—</span>
+          </div>
+
+        <div class="flex justify-between gap-4 border-b pb-3">
+          <span class="font-medium text-slate-500">Course</span>
+          <span id="studentDetailsCourse"
+          class="font-semibold text-slate-800 text-right">—</span>
+        </div>
+
+          <div class="flex justify-between gap-4 border-b pb-3">
+            <span class="font-medium text-slate-500">School</span>
+            <span id="studentDetailsProgram" class="font-semibold text-slate-800 text-right">—</span>
+          </div>
+
+          <div class="flex justify-between gap-4 border-b pb-3">
+            <span class="font-medium text-slate-500">Year Level</span>
+            <span id="studentDetailsYear" class="font-semibold text-slate-800 text-right">—</span>
+          </div>
+
+          <div class="flex justify-between gap-4 border-b pb-3">
+            <span class="font-medium text-slate-500">Status</span>
+            <span id="studentDetailsStatus" class="font-semibold text-slate-800 text-right">Active</span>
+          </div>
+
+          <div class="flex justify-between gap-4 border-b pb-3">
+            <span class="font-medium text-slate-500">Graduation Date</span>
+            <span id="studentDetailsGraduationDate" class="font-semibold text-slate-800 text-right">—</span>
+          </div>
+
+          <div class="flex justify-between gap-4">
+            <span class="font-medium text-slate-500">Sex</span>
+            <span id="studentDetailsSex" class="font-semibold text-slate-800 text-right">—</span>
+          </div>
+
+        </div>
+
+
+
+        <!-- PARENT AND GUARDIAN INFORMATION -->
+        <div class="mt-6">
+          <h4 class="text-sm font-bold text-slate-800 mb-3">
+            Parent and Guardian Information
+          </h4>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+            <!-- MOTHER DETAILS -->
+            <div class="border border-slate-200 rounded-lg p-3">
+              <h5 class="font-medium text-sm text-slate-800 mb-2">Mother Details</h5>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Mother Name</span>
+                  <span id="studentDetailsMotherName" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Mother Address</span>
+                  <span id="studentDetailsMotherAddress" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Mother Email</span>
+                  <span id="studentDetailsMotherEmail" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <span class="text-slate-600">Mother Contact Number</span>
+                  <span id="studentDetailsMotherContactNo" class="text-slate-800 text-right break-words">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- FATHER DETAILS -->
+            <div class="border border-slate-200 rounded-lg p-3">
+              <h5 class="font-medium text-sm text-slate-800 mb-2">Father Details</h5>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Father Name</span>
+                  <span id="studentDetailsFatherName" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Father Address</span>
+                  <span id="studentDetailsFatherAddress" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Father Email</span>
+                  <span id="studentDetailsFatherEmail" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <span class="text-slate-600">Father Contact Number</span>
+                  <span id="studentDetailsFatherContactNo" class="text-slate-800 text-right break-words">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- GUARDIAN DETAILS -->
+            <div class="border border-slate-200 rounded-lg p-3">
+              <h5 class="font-medium text-sm text-slate-800 mb-2">Guardian Details</h5>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Guardian Name</span>
+                  <span id="studentDetailsGuardianName" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Guardian Address</span>
+                  <span id="studentDetailsGuardianAddress" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3 border-b pb-1">
+                  <span class="text-slate-600">Guardian Email</span>
+                  <span id="studentDetailsGuardianEmail" class="text-slate-800 text-right break-words">—</span>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <span class="text-slate-600">Guardian Contact Number</span>
+                  <span id="studentDetailsGuardianContactNo" class="text-slate-800 text-right break-words">—</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- CLOSE BUTTON -->
+        <div class="flex justify-end mt-6">
+          <button
+            type="button"
+            onclick="closeStudentDetails()"
+            class="px-5 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 font-medium"
+          >
+            Close
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    /* SEARCH */
+    const studentSearch = document.getElementById("studentSearch");
+
+    studentSearch?.addEventListener("input", function () {
+      const searchValue = studentSearch.value.toLowerCase();
+      const rows = document.querySelectorAll("#studentTableBody tr");
+
+      rows.forEach(function (row) {
+        const rowText = row.textContent.toLowerCase();
+        row.style.display = rowText.includes(searchValue) ? "" : "none";
+      });
+    });
+
+    /* ADD STUDENT MODAL */
+    function openAddStudentModal() {
+      const modal = document.getElementById("addStudentModal");
+
+      if (modal) {
+        modal.classList.remove("hidden");
+        modal.classList.add("flex");
+      }
+    }
+
+    function closeAddStudentModal() {
+      const modal = document.getElementById("addStudentModal");
+
+      if (modal) {
+        modal.classList.add("hidden");
+        modal.classList.remove("flex");
+      }
+    }
+
+    /* ADD STUDENT IMAGE FILE NAME */
+    function showImageFileName(input) {
+      const fileName = document.getElementById("imageFileName");
+
+      if (fileName) {
+        fileName.textContent =
+          input.files && input.files.length > 0
+            ? input.files[0].name
+            : "No file chosen";
+      }
+    }
+
+    /* EDIT STUDENT MODAL */
+    const editStudentModal = document.getElementById("editStudentModal");
+    const editStudentForm = document.getElementById("editStudentForm");
+    const closeEditStudentModal = document.getElementById("closeEditStudentModal");
+    const cancelEditStudent = document.getElementById("cancelEditStudent");
+    const editStudentButtons = document.querySelectorAll(".edit-student-button");
+
+    const editStudentStatus = document.getElementById("editStudentStatus");
+    const editGraduationDate = document.getElementById("editGraduationDate");
+
+    function updateGraduationDateRequirement() {
+      if (!editStudentStatus || !editGraduationDate) return;
+
+      editGraduationDate.required =
+        editStudentStatus.value === "Graduated";
+    }
+
+    let previousStudentStatus = editStudentStatus?.value || "Active";
+
+    editStudentStatus?.addEventListener("focus", function () {
+      previousStudentStatus = editStudentStatus.value;
+    });
+
+    editStudentStatus?.addEventListener("change", function () {
+      if (
+        editStudentStatus.value === "Graduated" &&
+        previousStudentStatus !== "Graduated"
+      ) {
+        const confirmed = window.confirm(
+          "Are you sure you want to mark this student as Graduated? This will archive the student record."
+        );
+
+        if (!confirmed) {
+          editStudentStatus.value = previousStudentStatus;
+        } else {
+          previousStudentStatus = "Graduated";
+        }
+      } else {
+        previousStudentStatus = editStudentStatus.value;
+      }
+
+      updateGraduationDateRequirement();
+    });
+
+    editStudentForm?.addEventListener("submit", function (event) {
+      updateGraduationDateRequirement();
+
+      if (
+        editStudentStatus?.value === "Graduated" &&
+        !editGraduationDate?.value
+      ) {
+        event.preventDefault();
+        editGraduationDate.reportValidity();
+      }
+    });
+
+    editStudentButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        const studentId = button.dataset.id;
+        const imageURL = button.dataset.image;
+
+        if (!editStudentForm || !editStudentModal) return;
+
+        /* FORM ACTION */
+        editStudentForm.action = "/edit-student/" + studentId + "/";
+
+        /* FILL FORM */
+        document.getElementById("editStudentID").value =
+          button.dataset.studentId || "";
+
+        document.getElementById("editFirstName").value =
+          button.dataset.firstName || "";
+
+        document.getElementById("editMiddleName").value =
+          button.dataset.middleName || "";
+
+        document.getElementById("editLastName").value =
+          button.dataset.lastName || "";
+
+        document.getElementById("editCourse").value =
+          button.dataset.course || "";
+
+        document.getElementById("editProgram").value =
+          button.dataset.program || "";
+
+        document.getElementById("editYearLevel").value =
+          button.dataset.yearLevel || "";
+
+        document.getElementById("editStudentStatus").value =
+          button.dataset.status || "Active";
+
+        document.getElementById("editGraduationDate").value =
+          button.dataset.graduationDate || "";
+
+        document.getElementById("editSex").value =
+          button.dataset.sex || "";
+
+        document.getElementById("editMotherName").value =
+          button.dataset.motherName || "";
+
+        document.getElementById("editMotherAddress").value =
+          button.dataset.motherAddress || "";
+
+        document.getElementById("editMotherEmail").value =
+          button.dataset.motherEmail || "";
+
+        document.getElementById("editMotherContactNo").value =
+          button.dataset.motherContactNo || "";
+
+        document.getElementById("editFatherName").value =
+          button.dataset.fatherName || "";
+
+        document.getElementById("editFatherAddress").value =
+          button.dataset.fatherAddress || "";
+
+        document.getElementById("editFatherEmail").value =
+          button.dataset.fatherEmail || "";
+
+        document.getElementById("editFatherContactNo").value =
+          button.dataset.fatherContactNo || "";
+
+        document.getElementById("editGuardianName").value =
+          button.dataset.guardianName || "";
+
+        document.getElementById("editGuardianAddress").value =
+          button.dataset.guardianAddress || "";
+
+        document.getElementById("editGuardianEmail").value =
+          button.dataset.guardianEmail || "";
+
+        document.getElementById("editGuardianContactNo").value =
+          button.dataset.guardianContactNo || "";
+
+        previousStudentStatus =
+          button.dataset.status || "Active";
+
+        updateGraduationDateRequirement();
+
+        /* EXISTING IMAGE */
+        const image = document.getElementById("editStudentImage");
+        const noImage = document.getElementById("editStudentNoImage");
+
+        if (imageURL) {
+          image.src = imageURL;
+          image.classList.remove("hidden");
+          noImage.classList.add("hidden");
+        } else {
+          image.src = "";
+          image.classList.add("hidden");
+          noImage.classList.remove("hidden");
+        }
+
+        /* RESET FILE INPUT */
+        const imageInput =
+          document.getElementById("editStudentImageInput");
+
+        const fileName =
+          document.getElementById("editStudentFileName");
+
+        imageInput.value = "";
+        fileName.textContent = "No file chosen";
+
+        /* OPEN MODAL */
+        editStudentModal.classList.remove("hidden");
+        editStudentModal.classList.add("flex");
+      });
+    });
+
+    /* CLOSE EDIT MODAL */
+    function closeEditStudent() {
+      if (editStudentModal) {
+        editStudentModal.classList.add("hidden");
+        editStudentModal.classList.remove("flex");
+      }
+    }
+
+    closeEditStudentModal?.addEventListener("click", closeEditStudent);
+    cancelEditStudent?.addEventListener("click", closeEditStudent);
+
+    editStudentModal?.addEventListener("click", function (event) {
+      if (event.target === editStudentModal) {
+        closeEditStudent();
+      }
+    });
+
+    /* STUDENT DETAILS MODAL */
+    const studentDetailsModal =
+      document.getElementById("studentDetailsModal");
+
+    const viewStudentButtons =
+      document.querySelectorAll(".view-student-button");
+
+    function setStudentDetail(id, value) {
+      const element = document.getElementById(id);
+
+      if (element) {
+        element.textContent = value || "—";
+      }
+    }
+
+    function openStudentDetails(button) {
+      if (!studentDetailsModal) return;
+
+      const middleName = button.dataset.middleName || "";
+      const fullName = [
+        button.dataset.firstName || "",
+        middleName,
+        button.dataset.lastName || ""
+      ].filter(Boolean).join(" ");
+
+      setStudentDetail("studentDetailsName", fullName);
+      setStudentDetail("studentDetailsID", button.dataset.studentId);
+      setStudentDetail("studentDetailsCourse", button.dataset.course);
+      setStudentDetail("studentDetailsProgram", button.dataset.program);
+      setStudentDetail("studentDetailsYear", button.dataset.yearLevel);
+      setStudentDetail("studentDetailsStatus", button.dataset.status || "Active");
+      setStudentDetail(
+        "studentDetailsGraduationDate",
+        button.dataset.graduationDate
+      );
+      setStudentDetail("studentDetailsSex", button.dataset.sex);
+
+      setStudentDetail("studentDetailsMotherName", button.dataset.motherName);
+      setStudentDetail("studentDetailsMotherAddress", button.dataset.motherAddress);
+      setStudentDetail("studentDetailsMotherEmail", button.dataset.motherEmail);
+      setStudentDetail(
+        "studentDetailsMotherContactNo",
+        button.dataset.motherContactNo
+      );
+
+      setStudentDetail("studentDetailsFatherName", button.dataset.fatherName);
+      setStudentDetail("studentDetailsFatherAddress", button.dataset.fatherAddress);
+      setStudentDetail("studentDetailsFatherEmail", button.dataset.fatherEmail);
+      setStudentDetail(
+        "studentDetailsFatherContactNo",
+        button.dataset.fatherContactNo
+      );
+
+      setStudentDetail("studentDetailsGuardianName", button.dataset.guardianName);
+      setStudentDetail(
+        "studentDetailsGuardianAddress",
+        button.dataset.guardianAddress
+      );
+      setStudentDetail(
+        "studentDetailsGuardianEmail",
+        button.dataset.guardianEmail
+      );
+      setStudentDetail(
+        "studentDetailsGuardianContactNo",
+        button.dataset.guardianContactNo
+      );
+
+      const image = document.getElementById("studentDetailsImage");
+      const noImage = document.getElementById("noStudentImage");
+      const imageURL = button.dataset.image;
+
+      if (imageURL) {
+        image.src = imageURL;
+        image.classList.remove("hidden");
+        noImage.classList.add("hidden");
+      } else {
+        image.src = "";
+        image.classList.add("hidden");
+        noImage.classList.remove("hidden");
+      }
+
+      studentDetailsModal.classList.remove("hidden");
+      studentDetailsModal.classList.add("flex");
+    }
+
+    viewStudentButtons.forEach(function (button) {
+      button.addEventListener("click", function () {
+        openStudentDetails(button);
+      });
+    });
+
+    function closeStudentDetails() {
+      if (studentDetailsModal) {
+        studentDetailsModal.classList.add("hidden");
+        studentDetailsModal.classList.remove("flex");
+      }
+    }
+
+    studentDetailsModal?.addEventListener("click", function (event) {
+      if (event.target === studentDetailsModal) {
+        closeStudentDetails();
+      }
+    });
+
+
+    /* EDIT PROFILE PICTURE */
+    document.getElementById("editStudentImageInput")?.addEventListener(
+      "change",
+      function () {
+        const file = this.files[0];
+        const fileName = document.getElementById("editStudentFileName");
+
+        if (!fileName) return;
+
+        if (file) {
+          fileName.textContent = file.name;
+          fileName.classList.remove("text-slate-500");
+          fileName.classList.add("text-slate-700");
+        } else {
+          fileName.textContent = "No file chosen";
+          fileName.classList.remove("text-slate-700");
+          fileName.classList.add("text-slate-500");
+        }
+      }
+    );
+
+    /* ADD STUDENT PROFILE PICTURE FILE NAME */
+    function showImageFileName(input) {
+      const fileName = document.getElementById("imageFileName");
+
+      if (!fileName) return;
+
+      if (input.files && input.files.length > 0) {
+        fileName.textContent = input.files[0].name;
+        fileName.classList.remove("text-slate-500");
+        fileName.classList.add("text-slate-700");
+      } else {
+        fileName.textContent = "No file chosen";
+        fileName.classList.remove("text-slate-700");
+        fileName.classList.add("text-slate-500");
+      }
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+</body>
+</html>

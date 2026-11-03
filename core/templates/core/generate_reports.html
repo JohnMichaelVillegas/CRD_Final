@@ -1,0 +1,790 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate Reports</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: #166534;
+    }
+    .theme-bg { background-color: var(--theme-color); }
+    .theme-text { color: var(--theme-color); }
+    .theme-border { border-color: var(--theme-color); }
+    .hero-gradient {
+      background: linear-gradient(135deg, var(--theme-color), var(--theme-color-dark));
+    }
+    .filter-control {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      padding: 0.75rem;
+      background: white;
+    }
+    @media print {
+      aside, nav, .no-print { display: none !important; }
+      main { margin: 0 !important; padding: 0 !important; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800">
+
+<!-- TOP NAVIGATION -->
+
+<nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+  <div class="px-4 py-3 flex justify-between items-center gap-4">
+
+    <!-- PAGE TITLE -->
+    <h1 class="text-lg sm:text-xl font-bold text-slate-800 whitespace-nowrap">
+      CRD Admin Panel
+    </h1>
+
+    <!-- USER PROFILE AND LOGOUT -->
+    <div class="flex items-center gap-3 shrink-0">
+
+      <!-- USER NAME -->
+      <div class="text-right hidden sm:block leading-tight">
+        <p class="text-sm font-semibold text-slate-800">
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+        </p>
+
+        <p class="text-xs text-slate-500">
+          {% if request.user.is_superuser %}
+            Admin
+          {% else %}
+            Staff
+          {% endif %}
+        </p>
+      </div>
+
+      <!-- PROFILE PICTURE -->
+      <div class="w-10 h-10 shrink-0 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border">
+
+        {% if request.user.userprofile.image %}
+
+          <img
+            src="{{ request.user.userprofile.image.url }}"
+            alt="Profile Picture"
+            class="w-full h-full object-cover"
+          >
+
+        {% else %}
+
+          {{ request.user.username|first|upper }}
+
+        {% endif %}
+
+      </div>
+
+      <!-- LOGOUT -->
+      <form method="POST" action="{% url 'logout' %}" class="shrink-0">
+        {% csrf_token %}
+
+        <button
+          type="submit"
+          class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </form>
+
+    </div>
+
+  </div>
+
+</nav>
+
+<aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white no-print">
+  <div class="px-4">
+    <div class="mb-6 p-4 rounded-2xl theme-bg">
+      <p class="text-xs text-green-100">Logged in as</p>
+      <h2 class="text-sm font-bold">
+        {{ request.user.userprofile.full_name|default:request.user.username }}
+      </h2>
+      <p class="text-xs text-green-100 mt-1">CRD Case Management System</p>
+    </div>
+    <ul class="space-y-2">
+  <!-- Dashboard -->
+  <li>
+    <a href="{% if request.user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'staff_dashboard' %}{% endif %}"
+       class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">
+      Dashboard
+    </a>
+  </li>
+
+  <!-- Staff and Admin pages -->
+  {% if request.user.is_superuser or "student_records" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Records</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "student_archive" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_archive' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_archive' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Archive</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "case_view" in request.user.userprofile.permissions or "case_record" in request.user.userprofile.permissions or "case_full" in request.user.userprofile.permissions or "case_create" in request.user.userprofile.permissions or "case_information" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'case_record' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'case_record' or request.resolver_match.url_name == 'case_record_details' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Case Record</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "report_dashboard" in request.user.userprofile.permissions or "case_report" in request.user.userprofile.permissions or "print_reports" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'generate_reports' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'generate_reports' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Generate Reports</a></li>
+  {% endif %}
+
+  <!-- Admin-only pages -->
+  {% if request.user.is_superuser %}
+  <li><a href="{% url 'offense_master_list' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'offense_master_list' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Offense Master List</a></li>
+  <li><a href="{% url 'archive_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'archive_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Archive Records</a></li>
+  <li><a href="{% url 'user_management' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'user_management' or request.resolver_match.url_name == 'add_user' or request.resolver_match.url_name == 'edit_user' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">User Management</a></li>
+  <li><a href="{% url 'audit_log' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'audit_log' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Audit Logs</a></li>
+  <li><a href="{% url 'unlock_account' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'unlock_account' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Unlock Account</a></li>
+  {% endif %}
+
+  <!-- Settings: show if at least one Settings permission is assigned -->
+  {% if request.user.is_superuser or "settings_login_background" in request.user.userprofile.permissions or "settings_theme_color" in request.user.userprofile.permissions or "settings_student_api_url" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'settings' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'settings' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Settings</a></li>
+  {% endif %}
+</ul>
+  </div>
+</aside>
+
+<main class="sm:ml-64 p-6 mt-16">
+  <div class="max-w-7xl mx-auto space-y-5">
+
+    <section class="rounded-2xl hero-gradient p-5 text-white shadow">
+      <h2 class="text-2xl font-bold">Generate Reports</h2>
+      <p class="mt-1 text-white/80 text-sm">Filter case records, review statistics, and prepare reports.</p>
+    </section>
+
+    {% if can_view_report_dashboard %}
+
+    <!-- SUMMARY CARDS -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-2xl border p-5">
+        <p class="text-sm text-slate-500">Total Cases</p>
+        <p id="totalCases" class="text-3xl font-bold mt-1">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border p-5">
+        <p class="text-sm text-slate-500">Under Review</p>
+        <p id="underReviewCases" class="text-3xl font-bold mt-1">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border p-5">
+        <p class="text-sm text-slate-500">Pending</p>
+        <p id="pendingCases" class="text-3xl font-bold mt-1">0</p>
+      </div>
+      <div class="bg-white rounded-2xl border p-5">
+        <p class="text-sm text-slate-500">Resolved</p>
+        <p id="resolvedCases" class="text-3xl font-bold mt-1">0</p>
+      </div>
+    </section>
+
+    {% endif %} 
+
+    {% if can_view_report_dashboard %}
+
+    <!-- CHARTS -->
+    <section class="bg-white rounded-2xl border p-5">
+      <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4">
+        <div>
+          <h3 class="text-xl font-bold">Statistical Graph</h3>
+          <p class="text-sm text-slate-500 mt-1">Choose a chart and the case information to display.</p>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-3 w-full md:w-2/3">
+          <div>
+            <label for="graphSelector" class="block mb-2 text-sm font-medium">Chart Data</label>
+            <select id="graphSelector" class="filter-control">
+              <option value="status">Cases by Status</option>
+              <option value="program">Cases by Program</option>
+              <option value="offense">Cases by Offense</option>
+              <option value="year_level">Cases by Year Level</option>
+              <option value="classification">Cases by Classification</option>
+              <option value="sex">Cases by Sex</option>
+              <option value="date">Cases Over Time</option>
+            </select>
+          </div>
+          <div>
+            <label for="chartTypeSelector" class="block mb-2 text-sm font-medium">Chart Type</label>
+            <select id="chartTypeSelector" class="filter-control">
+              <option value="bar">Bar Chart</option>
+              <option value="line">Line Chart</option>
+              <option value="pie">Pie Chart</option>
+              <option value="doughnut">Doughnut Chart</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 h-96">
+        <canvas id="reportChart"></canvas>
+      </div>
+    </section>
+
+    {% endif %}
+
+    {% if can_view_case_report %}
+
+    <!-- FILTERS -->
+    <section class="bg-white rounded-2xl border theme-border p-5">
+      <h3 class="text-xl font-bold">Report Filters</h3>
+      <p class="text-sm text-slate-500 mt-1 mb-4">Filters work together. Only matching records remain visible.</p>
+
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label for="studentFilter" class="block mb-2 text-sm font-medium">Student</label>
+          <select id="studentFilter" class="filter-control">
+            <option value="">All Students</option>
+            {% for student in students %}
+              <option value="{{ student.id }}">{{ student.student_id }} - {{ student.first_name }} {{ student.last_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label for="offenseFilter" class="block mb-2 text-sm font-medium">Offense</label>
+          <select id="offenseFilter" class="filter-control">
+            <option value="">All Offenses</option>
+            {% for offense in offenses %}
+              <option value="{{ offense.id }}">{{ offense.offense_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div>
+          <label for="classificationFilter" class="block mb-2 text-sm font-medium">Classification</label>
+          <select id="classificationFilter" class="filter-control">
+            <option value="">All Classifications</option>
+            <option value="Infraction">Infraction</option>
+            <option value="Minor">Minor</option>
+            <option value="Major">Major</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="sexFilter" class="block mb-2 text-sm font-medium">Sex</label>
+          <select id="sexFilter" class="filter-control">
+            <option value="">All</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="schoolYearFilter" class="block mb-2 text-sm font-medium">School Year</label>
+          <input id="schoolYearFilter" type="text" placeholder="e.g. 2025-2026" class="filter-control">
+        </div>
+
+        <div>
+          <label for="termFilter" class="block mb-2 text-sm font-medium">Term</label>
+          <select id="termFilter" class="filter-control">
+            <option value="">All Terms</option>
+            <option value="1st">1st</option>
+            <option value="2nd">2nd</option>
+            <option value="3rd">3rd</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="statusFilter" class="block mb-2 text-sm font-medium">Case Status</label>
+          <select id="statusFilter" class="filter-control">
+            <option value="">All Case Statuses</option>
+            <option value="Reported">Reported</option>
+            <option value="Preliminary">Preliminary</option>
+            <option value="Notice of Complaint Sent">Notice of Complaint Sent</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Resolved by DO">Resolved by DO</option>
+            <option value="Resolved by Director">Resolved by Director</option>
+            <option value="Resolved by Other">Resolved by Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="activeFilter" class="block mb-2 text-sm font-medium">Record Activity</label>
+          <select id="activeFilter" class="filter-control">
+            <option value="">All Records</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="dateFilter" class="block mb-2 text-sm font-medium">Date Reported</label>
+          <input id="dateFilter" type="date" class="filter-control">
+        </div>
+      </div>
+
+      <div class="mt-4 flex gap-3 flex-wrap no-print">
+    <button id="applyFilterBtn" type="button" class="px-5 py-3 theme-bg text-white rounded-xl font-medium">Apply Filter</button>
+
+    <button id="resetFilterBtn" type="button" class="px-5 py-3 bg-slate-200 rounded-xl font-medium">Reset Filter</button>
+
+    {% if can_print_reports %}
+    <button id="printReportBtn" type="button" class="px-5 py-3 bg-slate-800 text-white rounded-xl font-medium">
+        Print Selected
+    </button>
+    {% endif %}
+    </div>
+    </section>
+
+    {% endif %}
+
+    {% if can_view_case_report %}
+
+    <!-- SELECT CASES -->
+    <section class="bg-white rounded-2xl border theme-border p-5">
+      <div class="flex items-start justify-between gap-4 mb-4 flex-wrap">
+        <div>
+          <h3 class="text-xl font-bold">Case Report</h3>
+          <p class="text-sm text-slate-500 mt-1">Select the records to include in your report.</p>
+          <p id="visibleCount" class="text-sm theme-text mt-1"></p>
+        </div>
+        <button id="selectAllBtn" type="button" class="px-4 py-2 bg-slate-200 rounded-xl text-sm font-medium no-print">Select All</button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="theme-bg text-white">
+            <tr>
+              <th class="px-4 py-3">Select</th>
+              <th class="px-4 py-3">Case #</th>
+              <th class="px-4 py-3">Student</th>
+              <th class="px-4 py-3">Sex</th>
+              <th class="px-4 py-3">Offense</th>
+              <th class="px-4 py-3">Classification</th>
+              <th class="px-4 py-3">Record Status</th>
+              <th class="px-4 py-3">Case Status</th>
+              <th class="px-4 py-3">Date</th>
+              <th class="px-4 py-3">Term</th>
+              <th class="px-4 py-3">School Year</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody" class="divide-y divide-slate-200">
+            {% for case in case_records %}
+              <tr
+                data-case-row="true"
+                data-student="{{ case.student.id }}"
+                data-offense="{{ case.offense.id }}"
+                data-program="{{ case.student.program|default:'Unknown' }}"
+                data-year-level="{{ case.student.year_level|default:'Unknown' }}"
+                data-school-year="{{ case.school_year|default:'' }}"
+                data-term="{{ case.term|default:'' }}"
+                data-status="{{ case.status|default:'' }}"
+                data-active="{% if case.is_active %}Active{% else %}Inactive{% endif %}"
+                data-classification="{% if case.classification_override != 'Auto' %}{{ case.classification_override|default:'' }}{% else %}{{ case.offense.severity|default:'' }}{% endif %}"
+                data-sex="{{ case.student.sex|default:'' }}"
+                data-date="{{ case.date_reported|date:'Y-m-d' }}"
+              >
+                <td class="px-4 py-3 text-center">
+                  <input type="checkbox" class="case-checkbox w-5 h-5" value="{{ case.id }}">
+                </td>
+                <td class="px-4 py-3">{{ case.case_number }}</td>
+                <td class="px-4 py-3">{{ case.student.student_id }} - {{ case.student.first_name }} {{ case.student.last_name }}</td>
+                <td class="px-4 py-3">{{ case.student.sex|default:"—" }}</td>
+                <td class="px-4 py-3">{{ case.offense.offense_name }}</td>
+                <td class="px-4 py-3">{{ case.classification_override|default:case.offense.severity }}</td>
+                <td class="px-4 py-3">{% if case.is_active %}Active{% else %}Inactive{% endif %}</td>
+                <td class="px-4 py-3">{{ case.status }}</td>
+                <td class="px-4 py-3">{{ case.date_reported|date:"M d, Y" }}</td>
+                <td class="px-4 py-3">{{ case.term|default:"—" }}</td>
+                <td class="px-4 py-3">{{ case.school_year|default:"—" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="11" class="px-4 py-6 text-center text-slate-500">No case records found.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    {% endif %}
+
+    {% if can_print_reports %}
+
+    <!-- AGREEMENT AND NOTES -->
+    <section class="bg-white rounded-2xl border p-5">
+      <h3 class="text-xl font-bold">Report Notes and Agreement</h3>
+      <p class="text-sm text-slate-500 mt-1 mb-4">
+        Review this draft text before printing. Replace it with the official CRD wording once approved.
+      </p>
+
+      <label for="reportNotes" class="block mb-2 text-sm font-medium">Custom Notes</label>
+      <textarea id="reportNotes" rows="4" class="filter-control mb-4" placeholder="Enter notes to include with the selected records..."></textarea>
+
+      <label for="agreementText" class="block mb-2 text-sm font-medium">Agreement Text</label>
+      <textarea id="agreementText" rows="10" class="filter-control">I acknowledge that I have reviewed and validated my discipline record. I understand that, under the Student Handbook, accumulating three (3) minor offenses or eight (8) ID, program dress code, or general dress code infractions during my stay in the College constitutes a major offense.
+
+I understand that major offenses carry serious consequences that may affect my student status. Subject to applicable Student Handbook provisions, these may include suspension, exclusion, or expulsion; loss of scholarship or grant eligibility or retention; and ineligibility for organization officership, the Dean’s List, or graduation honors.
+
+I take this reminder seriously and accept responsibility for my actions. I commit to preventing further violations, completing required interventions, and taking appropriate steps to repair any harm caused.
+
+By signing, I confirm that I understand these provisions and consequences and commit to demonstrating respect, responsibility, and accountability.</textarea>
+
+    </section>
+
+    {% endif %}
+
+  </div>
+</main>
+
+<div
+  id="dashboard-summary"
+  data-total="{{ total_cases|default:0 }}"
+  data-under-review="{{ under_review_cases|default:0 }}"
+  data-pending="{{ pending_cases|default:0 }}"
+  data-resolved="{{ resolved_cases|default:0 }}"
+  hidden
+></div>
+
+{{ chart_data|json_script:"report-chart-data" }}
+
+<script>
+const tableBody = document.getElementById("reportTableBody");
+
+const filterIds = [
+  "studentFilter", "offenseFilter", "classificationFilter", "sexFilter",
+  "schoolYearFilter", "termFilter", "statusFilter", "activeFilter", "dateFilter"
+];
+
+const selectAllBtn = document.getElementById("selectAllBtn");
+const graphSelector = document.getElementById("graphSelector");
+const chartTypeSelector = document.getElementById("chartTypeSelector");
+
+let reportChart = null;
+
+const chartDataElement = document.getElementById("report-chart-data");
+const summaryElement = document.getElementById("dashboard-summary");
+
+const dashboardData = {
+    total: Number(summaryElement?.dataset.total || 0),
+    underReview: Number(summaryElement?.dataset.underReview || 0),
+    pending: Number(summaryElement?.dataset.pending || 0),
+    resolved: Number(summaryElement?.dataset.resolved || 0),
+    charts: chartDataElement
+        ? JSON.parse(chartDataElement.textContent)
+        : {}
+};
+
+function allRows() {
+  if (!tableBody) return [];
+
+  return Array.from(
+    tableBody.querySelectorAll("tr[data-case-row='true']")
+  );
+}
+
+function visibleRows() {
+  return allRows().filter(row => row.style.display !== "none");
+}
+
+function countValues(rows, key) {
+  const counts = {};
+
+  rows.forEach(row => {
+    const value = row.dataset[key] || "Unknown";
+    counts[value] = (counts[value] || 0) + 1;
+  });
+
+  return counts;
+}
+
+function updateSummary(rows) {
+
+  const totalCases = document.getElementById("totalCases");
+  const underReviewCases = document.getElementById("underReviewCases");
+  const pendingCases = document.getElementById("pendingCases");
+  const resolvedCases = document.getElementById("resolvedCases");
+  const visibleCount = document.getElementById("visibleCount");
+
+  // Staff with dashboard-only permission use Python statistics.
+  if (!tableBody) {
+
+    if (totalCases) totalCases.textContent = dashboardData.total;
+    if (underReviewCases) underReviewCases.textContent = dashboardData.underReview;
+    if (pendingCases) pendingCases.textContent = dashboardData.pending;
+    if (resolvedCases) resolvedCases.textContent = dashboardData.resolved;
+
+    return;
+  }
+
+  // Users with case report permission use filtered table records.
+  if (totalCases) totalCases.textContent = rows.length;
+
+  if (underReviewCases) {
+    underReviewCases.textContent =
+      rows.filter(row => row.dataset.status.toLowerCase() === "under review").length;
+  }
+
+  if (pendingCases) {
+    pendingCases.textContent =
+      rows.filter(row => row.dataset.status.toLowerCase().includes("pending")).length;
+  }
+
+  if (resolvedCases) {
+    resolvedCases.textContent =
+      rows.filter(row => row.dataset.status.toLowerCase().startsWith("resolved")).length;
+  }
+
+  if (visibleCount) {
+    visibleCount.textContent = rows.length + " matching case record(s)";
+  }
+}
+
+function createGraph() {
+
+  if (!graphSelector || !chartTypeSelector ||
+      !document.getElementById("reportChart")) {
+    return;
+  }
+
+  const graph = graphSelector.value;
+  const requestedType = chartTypeSelector.value;
+
+  let labels = [];
+  let values = [];
+
+  // Dashboard-only users use aggregated data from Django.
+  if (!tableBody) {
+
+    const selectedData = dashboardData.charts[graph] || [];
+
+    labels = selectedData.map(item => item.label);
+    values = selectedData.map(item => item.count);
+
+  } else {
+
+    // Users with case report permission use the filtered records.
+    const rows = visibleRows();
+
+    if (graph === "date") {
+
+      const counts = {};
+
+      rows.forEach(row => {
+        const date = row.dataset.date;
+
+        if (date) {
+          counts[date] = (counts[date] || 0) + 1;
+        }
+      });
+
+      labels = Object.keys(counts).sort();
+      values = labels.map(date => counts[date]);
+
+    } else {
+
+      let key = "status";
+
+      if (graph === "program") key = "program";
+      if (graph === "offense") key = "offense";
+      if (graph === "year_level") key = "yearLevel";
+      if (graph === "classification") key = "classification";
+      if (graph === "sex") key = "sex";
+
+      const counts = countValues(rows, key);
+
+      labels = Object.keys(counts);
+      values = Object.values(counts);
+    }
+  }
+
+  if (reportChart) reportChart.destroy();
+
+  reportChart = new Chart(
+    document.getElementById("reportChart"),
+    {
+      type: requestedType,
+
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Cases",
+          data: values,
+          tension: 0.3
+        }]
+      },
+
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+
+        plugins: {
+          legend: {
+            display: ["pie", "doughnut"].includes(requestedType)
+          },
+
+          title: {
+            display: true,
+            text: graphSelector.options[graphSelector.selectedIndex].text
+          }
+        },
+
+        scales: ["pie", "doughnut"].includes(requestedType) ? {} : {
+          y: {
+            beginAtZero: true,
+            ticks: { precision: 0 }
+          }
+        }
+      }
+    }
+  );
+}
+
+function updateSelectAllButton() {
+
+  if (!selectAllBtn || !tableBody) return;
+
+  const rows = visibleRows();
+
+  const allChecked = rows.length > 0 &&
+    rows.every(row => row.querySelector(".case-checkbox").checked);
+
+  selectAllBtn.textContent = allChecked ? "Unselect All" : "Select All";
+}
+
+function applyFilters() {
+
+  if (!tableBody) return;
+
+  const filters = {};
+
+  filterIds.forEach(id => {
+    const element = document.getElementById(id);
+
+    filters[id] = element.value.trim().toLowerCase();
+  });
+
+  allRows().forEach(row => {
+
+    const matches =
+      (!filters.studentFilter || row.dataset.student === filters.studentFilter) &&
+      (!filters.offenseFilter || row.dataset.offense === filters.offenseFilter) &&
+      (!filters.classificationFilter || row.dataset.classification.toLowerCase() === filters.classificationFilter) &&
+      (!filters.sexFilter || row.dataset.sex.toLowerCase() === filters.sexFilter) &&
+      (!filters.schoolYearFilter || row.dataset.schoolYear.toLowerCase() === filters.schoolYearFilter) &&
+      (!filters.termFilter || row.dataset.term.toLowerCase() === filters.termFilter) &&
+      (!filters.statusFilter || row.dataset.status.toLowerCase() === filters.statusFilter) &&
+      (!filters.activeFilter || row.dataset.active.toLowerCase() === filters.activeFilter) &&
+      (!filters.dateFilter || row.dataset.date === filters.dateFilter);
+
+    row.style.display = matches ? "" : "none";
+
+    if (!matches) {
+      row.querySelector(".case-checkbox").checked = false;
+    }
+  });
+
+  updateSelectAllButton();
+  updateSummary(visibleRows());
+  createGraph();
+}
+
+const applyFilterBtn = document.getElementById("applyFilterBtn");
+const resetFilterBtn = document.getElementById("resetFilterBtn");
+
+if (applyFilterBtn) {
+  applyFilterBtn.addEventListener("click", applyFilters);
+}
+
+if (resetFilterBtn) {
+
+  resetFilterBtn.addEventListener("click", () => {
+
+    filterIds.forEach(id => {
+      const filter = document.getElementById(id);
+
+      if (filter) filter.value = "";
+    });
+
+    allRows().forEach(row => {
+      row.style.display = "";
+      row.querySelector(".case-checkbox").checked = false;
+    });
+
+    updateSelectAllButton();
+    updateSummary(visibleRows());
+    createGraph();
+  });
+}
+
+if (selectAllBtn) {
+
+  selectAllBtn.addEventListener("click", () => {
+
+    const rows = visibleRows();
+
+    const allChecked = rows.length > 0 &&
+      rows.every(row => row.querySelector(".case-checkbox").checked);
+
+    rows.forEach(row => {
+      row.querySelector(".case-checkbox").checked = !allChecked;
+    });
+
+    updateSelectAllButton();
+  });
+}
+
+if (tableBody) {
+
+  tableBody.addEventListener("change", event => {
+
+    if (event.target.classList.contains("case-checkbox")) {
+      updateSelectAllButton();
+    }
+  });
+}
+
+if (graphSelector) {
+  graphSelector.addEventListener("change", createGraph);
+}
+
+if (chartTypeSelector) {
+  chartTypeSelector.addEventListener("change", createGraph);
+}
+
+const printReportBtn = document.getElementById("printReportBtn");
+
+if (printReportBtn) {
+
+  printReportBtn.addEventListener("click", () => {
+
+    if (!tableBody) return;
+
+    const selected = Array.from(
+      tableBody.querySelectorAll(".case-checkbox:checked")
+    );
+
+    if (selected.length === 0) {
+      alert("Please select at least one case record first.");
+      return;
+    }
+
+    const notes = document.getElementById("reportNotes").value;
+    const agreement = document.getElementById("agreementText").value;
+
+    const url = new URL(
+      "{% url 'print_report' %}",
+      window.location.origin
+    );
+
+    selected.forEach(box => {
+      url.searchParams.append("case_id", box.value);
+    });
+
+    url.searchParams.set("notes", notes);
+    url.searchParams.set("agreement_text", agreement);
+
+    window.open(url.toString(), "_blank");
+  });
+}
+
+// Initial display
+updateSummary(visibleRows());
+createGraph();
+
+</script>
+</body>
+</html>

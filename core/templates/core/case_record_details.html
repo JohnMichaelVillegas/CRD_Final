@@ -1,0 +1,1062 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Case Record Details</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-bg-dark {
+      background-color: var(--theme-color-dark) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-hover:hover {
+      filter: brightness(0.95);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(
+        135deg,
+        var(--theme-color),
+        var(--theme-color-dark)
+      );
+    }
+
+  </style>
+
+</head>
+
+
+<body class="bg-slate-100">
+
+
+  <!-- TOP NAVIGATION -->
+
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+
+        {% if request.user.is_superuser %}
+          CRD Admin Panel
+        {% else %}
+          CRD Staff Panel
+        {% endif %}
+
+      </h1>
+
+
+      <div class="flex items-center gap-3">
+
+        <div class="text-right hidden sm:block">
+
+          <p class="text-sm font-semibold text-slate-800">
+
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+
+          </p>
+
+          <p class="text-xs text-slate-500">
+
+            {% if request.user.is_superuser %}
+              Admin
+            {% else %}
+              Staff
+            {% endif %}
+
+          </p>
+
+        </div>
+
+
+        <div
+          class="w-10 h-10 rounded-full border flex items-center justify-center font-semibold theme-text theme-border"
+        >
+
+          {{ request.user.username|first|upper }}
+
+        </div>
+
+
+        <form method="POST" action="{% url 'logout' %}">
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- SIDEBAR -->
+
+  <aside
+    class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white"
+  >
+
+    <div class="px-4">
+
+      <div class="mb-6 p-4 rounded-2xl theme-bg">
+
+        <p class="text-xs text-green-100">
+          Logged in as
+        </p>
+
+        <h2 class="text-sm font-bold">
+
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+
+        </h2>
+
+        <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+          CRD Case Management System
+        </p>
+
+      </div>
+
+
+      <ul class="space-y-2">
+
+
+        <!-- DASHBOARD -->
+
+        <li>
+
+          {% if request.user.is_superuser %}
+
+          <a
+            href="{% url 'admin_dashboard' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Dashboard
+          </a>
+
+          {% else %}
+
+          <a
+            href="{% url 'staff_dashboard' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Dashboard
+          </a>
+
+          {% endif %}
+
+        </li>
+
+
+        <!-- STUDENT RECORDS -->
+
+        <li>
+
+          <a
+            href="{% url 'student_records' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Student Records
+          </a>
+
+        </li>
+
+          <li>
+  <a
+    href="{% url 'student_archive' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Student Archive
+  </a>
+</li> 
+
+        <!-- CASE RECORD -->
+
+        <li>
+
+          <a
+            href="{% url 'case_record' %}"
+            class="block p-3 rounded-xl text-white theme-bg"
+          >
+            Case Record
+          </a>
+
+        </li>
+
+        <!-- GENERATE REPORTS -->
+
+        <li>
+
+          <a
+            href="{% url 'generate_reports' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Generate Reports
+          </a>
+
+        </li>
+
+        {% if request.user.is_superuser %}
+
+
+        <!-- OFFENSE MASTER LIST -->
+
+        <li>
+
+          <a
+            href="{% url 'offense_master_list' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Offense Master List
+          </a>
+
+        </li>
+
+
+        <!-- ARCHIVE RECORDS -->
+
+        <li>
+
+          <a
+            href="{% url 'archive_records' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Archive Records
+          </a>
+
+        </li>
+
+
+        <!-- USER MANAGEMENT -->
+
+        <li>
+
+          <a
+            href="{% url 'user_management' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            User Management
+          </a>
+
+        </li>
+
+        <!-- AUDIT LOGS -->
+
+<li>
+  <a
+    href="{% url 'audit_log' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Audit Logs
+  </a>
+</li>
+
+
+        <!-- UNLOCK ACCOUNT -->
+
+        <li>
+
+          <a
+            href="{% url 'unlock_account' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Unlock Account
+          </a>
+
+        </li>
+
+
+        <!-- SETTINGS -->
+
+        <li>
+
+          <a
+            href="{% url 'settings' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Settings
+          </a>
+
+        </li>
+
+        {% endif %}
+
+      </ul>
+
+    </div>
+
+  </aside>
+
+
+
+  <!-- MAIN -->
+
+  <main class="sm:ml-64 p-6 mt-16">
+
+    <div class="max-w-7xl mx-auto space-y-4">
+
+
+      <!-- HERO -->
+
+      <div class="rounded-2xl hero-gradient p-4 md:p-5 text-white shadow">
+
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+
+          <div>
+
+            <h2 class="text-2xl font-bold tracking-tight">
+              Case Record Details
+            </h2>
+
+            <p class="mt-1 text-white/80 text-sm">
+
+              {% if request.user.is_superuser %}
+
+                View and manage the complete information for this case record.
+
+              {% else %}
+
+                View the information recorded for this case.
+
+              {% endif %}
+
+            </p>
+
+          </div>
+
+
+          <div class="flex gap-2">
+
+            {% if request.user.is_superuser and not case.is_archived %}
+
+            <a
+              href="{% url 'case_record' %}?edit={{ case.id }}"
+              class="px-4 py-2 bg-white text-slate-800 rounded-xl font-medium hover:bg-slate-100"
+            >
+              Edit Case
+            </a>
+
+            {% endif %}
+
+            <a
+              href="{% url 'case_record' %}"
+              class="px-4 py-2 bg-white/20 text-white border border-white/30 rounded-xl font-medium hover:bg-white/30"
+            >
+              Back
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- CASE INFORMATION -->
+
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-5">
+
+        <div class="mb-5">
+
+          <h3 class="text-xl font-bold text-slate-800">
+            Case Information
+          </h3>
+
+          <p class="text-slate-500 mt-1 text-sm">
+            Complete information associated with this case record.
+          </p>
+
+        </div>
+
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+
+          <!-- CASE ID -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Case ID
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.case_number }}
+            </p>
+
+          </div>
+
+
+          <!-- DATE REPORTED -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Date Reported
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.date_reported|date:"M. d, Y" }}
+            </p>
+
+          </div>
+
+
+          <!-- DATE FILED -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs font-medium text-slate-500">Date Filed</p>
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.date_filed|date:"M. d, Y"|default:"—" }}
+            </p>
+          </div>
+
+          <!-- STUDENT CASE COUNT -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs font-medium text-slate-500">Total Cases for Student</p>
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case_count|default:"—" }}
+            </p>
+          </div>
+
+          <!-- CAMPUS -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs font-medium text-slate-500">Campus</p>
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.campus|default:"—" }}
+            </p>
+          </div>
+
+          <!-- PERSON HANDLING CASE -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs font-medium text-slate-500">Person Handling Case</p>
+            <p class="mt-1 font-semibold text-slate-800">
+              {% if case.handled_by %}
+                {{ case.handled_by.get_full_name|default:case.handled_by.username }}
+              {% else %}
+                —
+              {% endif %}
+            </p>
+          </div>
+
+          <!-- FORMATIVE STATUS -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs font-medium text-slate-500">Formative Intervention</p>
+            <div class="mt-1">
+              {% if case.formative_status == "Completed" %}
+                <span class="px-2 py-1 rounded-lg bg-green-100 text-green-700 text-sm">Completed</span>
+              {% elif case.formative_status == "Pending" %}
+                <span class="px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 text-sm">Pending</span>
+              {% else %}
+                <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-600 text-sm">
+                  {{ case.formative_status|default:"—" }}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- ID VIOLATION -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+            <p class="text-xs font-medium text-slate-500">ID Violation</p>
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.id_violation|default:"—" }}
+            </p>
+          </div>
+
+
+          <!-- STUDENT ID -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Student ID
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.student.student_id }}
+            </p>
+
+          </div>
+
+
+          <!-- STUDENT NAME -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Student Name
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+
+              {{ case.student.first_name }}
+              {{ case.student.last_name }}
+
+            </p>
+
+          </div>
+
+
+          <!-- SCHOOL -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+  <p class="text-xs font-medium text-slate-500">
+    Program
+  </p>
+
+  <p class="mt-1 font-semibold text-slate-800">
+    {{ case.student.program|default:"—" }}
+  </p>
+
+</div>
+
+
+          <!-- PROGRAM -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Program
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.student.course }}
+            </p>
+
+          </div>
+
+
+          <!-- YEAR LEVEL -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Year Level
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.year_level }}
+            </p>
+
+          </div>
+
+
+          <!-- TERM -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Term
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.term }}
+            </p>
+
+          </div>
+
+
+          <!-- SCHOOL YEAR -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              School Year
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.school_year }}
+            </p>
+
+          </div>
+
+
+          <!-- VIOLATION -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Violation
+            </p>
+
+            <p class="mt-1 font-semibold text-slate-800">
+              {{ case.offense.offense_name }}
+            </p>
+
+          </div>
+
+
+          <!-- SEVERITY -->
+
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+  <p class="text-xs font-medium text-slate-500">
+    Severity
+  </p>
+
+  <div class="mt-1">
+
+    {% with classification=case.classification_override|default:case.offense.severity %}
+
+      {% if classification == "Major Offense" or classification == "Major" %}
+
+        <span class="px-2 py-1 rounded-lg bg-red-100 text-red-700 text-sm">
+          Major Offense
+        </span>
+
+      {% elif classification == "Infraction" %}
+
+        <span class="px-2 py-1 rounded-lg bg-blue-100 text-blue-700 text-sm">
+          Infraction
+        </span>
+
+      {% elif classification == "Minor Offense" or classification == "Minor" %}
+
+        <span class="px-2 py-1 rounded-lg bg-green-100 text-green-700 text-sm">
+          Minor Offense
+        </span>
+
+      {% else %}
+
+        <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 text-sm">
+          {{ classification|default:"—" }}
+        </span>
+
+      {% endif %}
+
+    {% endwith %}
+
+  </div>
+
+</div>
+
+
+          <!-- STATUS -->
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+
+            <p class="text-xs font-medium text-slate-500">
+              Status
+            </p>
+
+            <div class="mt-1">
+
+              {% if case.status == "Resolved" or case.status == "Resolved by DO" or case.status == "Resolved by Director" or case.status == "Resolved by Other" or case.status == "Resolved by CRD Director" or case.status == "Resolved by Discipline Board" or case.status == "Resolved by CODI" %}
+
+                <span class="px-2 py-1 rounded-lg bg-green-100 text-green-700 text-sm">
+                  {{ case.status }}
+                </span>
+
+              {% elif case.status == "Reported" or case.status == "Preliminary" or case.status == "Notice of Complaint Sent" %}
+
+                <span class="px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 text-sm">
+                  {{ case.status }}
+                </span>
+
+              {% elif case.status == "Pending" %}
+
+                <span class="px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 text-sm">
+                  Pending
+                </span>
+
+              {% else %}
+
+                <span class="px-2 py-1 rounded-lg bg-blue-100 text-blue-700 text-sm">
+                  {{ case.status|default:"Under Review" }}
+                </span>
+
+              {% endif %}
+
+            </div>
+
+          </div>
+
+          <!-- RESOLUTION AUTHORITY -->
+
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+  <p class="text-xs font-medium text-slate-500">
+    Resolution Authority
+  </p>
+  <p class="mt-1 font-semibold text-slate-800">
+    {{ case.resolution_authority|default:"Not yet resolved" }}
+  </p>
+</div>
+
+
+<!-- APPEAL RESOLVED BY -->
+
+<div class="bg-slate-50 border border-slate-200 rounded-xl p-4">
+  <p class="text-xs font-medium text-slate-500">
+    Appeal Resolved By
+  </p>
+  <p class="mt-1 font-semibold text-slate-800">
+    {{ case.appeal_resolution|default:"Not applicable" }}
+  </p>
+</div>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- SANCTIONS -->
+
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-5">
+
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-slate-800">
+            Sanctions
+          </h3>
+
+          <p class="text-slate-500 mt-1 text-sm">
+            Sanctions and remarks recorded for this case.
+          </p>
+        </div>
+
+        <!-- ADD SANCTION FORM -->
+
+        <!-- DISPLAY SAVED SANCTIONS -->
+
+        {% if sanctions %}
+
+          <div class="space-y-3">
+
+            {% for sanction in sanctions %}
+
+              <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+
+                  <p class="font-semibold text-slate-800">
+                    {{ sanction.sanction_name|default:"Sanction" }}
+                  </p>
+
+                  <p class="text-xs text-slate-500">
+                    {% if sanction.date_added %}
+                      {{ sanction.date_added|date:"M. d, Y" }}
+                    {% endif %}
+                  </p>
+
+                </div>
+
+                <p class="text-sm text-slate-600 mt-2 whitespace-pre-line">
+                  {{ sanction.remarks|default:"No sanction remarks recorded." }}
+                </p>
+
+              </div>
+
+            {% endfor %}
+
+          </div>
+
+        {% else %}
+
+          <p class="text-slate-400 italic">
+            No sanctions recorded for this case.
+          </p>
+
+        {% endif %}
+
+      </div>
+
+
+      <!-- CASE DETAIL DIARY -->
+
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-5">
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-slate-800">Case Detail Diary</h3>
+          <p class="text-slate-500 mt-1 text-sm">Dated notes and updates recorded throughout the case.</p>
+        </div>
+
+        {% if diary_entries %}
+          <div class="space-y-3">
+            {% for entry in diary_entries %}
+              <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <p class="text-sm font-semibold text-slate-700">
+                  {% if entry.entry_date %}
+                    {{ entry.entry_date|date:"M. d, Y" }}
+                  {% elif entry.date %}
+                    {{ entry.date|date:"M. d, Y" }}
+                  {% else %}
+                    Date not provided
+                  {% endif %}
+                </p>
+                <p class="mt-2 text-slate-700 whitespace-pre-line">
+                  {{ entry.note|default:"No notes recorded." }}
+                </p>
+                {% if entry.created_by %}
+                  <p class="mt-2 text-xs text-slate-500">
+                    Recorded by: {{ entry.created_by.get_full_name|default:entry.created_by.username }}
+                  </p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-slate-400 italic">No diary entries recorded for this case.</p>
+        {% endif %}
+      </div>
+
+
+      <!-- CASE DETAILS -->
+
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-5">
+
+        <div class="mb-4">
+
+          <h3 class="text-xl font-bold text-slate-800">
+            Case Details
+          </h3>
+
+          <p class="text-slate-500 mt-1 text-sm">
+            Description and additional information recorded for this case.
+          </p>
+
+        </div>
+
+
+        <div class="border border-slate-200 rounded-xl bg-slate-50 p-5">
+
+          {% if case.remarks %}
+
+            <p class="text-slate-700 whitespace-pre-line leading-relaxed">
+              {{ case.remarks }}
+            </p>
+
+          {% else %}
+
+            <p class="text-slate-400 italic">
+              No case details provided.
+            </p>
+
+          {% endif %}
+
+        </div>
+
+      </div>
+
+
+
+      {% if case.is_archived %}
+      <div class="border border-amber-200 bg-amber-50 rounded-xl p-4">
+        <p class="font-semibold text-amber-800">Archived Case Record</p>
+        <p class="text-sm text-amber-700 mt-1">
+          This case is archived and cannot be edited from this page.
+        </p>
+      </div>
+      {% endif %}
+
+
+      <!-- EVIDENCE FILES AND ATTACHMENTS -->
+
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-5">
+
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-slate-800">
+            Evidence Files and Attachments
+          </h3>
+          <p class="text-slate-500 mt-1 text-sm">
+            All evidence and supporting files associated with this case.
+          </p>
+        </div>
+
+        {% if request.user.is_superuser %}
+
+          <!-- ADMIN: LEGACY PRIMARY EVIDENCE -->
+
+          {% if case.evidence %}
+            <div class="space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-slate-200 rounded-xl bg-slate-50 p-4">
+                <div class="min-w-0">
+                  <p class="font-semibold text-slate-800 break-words">
+                    {{ case.evidence.name }}
+                  </p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Primary evidence file
+                  </p>
+                </div>
+                <a
+                  href="{% url 'case_record_evidence' case.id %}"
+                  target="_blank"
+                  rel="noopener"
+                  class="px-4 py-2 theme-bg text-white rounded-xl font-medium theme-hover text-center shrink-0"
+                >
+                  View File
+                </a>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- ADMIN: MULTIPLE ATTACHMENTS -->
+
+          {% if attachments %}
+            <div class="{% if case.evidence %}mt-3{% endif %} space-y-3">
+              {% for attachment in attachments %}
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-slate-200 rounded-xl bg-slate-50 p-4">
+                  <div class="min-w-0">
+                    <p class="font-semibold text-slate-800 break-words">
+                      {{ attachment.file_name|default:attachment.file.name }}
+                    </p>
+                    <p class="text-xs text-slate-500 mt-1">
+                      Date added: {{ attachment.date_added|date:"M. d, Y" }}
+                    </p>
+                  </div>
+                  <a
+                    href="{% url 'case_attachment_view' attachment.id %}"
+                    target="_blank"
+                    rel="noopener"
+                    class="px-4 py-2 theme-bg text-white rounded-xl font-medium theme-hover text-center shrink-0"
+                  >
+                    View File
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          {% if not case.evidence and not attachments %}
+            <div class="border border-slate-200 bg-slate-50 rounded-xl p-4">
+              <p class="text-slate-400 italic">
+                No evidence files or supporting attachments recorded for this case.
+              </p>
+            </div>
+          {% endif %}
+
+        {% else %}
+
+          <!-- STAFF: SHOW FILE PRESENCE, NOT FILE LINKS -->
+
+          {% if case.evidence or attachments %}
+            <div class="space-y-3">
+              {% if case.evidence %}
+                <div class="border border-green-200 bg-green-50 rounded-xl p-4">
+                  <p class="font-semibold text-green-800 break-words">
+                    {{ case.evidence.name }}
+                  </p>
+                  <p class="text-sm text-green-700 mt-1">
+                    Primary evidence file is attached.
+                  </p>
+                </div>
+              {% endif %}
+
+              {% for attachment in attachments %}
+                <div class="border border-slate-200 rounded-xl bg-slate-50 p-4">
+                  <p class="font-semibold text-slate-800 break-words">
+                    {{ attachment.file_name|default:attachment.file.name }}
+                  </p>
+                  <p class="text-xs text-slate-500 mt-1">
+                    Date added: {{ attachment.date_added|date:"M. d, Y" }}
+                  </p>
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="mt-4 border border-amber-200 bg-amber-50 rounded-xl p-4">
+              <p class="font-semibold text-amber-800">
+                File Access Restricted
+              </p>
+              <p class="text-sm text-amber-700 mt-1 leading-relaxed">
+                Staff users can see the files associated with this case but cannot open or download them.
+                Please contact an Admin if access is required.
+              </p>
+            </div>
+          {% else %}
+            <div class="border border-slate-200 bg-slate-50 rounded-xl p-4">
+              <p class="text-slate-400 italic">
+                No evidence files or supporting attachments recorded for this case.
+              </p>
+            </div>
+          {% endif %}
+
+        {% endif %}
+
+      </div>
+
+
+
+      <!-- BOTTOM BUTTONS -->
+
+      <div class="flex justify-end gap-3 pb-4">
+
+        {% if request.user.is_superuser %}
+
+        {% endif %}
+
+
+        <a
+          href="{% url 'case_record' %}"
+          class="px-5 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 font-medium"
+        >
+          Back to Case Records
+        </a>
+
+      </div>
+
+
+    </div>
+
+  </main>
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+</body>
+
+</html>

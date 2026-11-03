@@ -1,0 +1,1011 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-bg-dark {
+      background-color: var(--theme-color-dark) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+      outline-color: var(--theme-color);
+    }
+
+    .theme-hover:hover {
+      filter: brightness(0.95);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(
+        135deg,
+        var(--theme-color),
+        var(--theme-color-dark)
+      );
+    }
+
+    .dashboard-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 10px 12px;
+  vertical-align: middle;
+}
+
+.dashboard-table th {
+  white-space: nowrap;
+}
+
+.dashboard-table td {
+  overflow-wrap: break-word;
+}
+
+    .calendar-day {
+      min-height: 90px;
+      overflow: hidden;
+    }
+
+    @media print {
+      nav,
+      aside,
+      #dashboardFilters,
+      #viewButtons,
+      #calendarNavigation {
+        display: none !important;
+      }
+
+      main {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100">
+
+  <!-- TOP NAVIGATION -->
+
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+        CRD Admin Panel
+      </h1>
+
+      <div class="flex items-center gap-3">
+
+        <div class="text-right hidden sm:block">
+          <p class="text-sm font-semibold text-slate-800">
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+          </p>
+          <p class="text-xs text-slate-500">Admin</p>
+        </div>
+
+        <!-- USER PROFILE PICTURE -->
+
+        <div class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border">
+
+          {% if request.user.userprofile.image %}
+            <img
+              src="{{ request.user.userprofile.image.url }}"
+              alt="Profile Picture"
+              class="w-full h-full object-cover"
+            >
+          {% else %}
+            {{ request.user.username|first|upper }}
+          {% endif %}
+
+        </div>
+
+        <form method="POST" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </nav>
+
+
+  <!-- SIDEBAR -->
+
+  <aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white">
+
+    <div class="px-4">
+
+      <!-- LOGGED IN CARD -->
+
+      <div class="mb-6 p-4 rounded-2xl theme-bg">
+
+        <p class="text-xs text-green-100">
+          Logged in as
+        </p>
+
+        <h2 class="text-sm font-bold">
+          {{ request.user.userprofile.full_name|default:request.user.username }}
+        </h2>
+
+        <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+          CRD Case Management System
+        </p>
+
+      </div>
+
+      <!-- SIDEBAR MENU -->
+
+      <ul class="space-y-2">
+
+        <!-- ACTIVE PAGE: DASHBOARD -->
+
+        <li>
+          <a
+            href="{% url 'admin_dashboard' %}"
+            class="block p-3 rounded-xl text-white theme-bg"
+          >
+            Dashboard
+          </a>
+        </li>
+
+        <!-- STUDENT RECORDS -->
+
+        <li>
+          <a
+            href="{% url 'student_records' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Student Records
+          </a>
+        </li>
+
+        <!-- STUDENT ARCHIVE -->
+
+        <li>
+          <a
+            href="{% url 'student_archive' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Student Archive
+          </a>
+        </li>
+
+        <!-- CASE RECORD -->
+
+        <li>
+          <a
+            href="{% url 'case_record' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Case Record
+          </a>
+        </li>
+
+
+        <!-- GENERATE REPORTS -->
+
+        <li>
+          <a
+            href="{% url 'generate_reports' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Generate Reports
+          </a>
+        </li>
+
+        <!-- OFFENSE MASTER LIST -->
+
+        <li>
+          <a
+            href="{% url 'offense_master_list' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Offense Master List
+          </a>
+        </li>
+
+        <!-- ARCHIVE RECORDS -->
+
+        <li>
+          <a
+            href="{% url 'archive_records' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Archive Records
+          </a>
+        </li>
+
+        <!-- USER MANAGEMENT -->
+
+        <li>
+          <a
+            href="{% url 'user_management' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            User Management
+          </a>
+        </li>
+
+        <!-- AUDIT LOGS -->
+
+        <li>
+          <a
+            href="{% url 'audit_log' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Audit Logs
+          </a>
+        </li>
+
+        <!-- UNLOCK ACCOUNT -->
+
+        <li>
+          <a
+            href="{% url 'unlock_account' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Unlock Account
+          </a>
+        </li>
+
+        <!-- SETTINGS -->
+
+        <li>
+          <a
+            href="{% url 'settings' %}"
+            class="block p-3 rounded-xl hover:bg-slate-800"
+          >
+            Settings
+          </a>
+        </li>
+
+      </ul>
+
+    </div>
+
+  </aside>
+
+
+  <!-- MAIN CONTENT -->
+
+  <main class="sm:ml-64 p-6 mt-16">
+    <div class="max-w-7xl mx-auto space-y-4">
+
+      <!-- HERO -->
+
+      <div class="rounded-2xl hero-gradient p-4 md:p-5 text-white shadow">
+
+        <h2 class="text-2xl font-bold tracking-tight">
+          Welcome, {{ request.user.userprofile.full_name|default:request.user.username }}
+        </h2>
+
+        <p class="mt-1 text-white/80 text-sm">
+          Overview of student records, incidents, offense setup, and system activity.
+        </p>
+
+      </div>
+
+
+      <!-- MESSAGES -->
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="p-4 rounded-xl bg-green-100 text-green-800 border border-green-300">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+
+      <!-- DASHBOARD FILTERS -->
+
+      <div id="dashboardFilters" class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+        <div class="mb-4">
+          <h3 class="text-xl font-bold text-slate-800">
+            Dashboard Filters
+          </h3>
+
+          <p class="text-slate-500 text-sm mt-1">
+            Filter case records by school year, term, status, and date range.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+
+          <!-- SCHOOL YEAR -->
+
+          <div>
+            <label for="schoolYearFilter" class="block mb-2 text-sm font-medium text-slate-800">
+              School Year
+            </label>
+
+            <select
+  id="schoolYearFilter"
+  class="w-full min-w-0 border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+>
+  <option value="">All School Years</option>
+
+  {% for year in school_years %}
+    <option value="{{ year }}">{{ year }}</option>
+  {% endfor %}
+</select>
+          </div>
+
+          <!-- TERM -->
+
+          <div>
+            <label for="termFilter" class="block mb-2 text-sm font-medium text-slate-800">
+              Term
+            </label>
+
+            <select id="termFilter" class="w-full border border-slate-300 rounded-xl p-3 theme-ring">
+              <option value="">All Terms</option>
+              <option value="1st">1st</option>
+              <option value="2nd">2nd</option>
+              <option value="3rd">3rd</option>
+            </select>
+          </div>
+
+          <!-- CASE STATUS -->
+
+          <div>
+            <label for="statusFilter" class="block mb-2 text-sm font-medium text-slate-800">
+              Case Status
+            </label>
+
+            <select id="statusFilter" class="w-full border border-slate-300 rounded-xl p-3 theme-ring">
+              <option value="">All Cases</option>
+              <option value="Reported">Reported</option>
+              <option value="Preliminary">Preliminary</option>
+              <option value="Notice of Complaint Sent">Notice of Complaint Sent</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Resolved">All Resolved Cases</option>
+              <option value="Resolved by DO">Resolved by DO</option>
+              <option value="Resolved by Director">Resolved by Director</option>
+              <option value="Resolved by Other">Resolved by Other</option>
+            </select>
+          </div>
+
+          <!-- DATE FROM -->
+
+          <div>
+            <label for="dateFromFilter" class="block mb-2 text-sm font-medium text-slate-800">
+              Date From
+            </label>
+
+            <input
+              id="dateFromFilter"
+              type="date"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            >
+          </div>
+
+          <!-- DATE TO -->
+
+          <div>
+            <label for="dateToFilter" class="block mb-2 text-sm font-medium text-slate-800">
+              Date To
+            </label>
+
+            <input
+              id="dateToFilter"
+              type="date"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            >
+          </div>
+
+        </div>
+
+        <div class="mt-4 flex gap-3 flex-wrap">
+
+          <button
+            id="applyFilterBtn"
+            type="button"
+            class="px-5 py-3 theme-bg text-white rounded-xl theme-hover font-medium shadow-sm"
+          >
+            Apply Filter
+          </button>
+
+          <button
+            id="resetFilterBtn"
+            type="button"
+            class="px-5 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 font-medium"
+          >
+            Reset Filter
+          </button>
+
+        </div>
+      </div>
+
+
+      <!-- SUMMARY CARDS -->
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+        <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+          <p class="text-slate-500 text-sm">Students with Records</p>
+          <h3 class="text-3xl font-bold text-slate-800 mt-2">
+            {{ students_with_records }}
+          </h3>
+        </div>
+
+        <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+          <p class="text-slate-500 text-sm">Open Incidents</p>
+          <h3 class="text-3xl font-bold text-slate-800 mt-2">
+            {{ open_incidents }}
+          </h3>
+        </div>
+
+        <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+          <p class="text-slate-500 text-sm">Total Offense Codes</p>
+          <h3 class="text-3xl font-bold text-slate-800 mt-2">
+            {{ total_offense_codes }}
+          </h3>
+        </div>
+
+        <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+          <p class="text-slate-500 text-sm">Locked Accounts</p>
+          <h3 class="text-3xl font-bold text-slate-800 mt-2">
+            {{ locked_accounts }}
+          </h3>
+        </div>
+
+      </div>
+
+
+      <!-- DASHBOARD CONTENT -->
+
+      <div class="grid grid-cols-1 gap-4">
+
+        <!-- INCIDENT REPORTS -->
+
+        <div class="xl:col-span-2 bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+          <div class="flex items-start justify-between gap-4 mb-4 flex-wrap">
+            <div>
+              <h3 class="text-xl font-bold text-slate-800">
+                Incident Reports
+              </h3>
+
+              <p class="text-slate-500 mt-1 text-sm">
+                View and filter recorded student cases.
+              </p>
+            </div>
+          </div>
+
+          <!-- VIEW BUTTONS -->
+
+          <div id="viewButtons" class="flex gap-2 mb-4 flex-wrap">
+
+            <button
+              id="tableViewBtn"
+              type="button"
+              class="px-4 py-2 theme-bg text-white rounded-xl font-medium"
+            >
+              Table View
+            </button>
+
+            <button
+              id="calendarViewBtn"
+              type="button"
+              class="px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-medium"
+            >
+              Calendar View
+            </button>
+
+          </div>
+
+
+          <!-- TABLE VIEW -->
+
+          <div id="tableView" class="w-full max-w-full overflow-x-auto rounded-lg">
+
+            <table class="dashboard-table text-left text-sm">
+
+              <thead class="theme-bg text-white">
+                <tr>
+                  <th class="font-bold">Case #</th>
+                  <th class="font-bold">Student</th>
+                  <th class="font-bold">Offense</th>
+                  <th class="font-bold">Classification</th>
+                  <th class="font-bold">Status</th>
+                  <th class="font-bold">Date</th>
+                  <th class="font-bold">Term</th>
+                  <th class="font-bold">School Year</th>
+                </tr>
+              </thead>
+
+              <tbody id="incidentTableBody" class="divide-y divide-slate-200">
+
+                {% for report in dashboard_cases %}
+
+                  <tr
+                    data-report-row="true"
+                    data-school-year="{{ report.school_year|default:'' }}"
+                    data-term="{{ report.term|default:'' }}"
+                    data-status="{{ report.status|default:'' }}"
+                    data-date="{{ report.date_reported|date:'Y-m-d' }}"
+                    class="hover:bg-slate-50"
+                  >
+
+                    <td class="font-semibold text-slate-800 whitespace-nowrap">
+                      {{ report.case_number|default:report.id }}
+                    </td>
+
+                    <td>
+                      <div class="font-medium text-slate-800">
+                        {{ report.student.first_name }} {{ report.student.last_name }}
+                      </div>
+                      <div class="text-xs text-slate-500 mt-1">
+                        {{ report.student.student_id }}
+                      </div>
+                    </td>
+
+                    <td class="text-slate-700">
+                      {{ report.offense.offense_name|default:"-" }}
+                    </td>
+
+                    <td class="text-slate-700 whitespace-nowrap">
+                      {% if report.classification_override and report.classification_override != "Auto" %}
+                        {{ report.classification_override }}
+                      {% else %}
+                        {{ report.offense.severity|default:"-" }}
+                      {% endif %}
+                    </td>
+
+                    <td>
+                      {% if report.status == "Resolved" or report.status == "Resolved by DO" or report.status == "Resolved by Director" or report.status == "Resolved by Other" %}
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                          {{ report.status }}
+                        </span>
+                      {% elif report.status == "Under Review" or report.status == "Preliminary" %}
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                          {{ report.status }}
+                        </span>
+                      {% else %}
+                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                          {{ report.status }}
+                        </span>
+                      {% endif %}
+                    </td>
+
+                    <td class="text-slate-700 whitespace-nowrap">
+                      {{ report.date_reported|date:"M d, Y"|default:"-" }}
+                    </td>
+
+                    <td class="text-slate-700 whitespace-nowrap">
+                      {{ report.term|default:"-" }}
+                    </td>
+
+                    <td class="text-slate-700 whitespace-nowrap">
+                      {{ report.school_year|default:"-" }}
+                    </td>
+
+                  </tr>
+
+                {% empty %}
+
+                  <tr>
+                    <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+                      No case records found.
+                    </td>
+                  </tr>
+
+                {% endfor %}
+
+              </tbody>
+            </table>
+
+            <p id="noFilteredRecords" class="hidden px-4 py-6 text-center text-slate-500">
+              No records match the selected filters.
+            </p>
+
+          </div>
+
+
+          <!-- CALENDAR VIEW -->
+
+          <div id="calendarView" class="hidden">
+
+            <div id="calendarNavigation" class="flex items-center justify-between gap-3 mb-4">
+
+              <button
+                id="previousMonthBtn"
+                type="button"
+                class="px-3 py-2 bg-slate-200 rounded-xl hover:bg-slate-300"
+              >
+                Previous
+              </button>
+
+              <h4 id="calendarMonthTitle" class="font-bold text-lg text-slate-800 text-center"></h4>
+
+              <button
+                id="nextMonthBtn"
+                type="button"
+                class="px-3 py-2 bg-slate-200 rounded-xl hover:bg-slate-300"
+              >
+                Next
+              </button>
+
+            </div>
+
+            <div class="grid grid-cols-7 gap-1 text-center text-xs sm:text-sm font-semibold mb-2">
+              <div>Sun</div>
+              <div>Mon</div>
+              <div>Tue</div>
+              <div>Wed</div>
+              <div>Thu</div>
+              <div>Fri</div>
+              <div>Sat</div>
+            </div>
+
+            <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
+
+            <p class="text-xs text-slate-500 mt-3">
+              Cases are shown on their recorded report dates. Use the filters above to narrow the results.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- ANALYTICS SNAPSHOT -->
+
+        <!-- ANALYTICS SNAPSHOT -->
+
+<div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+  <h3 class="text-xl font-bold text-slate-800 mb-4">
+    Analytics Snapshot
+  </h3>
+
+  <div class="space-y-3">
+
+    <div class="rounded-xl border theme-border bg-slate-50 p-3">
+      <p class="text-slate-500 text-sm">Major Incidents</p>
+      <h4 class="text-2xl font-bold text-slate-800 mt-1">
+        {{ major_incidents }}
+      </h4>
+    </div>
+
+    <div class="rounded-xl border theme-border bg-slate-50 p-3">
+      <p class="text-slate-500 text-sm">Minor Incidents</p>
+      <h4 class="text-2xl font-bold text-slate-800 mt-1">
+        {{ minor_incidents }}
+      </h4>
+    </div>
+
+    <div class="rounded-xl border theme-border bg-slate-50 p-3">
+      <p class="text-slate-500 text-sm">Infraction Incidents</p>
+      <h4 class="text-2xl font-bold text-slate-800 mt-1">
+        {{ infraction_incidents }}
+      </h4>
+    </div>
+
+    <div class="rounded-xl border theme-border bg-slate-50 p-3">
+      <p class="text-slate-500 text-sm">Resolved Incidents</p>
+      <h4 class="text-2xl font-bold text-slate-800 mt-1">
+        {{ resolved_incidents }}
+      </h4>
+    </div>
+
+  </div>
+</div>
+
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- DASHBOARD JAVASCRIPT -->
+
+  <script>
+    const schoolYearFilter = document.getElementById("schoolYearFilter");
+    const termFilter = document.getElementById("termFilter");
+    const statusFilter = document.getElementById("statusFilter");
+    const dateFromFilter = document.getElementById("dateFromFilter");
+    const dateToFilter = document.getElementById("dateToFilter");
+
+    const applyFilterBtn = document.getElementById("applyFilterBtn");
+    const resetFilterBtn = document.getElementById("resetFilterBtn");
+
+    const tableView = document.getElementById("tableView");
+    const calendarView = document.getElementById("calendarView");
+
+    const tableViewBtn = document.getElementById("tableViewBtn");
+    const calendarViewBtn = document.getElementById("calendarViewBtn");
+
+    const tableBody = document.getElementById("incidentTableBody");
+    const noFilteredRecords = document.getElementById("noFilteredRecords");
+
+    const calendarGrid = document.getElementById("calendarGrid");
+    const calendarMonthTitle = document.getElementById("calendarMonthTitle");
+
+    const rows = Array.from(
+      tableBody.querySelectorAll("tr[data-report-row='true']")
+    );
+
+    let calendarDate = new Date();
+    calendarDate = new Date(
+      calendarDate.getFullYear(),
+      calendarDate.getMonth(),
+      1
+    );
+
+    function isResolved(status) {
+      const resolvedStatuses = [
+        "Resolved",
+        "Resolved by DO",
+        "Resolved by Director",
+        "Resolved by Other"
+      ];
+
+      return resolvedStatuses.includes(status);
+    }
+
+    function getVisibleRows() {
+      return rows.filter(function(row) {
+        return row.style.display !== "none";
+      });
+    }
+
+    function applyDashboardFilter() {
+      const schoolYear = schoolYearFilter.value.trim().toLowerCase();
+      const term = termFilter.value.trim().toLowerCase();
+      const status = statusFilter.value;
+      const dateFrom = dateFromFilter.value;
+      const dateTo = dateToFilter.value;
+
+      let visibleCount = 0;
+
+      rows.forEach(function(row) {
+        const rowSchoolYear = (row.dataset.schoolYear || "").trim().toLowerCase();
+        const rowTerm = (row.dataset.term || "").trim().toLowerCase();
+        const rowStatus = row.dataset.status || "";
+        const rowDate = row.dataset.date || "";
+
+        let showRow = true;
+
+        if (schoolYear && rowSchoolYear !== schoolYear) {
+          showRow = false;
+        }
+
+        if (term && rowTerm !== term) {
+          showRow = false;
+        }
+
+        if (status === "Resolved") {
+          if (!isResolved(rowStatus)) {
+            showRow = false;
+          }
+        } else if (status && rowStatus !== status) {
+          showRow = false;
+        }
+
+        if (dateFrom && (!rowDate || rowDate < dateFrom)) {
+          showRow = false;
+        }
+
+        if (dateTo && (!rowDate || rowDate > dateTo)) {
+          showRow = false;
+        }
+
+        row.style.display = showRow ? "" : "none";
+
+        if (showRow) {
+          visibleCount++;
+        }
+      });
+
+      noFilteredRecords.classList.toggle("hidden", visibleCount > 0);
+
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      calendarGrid.innerHTML = "";
+
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+
+      calendarMonthTitle.textContent = calendarDate.toLocaleDateString(
+        "en-US",
+        {
+          month: "long",
+          year: "numeric"
+        }
+      );
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const visibleRows = getVisibleRows();
+
+      for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement("div");
+        emptyCell.className = "calendar-day rounded-lg bg-slate-50";
+        calendarGrid.appendChild(emptyCell);
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div");
+
+        cell.className =
+          "calendar-day border border-slate-200 rounded-xl p-1 bg-white";
+
+        const dayNumber = document.createElement("div");
+        dayNumber.className = "text-xs sm:text-sm font-bold text-slate-700 mb-1";
+        dayNumber.textContent = day;
+
+        cell.appendChild(dayNumber);
+
+        const dateString =
+          year + "-" +
+          String(month + 1).padStart(2, "0") + "-" +
+          String(day).padStart(2, "0");
+
+        visibleRows.forEach(function(row) {
+          if (row.dataset.date === dateString) {
+            const caseItem = document.createElement("div");
+
+            caseItem.className =
+              "text-xs rounded-lg p-1 mb-1 break-words";
+
+            if (isResolved(row.dataset.status || "")) {
+              caseItem.classList.add("bg-green-100", "text-green-800");
+            } else {
+              caseItem.classList.add("bg-blue-100", "text-blue-800");
+            }
+
+            const caseNumber = row.children[0].textContent.trim();
+            const studentName = row.children[1].querySelector("div")
+              ? row.children[1].querySelector("div").textContent.trim()
+              : row.children[1].textContent.trim();
+
+            caseItem.textContent = caseNumber + " - " + studentName;
+            caseItem.title =
+              row.children[2].textContent.trim() +
+              " | " +
+              row.dataset.status;
+
+            cell.appendChild(caseItem);
+          }
+        });
+
+        calendarGrid.appendChild(cell);
+      }
+    }
+
+    function showTableView() {
+      tableView.classList.remove("hidden");
+      calendarView.classList.add("hidden");
+
+      tableViewBtn.className =
+        "px-4 py-2 theme-bg text-white rounded-xl font-medium";
+
+      calendarViewBtn.className =
+        "px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-medium";
+    }
+
+    function showCalendarView() {
+      tableView.classList.add("hidden");
+      calendarView.classList.remove("hidden");
+
+      calendarViewBtn.className =
+        "px-4 py-2 theme-bg text-white rounded-xl font-medium";
+
+      tableViewBtn.className =
+        "px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-medium";
+
+      renderCalendar();
+    }
+
+    function resetDashboardFilters() {
+      schoolYearFilter.value = "";
+      termFilter.value = "";
+      statusFilter.value = "";
+      dateFromFilter.value = "";
+      dateToFilter.value = "";
+
+      rows.forEach(function(row) {
+        row.style.display = "";
+      });
+
+      noFilteredRecords.classList.add("hidden");
+
+      renderCalendar();
+    }
+
+    tableViewBtn.addEventListener("click", showTableView);
+    calendarViewBtn.addEventListener("click", showCalendarView);
+
+    applyFilterBtn.addEventListener("click", applyDashboardFilter);
+    resetFilterBtn.addEventListener("click", resetDashboardFilters);
+
+    [
+      schoolYearFilter,
+      termFilter,
+      statusFilter,
+      dateFromFilter,
+      dateToFilter
+    ].forEach(function(filter) {
+      filter.addEventListener("change", applyDashboardFilter);
+    });
+
+    document.getElementById("previousMonthBtn").addEventListener(
+      "click",
+      function() {
+        calendarDate.setMonth(calendarDate.getMonth() - 1);
+        renderCalendar();
+      }
+    );
+
+    document.getElementById("nextMonthBtn").addEventListener(
+      "click",
+      function() {
+        calendarDate.setMonth(calendarDate.getMonth() + 1);
+        renderCalendar();
+      }
+    );
+
+    // Remove duplicate school-year options.
+    const schoolYearOptions = Array.from(schoolYearFilter.options);
+    const seenSchoolYears = new Set();
+
+    schoolYearOptions.forEach(function(option, index) {
+      if (index === 0) {
+        return;
+      }
+
+      if (seenSchoolYears.has(option.value)) {
+        option.remove();
+      } else {
+        seenSchoolYears.add(option.value);
+      }
+    });
+
+    renderCalendar();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+</body>
+</html>

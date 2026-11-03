@@ -1,0 +1,475 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Add User</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100">
+
+  <!-- TOP NAVIGATION -->
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+        CRD Admin Panel
+      </h1>
+
+      <div class="flex items-center gap-3">
+
+        <div class="text-right">
+          <p class="text-sm font-semibold text-slate-800">
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+          </p>
+
+          <p class="text-xs text-slate-500">
+            Administrator
+          </p>
+        </div>
+
+        <div class="w-10 h-10 rounded-full border flex items-center justify-center font-semibold theme-text theme-border">
+          {{ request.user.username|first|upper }}
+        </div>
+
+        <form method="POST" action="{% url 'logout' %}">
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+        </form>
+
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-2xl mx-auto p-6 mt-24">
+
+    <div class="bg-white rounded-3xl shadow border theme-border p-6">
+
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">
+          Add User
+        </h1>
+
+        <p class="text-sm text-slate-500 mt-1">
+          Create a new user account for the CRD system.
+        </p>
+      </div>
+
+      <!-- MESSAGES -->
+      {% if messages %}
+        <div class="mb-5 space-y-2">
+          {% for message in messages %}
+            <div class="p-3 rounded-xl text-sm
+              {% if message.tags == 'error' %}
+                bg-red-100 text-red-700
+              {% else %}
+                bg-green-100 text-green-700
+              {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- FORM -->
+      <form method="POST">
+        {% csrf_token %}
+
+        <!-- USERNAME -->
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Username
+          </label>
+
+          <input
+            type="text"
+            name="username"
+            required
+            autocomplete="off"
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            placeholder="Enter username"
+          >
+        </div>
+
+        <!-- ACCOUNT ACTIVATION NOTICE -->
+<div class="mb-4 p-4 rounded-xl bg-blue-50 border border-blue-200">
+  <p class="text-sm font-semibold text-blue-800">
+    Account Activation
+  </p>
+
+  <p class="text-sm text-blue-700 mt-1">
+    A five-digit activation code will be generated after the account is created.
+    The user will use this code to activate the account and set their own password.
+  </p>
+</div>
+
+        <!-- FIRST NAME -->
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            First Name
+          </label>
+
+          <input
+            type="text"
+            name="first_name"
+            required
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            placeholder="Enter first name"
+          >
+        </div>
+
+        <!-- LAST NAME -->
+        <div class="mb-4">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Last Name
+          </label>
+
+          <input
+            type="text"
+            name="last_name"
+            required
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+            placeholder="Enter last name"
+          >
+        </div>
+
+        <!-- ROLE -->
+        <div class="mb-5">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Role
+          </label>
+
+          <select
+            id="role"
+            name="role"
+            required
+            onchange="toggleStaffPermissions()"
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+          >
+            <option value="Staff" selected>Staff</option>
+            <option value="Administrator">Administrator</option>
+          </select>
+
+          <p class="text-xs text-slate-500 mt-2">
+            Administrators have full access. Staff can access their assigned functions.
+          </p>
+        </div>
+
+        <!-- ACCOUNT STATUS -->
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Account Status
+          </label>
+
+          <select
+            name="is_active"
+            required
+            class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+          >
+            <option value="True" selected>Active</option>
+            <option value="False">Inactive</option>
+          </select>
+
+          <p class="text-xs text-slate-500 mt-2">
+            Inactive accounts cannot log in.
+          </p>
+        </div>
+
+        <!-- STAFF PERMISSIONS -->
+        <div
+          id="staffPermissions"
+          class="mb-6 border border-slate-200 rounded-2xl p-4 bg-slate-50"
+        >
+
+          <h2 class="text-sm font-semibold text-slate-800 mb-2">
+            Staff Permissions
+          </h2>
+
+          <p class="text-xs text-slate-500 mb-4">
+            Dashboard access is mandatory. Select the additional functions this Staff account can access.
+          </p>
+
+          <!-- MANDATORY DASHBOARD -->
+          <div class="mb-5 rounded-xl bg-slate-50 border border-slate-200 p-3">
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked
+                disabled
+                class="w-4 h-4"
+              >
+              <span class="text-sm font-medium text-slate-700">
+                Dashboard — Always Available
+              </span>
+            </label>
+          </div>
+
+          <!-- STUDENT RECORDS -->
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+            Student Records
+          </h3>
+
+          <div class="space-y-3 mb-5">
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="student_records"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                Student Records — View
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="student_archive"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                Student Archive — View Only
+              </span>
+            </label>
+
+          </div>
+
+          <!-- CASE RECORD ACCESS -->
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+            Case Record Access
+          </h3>
+
+          <p class="text-xs text-slate-500 mb-3">
+            Select each Case Record function separately. You can enable or remove functions independently.
+          </p>
+
+          <div class="space-y-3 mb-5">
+
+            <label class="flex items-start gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="case_view"
+                class="w-4 h-4 mt-1"
+              >
+              <span class="text-sm text-slate-700">
+                <strong>View Only</strong>
+                <span class="block text-xs text-slate-500">
+                  View case records without creating or editing them.
+                </span>
+              </span>
+            </label>
+
+            <label class="flex items-start gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="case_full"
+                class="w-4 h-4 mt-1"
+              >
+              <span class="text-sm text-slate-700">
+                <strong>Full Access</strong>
+                <span class="block text-xs text-slate-500">
+                  View, create, and edit case records.
+                </span>
+              </span>
+            </label>
+
+            <label class="flex items-start gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="case_create"
+                class="w-4 h-4 mt-1"
+              >
+              <span class="text-sm text-slate-700">
+                <strong>View and Create</strong>
+                <span class="block text-xs text-slate-500">
+                  View existing cases and create new ones, without editing existing case details.
+                </span>
+              </span>
+            </label>
+
+
+          </div>
+
+          <!-- REPORT ACCESS -->
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+            Reports
+          </h3>
+
+          <div class="space-y-3 mb-5">
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="report_dashboard"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                View Report Dashboard and Charts
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="case_report"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                View Case Reports and Records
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="print_reports"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                Print Selected Case Reports
+              </span>
+            </label>
+
+          </div>
+
+          <!-- SETTINGS ACCESS -->
+          <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
+            System Settings
+          </h3>
+
+          <div class="space-y-3">
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="settings_login_background"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                Change Login Background
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="settings_theme_color"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                Change Theme Color
+              </span>
+            </label>
+
+            <label class="flex items-center gap-3">
+              <input
+                type="checkbox"
+                name="permissions"
+                value="settings_student_api_url"
+                class="w-4 h-4"
+              >
+              <span class="text-sm text-slate-700">
+                Change Student API URL
+              </span>
+            </label>
+
+          </div>
+
+          <!-- ADMIN-ONLY FEATURES -->
+          <div class="mt-5 border-t border-slate-200 pt-4">
+            <p class="text-xs text-slate-500">
+              Offense Master List, Archive Records, Audit Logs, Unlock Account, and User Management remain restricted to the Main Admin.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- BUTTONS -->
+        <div class="flex flex-wrap gap-3">
+
+          <button
+            type="submit"
+            class="px-5 py-3 text-white rounded-xl theme-bg hover:opacity-90"
+          >
+            Create User
+          </button>
+
+          <a
+            href="{% url 'user_management' %}"
+            class="px-5 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300"
+          >
+            Cancel
+          </a>
+
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <!-- ROLE SCRIPT -->
+  <script>
+    function toggleStaffPermissions() {
+      const role = document.getElementById("role").value;
+      const permissions = document.getElementById("staffPermissions");
+
+      if (role === "Staff") {
+        permissions.style.display = "block";
+      } else {
+        permissions.style.display = "none";
+      }
+    }
+
+    toggleStaffPermissions();
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,574 @@
+
+{% load static %}
+{% load tz %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Audit Logs - CRD Case Management System</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+        :root {
+            --theme-color: {{ settings.theme_color|default:"#15803d" }};
+            --theme-color-dark: {{ settings.theme_color|default:"#15803d" }};
+        }
+
+        .theme-bg {
+            background-color: var(--theme-color) !important;
+        }
+
+        .theme-bg-dark {
+            background-color: var(--theme-color-dark) !important;
+        }
+
+        .theme-text {
+            color: var(--theme-color) !important;
+        }
+
+        .theme-border {
+            border-color: var(--theme-color) !important;
+        }
+
+        .theme-ring:focus {
+            --tw-ring-color: var(--theme-color) !important;
+            border-color: var(--theme-color) !important;
+        }
+
+        .theme-hover:hover {
+            filter: brightness(0.95);
+        }
+
+        .hero-gradient {
+            background: linear-gradient(
+                135deg,
+                var(--theme-color),
+                var(--theme-color-dark)
+            );
+        }
+
+        /* AUDIT TABLE SPACING */
+
+.audit-table {
+    width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+}
+
+.audit-table th,
+.audit-table td {
+    padding: 14px 12px;
+    vertical-align: middle;
+    text-align: left;
+}
+
+.audit-table th {
+    white-space: nowrap;
+}
+
+.audit-table .date-column {
+    width: 175px;
+}
+
+.audit-table .user-column {
+    width: 100px;
+}
+
+.audit-table .action-column {
+    width: 190px;
+}
+
+.audit-table .page-column {
+    width: 125px;
+}
+
+.audit-table .date-cell {
+    white-space: nowrap;
+}
+
+.audit-table .action-cell {
+    white-space: nowrap;
+}
+
+.audit-table .page-cell {
+    white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+    .audit-table {
+        min-width: 950px;
+    }
+}   
+    </style>
+</head>
+
+<body class="bg-slate-100">
+
+    <!-- TOP NAVIGATION -->
+
+    <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+        <div class="px-4 py-3 flex justify-between items-center">
+
+            <h1 class="text-xl font-bold text-slate-800">
+                {% if request.user.is_superuser %}
+                    CRD Admin Panel
+                {% else %}
+                    CRD Staff Panel
+                {% endif %}
+            </h1>
+
+            <div class="flex items-center gap-3">
+
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-semibold text-slate-800">
+                        {{ request.user.userprofile.full_name|default:request.user.username }}
+                    </p>
+
+                    <p class="text-xs text-slate-500">
+                        {% if request.user.is_superuser %}
+                            Admin
+                        {% else %}
+                            Staff
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- USER PROFILE PICTURE -->
+
+                <div class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border">
+
+                    {% if request.user.userprofile.image %}
+                        <img
+                            src="{{ request.user.userprofile.image.url }}"
+                            alt="Profile Picture"
+                            class="w-full h-full object-cover"
+                        >
+                    {% else %}
+                        {{ request.user.username|first|upper }}
+                    {% endif %}
+
+                </div>
+
+                <!-- LOGOUT -->
+
+                <form method="POST" action="{% url 'logout' %}">
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+                    >
+                        Logout
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- SIDEBAR -->
+
+    <aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white">
+
+        <div class="px-4">
+
+            <!-- LOGGED-IN CARD -->
+
+            <div class="mb-6 p-4 rounded-2xl theme-bg">
+                <p class="text-xs text-green-100">
+                    Logged in as
+                </p>
+
+                <h2 class="text-sm font-bold">
+                    {{ request.user.userprofile.full_name|default:request.user.username }}
+                </h2>
+
+                <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+                    CRD Case Management System
+                </p>
+            </div>
+
+            <!-- NAVIGATION LINKS -->
+
+            <ul class="space-y-2">
+
+                <!-- DASHBOARD -->
+
+                <li>
+                    {% if request.user.is_superuser %}
+                        <a
+                            href="{% url 'admin_dashboard' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            Dashboard
+                        </a>
+                    {% else %}
+                        <a
+                            href="{% url 'staff_dashboard' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            Dashboard
+                        </a>
+                    {% endif %}
+                </li>
+
+                <!-- STUDENT RECORDS -->
+
+                <li>
+                    <a
+                        href="{% url 'student_records' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Student Records
+                    </a>
+                </li>
+
+                <li>
+  <a
+    href="{% url 'student_archive' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Student Archive
+  </a>
+</li>
+
+                <!-- CASE RECORD -->
+
+                <li>
+                    <a
+                        href="{% url 'case_record' %}"
+                        class="block p-3 rounded-xl hover:bg-slate-800"
+                    >
+                        Case Record
+                    </a>
+                </li>
+
+                {% if request.user.is_superuser %}
+
+                <!-- GENERATE REPORTS -->
+
+                    <li>
+                        <a
+                            href="{% url 'generate_reports' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            Generate Reports
+                        </a>
+                    </li>
+
+                    <!-- OFFENSE MASTER LIST -->
+
+                    <li>
+                        <a
+                            href="{% url 'offense_master_list' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            Offense Master List
+                        </a>
+                    </li>
+
+                    <!-- ARCHIVE RECORDS -->
+
+                    <li>
+                        <a
+                            href="{% url 'archive_records' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            Archive Records
+                        </a>
+                    </li>
+
+                    <!-- USER MANAGEMENT -->
+
+                    <li>
+                        <a
+                            href="{% url 'user_management' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            User Management
+                        </a>
+                    </li>
+
+                    <!-- AUDIT LOGS -->
+
+                    <li>
+                        <a
+                            href="{% url 'audit_log' %}"
+                            class="block p-3 rounded-xl text-white theme-bg"
+                            aria-current="page"
+                        >
+                            Audit Logs
+                        </a>
+                    </li>
+
+                    <!-- UNLOCK ACCOUNT -->
+
+                    <li>
+                        <a
+                            href="{% url 'unlock_account' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            Unlock Account
+                        </a>
+                    </li>
+
+                    <!-- SETTINGS -->
+
+                    <li>
+                        <a
+                            href="{% url 'settings' %}"
+                            class="block p-3 rounded-xl hover:bg-slate-800"
+                        >
+                            Settings
+                        </a>
+                    </li>
+
+                {% endif %}
+
+            </ul>
+        </div>
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="sm:ml-64 p-4 sm:p-6 mt-16">
+
+        <div class="max-w-7xl mx-auto space-y-4">
+
+            <!-- PAGE HEADER -->
+
+            <div class="rounded-2xl hero-gradient p-4 md:p-5 text-white shadow">
+
+                <h2 class="text-2xl font-bold tracking-tight">
+                    Audit Logs
+                </h2>
+
+                <p class="mt-1 text-white/80 text-sm">
+                    Monitor recorded activities in the CRD Case Management System.
+                </p>
+
+            </div>
+
+
+            <!-- AUDIT LOG TABLE -->
+
+            <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+                <!-- TABLE HEADER AND SEARCH -->
+
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800">
+                            System Activity History
+                        </h3>
+
+                        <p class="text-slate-500 mt-1 text-sm">
+                            Review users, actions, descriptions, and related pages.
+                        </p>
+                    </div>
+
+                    <!-- SEARCH -->
+
+                    <div class="w-full sm:w-64 shrink-0">
+                        <input
+                            type="text"
+                            id="auditSearch"
+                            placeholder="Search audit logs..."
+                            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+                            aria-label="Search audit logs"
+                        >
+                    </div>
+
+                </div>
+
+
+                <!-- TABLE -->
+
+                <div class="overflow-x-auto w-full rounded-lg">
+
+                    <table class="audit-table text-left text-sm text-slate-700">
+
+                        <thead class="theme-bg text-white">
+                            <tr>
+                                <th class="date-column font-bold">
+                                    Date and Time
+                                </th>
+
+                                <th class="user-column font-bold">
+                                    User
+                                </th>
+
+                                <th class="action-column font-bold">
+                                    Action
+                                </th>
+
+                                <th class="font-bold">
+                                    Description
+                                </th>
+
+                                <th class="page-column font-bold">
+                                    Page
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody
+                            id="auditTableBody"
+                            class="divide-y divide-slate-200"
+                        >
+
+                            {% for log in audit_logs %}
+
+                                <tr class="audit-row hover:bg-slate-50">
+
+                                    <!-- DATE AND TIME -->
+
+                                    <td class="date-cell">
+                                        {{ log.date_created|localtime|date:"M d, Y h:i A" }}
+                                    </td>
+
+                                    <!-- USER -->
+
+                                    <td>
+                                        {% if log.user %}
+                                            {{ log.user.username }}
+                                        {% else %}
+                                            System
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- ACTION -->
+
+                                    <td class="font-medium">
+                                        {{ log.action }}
+                                    </td>
+
+                                    <!-- DESCRIPTION -->
+
+                                    <td>
+                                        {{ log.description }}
+                                    </td>
+
+                                    <!-- PAGE -->
+
+                                    <td class="page-cell">
+
+                                        {% if log.page %}
+
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                {{ log.page }}
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                                                Not specified
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                </tr>
+
+                            {% empty %}
+
+                                <tr id="emptyAuditRow">
+                                    <td colspan="5" class="py-8 text-center text-slate-500">
+                                        No audit logs found.
+                                    </td>
+                                </tr>
+
+                            {% endfor %}
+
+                            <!-- NO SEARCH RESULTS -->
+
+                            <tr id="noSearchResults" class="hidden">
+                                <td colspan="5" class="py-8 text-center text-slate-500">
+                                    No matching audit logs found.
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                </div>
+
+
+                <!-- TABLE FOOTER -->
+
+                <div class="mt-4 flex flex-col sm:flex-row justify-between gap-2 text-sm text-slate-500">
+
+                    <p>
+                        Total records:
+                        <span id="auditCount" class="font-semibold text-slate-700">
+                            {{ audit_logs|length }}
+                        </span>
+                    </p>
+
+                    <p>
+                        Audit history is displayed with the newest entries first.
+                    </p>
+
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+
+    <!-- SEARCH FUNCTION -->
+
+    <script>
+        const auditSearch = document.getElementById("auditSearch");
+        const auditRows = document.querySelectorAll(".audit-row");
+        const auditCount = document.getElementById("auditCount");
+        const noSearchResults = document.getElementById("noSearchResults");
+
+        auditSearch.addEventListener("input", function () {
+
+            const searchText = auditSearch.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            auditRows.forEach(function (row) {
+
+                const rowText = row.textContent.toLowerCase();
+                const matches = rowText.includes(searchText);
+
+                row.style.display = matches ? "" : "none";
+
+                if (matches) {
+                    visibleCount++;
+                }
+
+            });
+
+            auditCount.textContent = visibleCount;
+
+            if (noSearchResults) {
+                noSearchResults.classList.toggle(
+                    "hidden",
+                    visibleCount > 0 || auditRows.length === 0
+                );
+            }
+
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+</body>
+</html>

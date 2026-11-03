@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Archive</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet">
+  <style>
+    :root { --theme-color: {{ settings.theme_color|default:"#15803d" }}; --theme-color-dark: {{ settings.theme_color|default:"#15803d" }}; }
+    .theme-bg { background-color: var(--theme-color) !important; }
+    .theme-text { color: var(--theme-color) !important; }
+    .theme-border { border-color: var(--theme-color) !important; }
+    .theme-ring:focus { --tw-ring-color: var(--theme-color) !important; border-color: var(--theme-color) !important; }
+    .theme-hover:hover { filter: brightness(.95); }
+    .hero-gradient { background: linear-gradient(135deg, var(--theme-color), var(--theme-color-dark)); }
+  </style>
+</head>
+<body class="bg-slate-100">
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+    <div class="px-4 py-3 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-slate-800">{% if request.user.is_superuser %}CRD Admin Panel{% else %}CRD Staff Panel{% endif %}</h1>
+      <div class="flex items-center gap-3">
+        <div class="text-right hidden sm:block">
+          <p class="text-sm font-semibold text-slate-800">{{ request.user.userprofile.full_name|default:request.user.username }}</p>
+          <p class="text-xs text-slate-500">{% if request.user.is_superuser %}Admin{% else %}Staff{% endif %}</p>
+        </div>
+        <div class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border">
+          {% if request.user.userprofile.image %}<img src="{{ request.user.userprofile.image.url }}" alt="Profile Picture" class="w-full h-full object-cover">{% else %}{{ request.user.username|first|upper }}{% endif %}
+        </div>
+        <form method="POST" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">Logout</button></form>
+      </div>
+    </div>
+  </nav>
+  
+
+
+<aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white">
+    <div class="px-4">
+
+        <!-- Logged-in user -->
+        <div class="mb-6 p-4 rounded-2xl theme-bg">
+            <p class="text-xs text-green-100">Logged in as</p>
+            <h2 class="text-sm font-bold">
+                {{ request.user.userprofile.full_name|default:request.user.username }}
+            </h2>
+            <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+                CRD Case Management System
+            </p>
+        </div>
+
+        <ul class="space-y-2">
+  <!-- Dashboard -->
+  <li>
+    <a href="{% if request.user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'staff_dashboard' %}{% endif %}"
+       class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">
+      Dashboard
+    </a>
+  </li>
+
+  <!-- Staff and Admin pages -->
+  {% if request.user.is_superuser or "student_records" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Records</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "student_archive" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_archive' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_archive' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Archive</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "case_view" in request.user.userprofile.permissions or "case_record" in request.user.userprofile.permissions or "case_full" in request.user.userprofile.permissions or "case_create" in request.user.userprofile.permissions or "case_information" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'case_record' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'case_record' or request.resolver_match.url_name == 'case_record_details' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Case Record</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "report_dashboard" in request.user.userprofile.permissions or "case_report" in request.user.userprofile.permissions or "print_reports" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'generate_reports' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'generate_reports' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Generate Reports</a></li>
+  {% endif %}
+
+  <!-- Admin-only pages -->
+  {% if request.user.is_superuser %}
+  <li><a href="{% url 'offense_master_list' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'offense_master_list' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Offense Master List</a></li>
+  <li><a href="{% url 'archive_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'archive_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Archive Records</a></li>
+  <li><a href="{% url 'user_management' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'user_management' or request.resolver_match.url_name == 'add_user' or request.resolver_match.url_name == 'edit_user' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">User Management</a></li>
+  <li><a href="{% url 'audit_log' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'audit_log' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Audit Logs</a></li>
+  <li><a href="{% url 'unlock_account' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'unlock_account' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Unlock Account</a></li>
+  {% endif %}
+
+  <!-- Settings: show if at least one Settings permission is assigned -->
+  {% if request.user.is_superuser or "settings_login_background" in request.user.userprofile.permissions or "settings_theme_color" in request.user.userprofile.permissions or "settings_student_api_url" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'settings' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'settings' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Settings</a></li>
+  {% endif %}
+</ul>
+    </div>
+</aside>
+
+
+
+  <main class="sm:ml-64 p-6 mt-16">
+    <div class="max-w-7xl mx-auto space-y-4">
+      <div class="rounded-2xl hero-gradient p-4 md:p-5 text-white shadow"><h2 class="text-2xl font-bold tracking-tight">Student Archive</h2><p class="mt-1 text-white/80 text-sm">View graduated students and restore records when needed.</p></div>
+      {% if messages %}{% for message in messages %}<div class="p-4 rounded-xl {% if message.tags == 'error' %}bg-red-100 text-red-800 border border-red-300{% else %}bg-green-100 text-green-800 border border-green-300{% endif %}">{{ message }}</div>{% endfor %}{% endif %}
+      <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+        <div class="mb-4"><h3 class="text-xl font-bold text-slate-800">Graduated Students</h3><p class="text-slate-500 mt-1 text-sm">Records retrieved from the database.</p></div>
+        <div class="mb-4"><input type="text" id="archiveSearch" placeholder="Search student ID, name, program, or school..." class="w-full border border-slate-300 rounded-xl p-3 theme-ring"></div>
+        <div class="overflow-x-auto"><table class="w-full text-left text-sm">
+          <thead class="theme-bg text-white"><tr><th class="px-4 py-3 font-bold">Student ID</th><th class="px-4 py-3 font-bold">Name</th><th class="px-4 py-3 font-bold">Program</th><th class="px-4 py-3 font-bold">School</th><th class="px-4 py-3 font-bold">Year Level</th><th class="px-4 py-3 font-bold">Graduation Date</th><th class="px-4 py-3 font-bold">Archived At</th><th class="px-4 py-3 font-bold text-center">Action</th></tr></thead>
+          <tbody id="archiveTableBody" class="divide-y divide-slate-200">
+            {% for archived in archived_students %}
+            <tr class="hover:bg-slate-50"><td class="px-4 py-3 font-medium">{{ archived.student_id }}</td><td class="px-4 py-3">{{ archived.first_name }} {{ archived.last_name }}</td><td class="px-4 py-3">{{ archived.course|default:"—" }}</td><td class="px-4 py-3">{{ archived.program|default:"—" }}</td><td class="px-4 py-3">{{ archived.year_level|default:"—" }}</td><td class="px-4 py-3">{{ archived.graduation_date|date:"M d, Y"|default:"—" }}</td><td class="px-4 py-3">{{ archived.archived_at|date:"M d, Y"|default:"—" }}</td><td class="px-4 py-3 text-center"><form method="POST" action="{% url 'student_archive' %}" onsubmit="return confirm('Restore this student to Active status?');">{% csrf_token %}<input type="hidden" name="action" value="restore"><input type="hidden" name="archived_id" value="{{ archived.id }}"><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Restore</button></form></td></tr>
+            {% empty %}<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No graduated students in the archive.</td></tr>{% endfor %}
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+  </main>
+  <script>
+    const archiveSearch = document.getElementById("archiveSearch");
+    archiveSearch?.addEventListener("input", function () {
+      const searchValue = archiveSearch.value.toLowerCase();
+      document.querySelectorAll("#archiveTableBody tr").forEach(function (row) {
+        row.style.display = row.textContent.toLowerCase().includes(searchValue) ? "" : "none";
+      });
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+</body>
+</html>

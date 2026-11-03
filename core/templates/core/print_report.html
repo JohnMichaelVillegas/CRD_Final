@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Benilde Discipline Records</title>
+
+  <style>
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: white;
+      color: black;
+      margin: 40px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 20px;
+      margin: 5px 0;
+    }
+
+    .header h2 {
+      font-size: 16px;
+      margin: 5px 0;
+    }
+
+    .student-info {
+      margin-bottom: 25px;
+    }
+
+    .student-info p {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    .student-info strong {
+      display: inline-block;
+      width: 110px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    th {
+      background: #eeeeee;
+    }
+
+    .section-title {
+      font-weight: bold;
+      margin-top: 30px;
+      margin-bottom: 10px;
+    }
+
+    .notes-content,
+    .agreement-content {
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .signature-section {
+      margin-top: 50px;
+      display: flex;
+      justify-content: space-between;
+      gap: 50px;
+      page-break-inside: avoid;
+    }
+
+    .signature {
+      width: 45%;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .signature-line {
+      border-bottom: 1px solid black;
+      height: 30px;
+      margin-bottom: 5px;
+    }
+
+    .print-button {
+      margin-bottom: 20px;
+    }
+
+    .print-button button {
+      background-color: var(--theme-color);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    .print-button button:hover {
+      filter: brightness(0.95);
+    }
+
+    @media print {
+      body {
+        margin: 20px;
+      }
+
+      .print-button {
+        display: none;
+      }
+
+      tr, .student-info, .signature-section {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="print-button">
+    <button onclick="window.print()">Print / Save as PDF</button>
+    <button onclick="window.close()">Close</button>
+  </div>
+
+  <div class="header">
+    <h1>DE LA SALLE-COLLEGE OF SAINT BENILDE</h1>
+    <h2>BENILDE DISCIPLINE RECORDS</h2>
+  </div>
+
+  {% if case_records %}
+
+    {% if same_student %}
+      <div class="student-info">
+        <p>
+          <strong>Student Name:</strong>
+          {{ case_records.0.student.first_name }}
+          {% if case_records.0.student.middle_name %}
+            {{ case_records.0.student.middle_name }}
+          {% endif %}
+          {{ case_records.0.student.last_name }}
+        </p>
+
+        <p>
+          <strong>Program:</strong>
+          {{ case_records.0.student.course|default:"—" }}
+        </p>
+
+        <p>
+          <strong>ID Number:</strong>
+          {{ case_records.0.student.student_id }}
+        </p>
+
+        <p>
+          <strong>School:</strong>
+          {{ case_records.0.student.program|default:"—" }}
+        </p>
+
+        <p>
+          <strong>Year Level:</strong>
+          {{ case_records.0.student.year_level|default:"—" }}
+        </p>
+      </div>
+    {% else %}
+      <p style="font-size:13px;">
+        This report contains selected case records for multiple students.
+      </p>
+    {% endif %}
+
+    <div class="section-title">DISCIPLINE RECORDS</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>RECNO</th>
+          <th>Name of Student</th>
+          <th>Offense</th>
+          <th>Count</th>
+          <th>
+            Classification<br>
+            (Major/Minor)
+          </th>
+          <th>Date Committed</th>
+          <th>Term</th>
+          <th>SY</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for case in case_records %}
+          <tr>
+            <td>{{ case.case_number }}</td>
+
+            <td>
+              {{ case.student.first_name }}
+              {% if case.student.middle_name %}
+                {{ case.student.middle_name }}
+              {% endif %}
+              {{ case.student.last_name }}
+            </td>
+
+            <td>{{ case.offense.offense_name }}</td>
+
+            <td>{{ forloop.counter }}</td>
+
+            <td>
+              {% if case.classification_override != "Auto" %}
+                {{ case.classification_override|default:"—" }}
+              {% else %}
+                {{ case.offense.severity|default:"—" }}
+              {% endif %}
+            </td>
+
+            <td>
+              {{ case.date_reported|date:"m/d/Y"|default:"—" }}
+            </td>
+
+            <td>{{ case.term|default:"—" }}</td>
+
+            <td>{{ case.school_year|default:"—" }}</td>
+
+            <td>{{ case.status|default:"—" }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {% if notes %}
+      <div class="section-title">NOTES</div>
+      <div class="notes-content">{{ notes }}</div>
+    {% endif %}
+
+    <div class="section-title">
+      Student Acknowledgment and Commitment
+    </div>
+
+    <div class="agreement-content">{% if agreement_text %}{{ agreement_text }}{% else %}I acknowledge that I have reviewed and validated my discipline record. I understand that, under the Student Handbook, accumulating three (3) minor offenses or eight (8) ID, program dress code, or general dress code infractions during my stay in the College constitutes a major offense.
+
+I understand that major offenses carry serious consequences that may affect my student status. Subject to applicable Student Handbook provisions, these may include suspension, exclusion, or expulsion; loss of scholarship or grant eligibility or retention; and ineligibility for organization officership, the Dean’s List, or graduation honors.
+
+I take this reminder seriously and accept responsibility for my actions. I commit to preventing further violations, completing required interventions, and taking appropriate steps to repair any harm caused.
+
+By signing, I confirm that I understand these provisions and consequences and commit to demonstrating respect, responsibility, and accountability.{% endif %}</div>
+
+    <div class="signature-section">
+      <div class="signature">
+        <div class="signature-line"></div>
+        Student Signature
+      </div>
+
+      <div class="signature">
+        <div class="signature-line"></div>
+        CRD Associate
+      </div>
+    </div>
+
+  {% else %}
+    <p>No case records were selected.</p>
+  {% endif %}
+
+</body>
+</html>

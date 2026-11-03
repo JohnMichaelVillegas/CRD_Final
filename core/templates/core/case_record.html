@@ -1,0 +1,1670 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Case Record</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: {{ settings.theme_color|default:"#15803d" }};
+    }
+
+    .theme-bg {
+      background-color: var(--theme-color) !important;
+    }
+
+    .theme-bg-dark {
+      background-color: var(--theme-color-dark) !important;
+    }
+
+    .theme-text {
+      color: var(--theme-color) !important;
+    }
+
+    .theme-border {
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+    }
+
+    .theme-hover:hover {
+      filter: brightness(0.95);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(
+        135deg,
+        var(--theme-color),
+        var(--theme-color-dark)
+      );
+    }
+
+.case-table {
+  width: 100%;
+  min-width: 1200px;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.case-table th,
+.case-table td {
+  padding: 12px 10px;
+  vertical-align: middle;
+  overflow-wrap: break-word;
+}
+
+.case-id-column {
+  width: 100px;
+}
+
+.student-id-column {
+  width: 100px;
+}
+
+.count-column {
+  width: 100px;
+}
+
+.name-column {
+  width: 125px;
+}
+
+.handler-column {
+  width: 145px;
+}
+
+.program-column {
+  width: 90px;
+}
+
+.violation-column {
+  width: 115px;
+}
+
+.severity-column {
+  width: 110px;
+}
+
+.record-status-column {
+  width: 110px;
+}
+
+.status-column {
+  width: 110px;
+}
+
+.date-column {
+  width: 120px;
+}
+
+.actions-column {
+  width: 125px;
+}
+
+.case-table .action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+  </style>
+
+</head>
+
+
+<body
+  class="bg-slate-100"
+  data-editing="{% if edit_case %}true{% else %}false{% endif %}"
+>
+
+
+  <!-- TOP NAVIGATION -->
+
+  <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
+
+    <div class="px-4 py-3 flex justify-between items-center">
+
+      <h1 class="text-xl font-bold text-slate-800">
+
+        {% if request.user.is_superuser %}
+          CRD Admin Panel
+        {% else %}
+          CRD Staff Panel
+        {% endif %}
+
+      </h1>
+
+
+      <div class="flex items-center gap-3">
+
+        <div class="text-right hidden sm:block">
+
+          <p class="text-sm font-semibold text-slate-800">
+
+            {{ request.user.userprofile.full_name|default:request.user.username }}
+
+          </p>
+
+          <p class="text-xs text-slate-500">
+
+            {% if request.user.is_superuser %}
+              Admin
+            {% else %}
+              Staff
+            {% endif %}
+
+          </p>
+
+        </div>
+
+
+        <!-- USER PROFILE PICTURE -->
+
+        <div
+          class="w-10 h-10 rounded-full border overflow-hidden flex items-center justify-center font-semibold theme-text theme-border"
+        >
+
+          {% if request.user.userprofile.image %}
+
+            <img
+              src="{{ request.user.userprofile.image.url }}"
+              alt="Profile Picture"
+              class="w-full h-full object-cover"
+            >
+
+          {% else %}
+
+            {{ request.user.username|first|upper }}
+
+          {% endif %}
+
+        </div>
+
+
+        <form method="POST" action="{% url 'logout' %}">
+
+          {% csrf_token %}
+
+          <button
+            type="submit"
+            class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700"
+          >
+            Logout
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+
+  <!-- SIDEBAR -->
+
+ 
+<aside class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 bg-slate-900 text-white">
+    <div class="px-4">
+
+        <div class="mb-6 p-4 rounded-2xl theme-bg">
+            <p class="text-xs text-green-100">Logged in as</p>
+            <h2 class="text-sm font-bold">
+                {{ request.user.userprofile.full_name|default:request.user.username }}
+            </h2>
+            <p class="text-[10px] text-green-100 mt-1 whitespace-nowrap">
+                CRD Case Management System
+            </p>
+        </div>
+
+        <ul class="space-y-2">
+  <!-- Dashboard -->
+  <li>
+    <a href="{% if request.user.is_superuser %}{% url 'admin_dashboard' %}{% else %}{% url 'staff_dashboard' %}{% endif %}"
+       class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'admin_dashboard' or request.resolver_match.url_name == 'staff_dashboard' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">
+      Dashboard
+    </a>
+  </li>
+
+  <!-- Staff and Admin pages -->
+  {% if request.user.is_superuser or "student_records" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Records</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "student_archive" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'student_archive' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'student_archive' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Student Archive</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "case_view" in request.user.userprofile.permissions or "case_record" in request.user.userprofile.permissions or "case_full" in request.user.userprofile.permissions or "case_create" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'case_record' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'case_record' or request.resolver_match.url_name == 'case_record_details' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Case Record</a></li>
+  {% endif %}
+
+  {% if request.user.is_superuser or "report_dashboard" in request.user.userprofile.permissions or "case_report" in request.user.userprofile.permissions or "print_reports" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'generate_reports' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'generate_reports' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Generate Reports</a></li>
+  {% endif %}
+
+  <!-- Admin-only pages -->
+  {% if request.user.is_superuser %}
+  <li><a href="{% url 'offense_master_list' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'offense_master_list' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Offense Master List</a></li>
+  <li><a href="{% url 'archive_records' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'archive_records' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Archive Records</a></li>
+  <li><a href="{% url 'user_management' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'user_management' or request.resolver_match.url_name == 'add_user' or request.resolver_match.url_name == 'edit_user' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">User Management</a></li>
+  <li><a href="{% url 'audit_log' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'audit_log' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Audit Logs</a></li>
+  <li><a href="{% url 'unlock_account' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'unlock_account' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Unlock Account</a></li>
+  {% endif %}
+
+  <!-- Settings: show if at least one Settings permission is assigned -->
+  {% if request.user.is_superuser or "settings_login_background" in request.user.userprofile.permissions or "settings_theme_color" in request.user.userprofile.permissions or "settings_student_api_url" in request.user.userprofile.permissions %}
+  <li><a href="{% url 'settings' %}" class="block p-3 rounded-xl {% if request.resolver_match.url_name == 'settings' %}text-white theme-bg{% else %}hover:bg-slate-800{% endif %}">Settings</a></li>
+  {% endif %}
+</ul>
+    </div>
+</aside>
+
+
+  <!-- MAIN -->
+
+  <main class="sm:ml-64 p-6 mt-16">
+
+    <div class="max-w-7xl mx-auto space-y-4">
+
+
+      <!-- HERO -->
+
+      <div class="rounded-2xl hero-gradient p-4 md:p-5 text-white shadow">
+
+        <h2 class="text-2xl font-bold tracking-tight">
+          Case Records
+        </h2>
+
+        <p class="mt-1 text-white/80 text-sm">
+
+          {% if request.user.is_superuser %}
+
+            Manage student case records, violations, and status updates.
+
+          {% else %}
+
+            View student case records and case information.
+
+          {% endif %}
+
+        </p>
+
+      </div>
+
+
+
+      <!-- MESSAGES -->
+
+      {% if messages %}
+
+        {% for message in messages %}
+
+          <div class="p-4 rounded-xl bg-green-100 text-green-800 border border-green-300">
+
+            {{ message }}
+
+          </div>
+
+        {% endfor %}
+
+      {% endif %}
+
+
+      {% if error %}
+
+        <div class="p-4 rounded-xl bg-red-100 text-red-800 border border-red-300">
+
+          {{ error }}
+
+        </div>
+
+      {% endif %}
+
+
+
+      <!-- ADMIN CASE FORM -->
+
+      {% if can_create_cases or can_edit_cases %}
+
+      <form
+  method="POST"
+  enctype="multipart/form-data"
+  class="bg-white rounded-2xl border theme-border shadow-sm p-5 space-y-5"
+>
+
+        {% csrf_token %}
+
+
+        {% if edit_case %}
+
+          <input
+            type="hidden"
+            name="case_id"
+            value="{{ edit_case.id }}"
+          >
+
+        {% endif %}
+
+
+
+        <div class="grid md:grid-cols-2 gap-4">
+
+          <!-- CASE ID -->
+
+          <div>
+  <label class="block mb-2 text-sm font-medium text-slate-800">
+    Case ID
+  </label>
+
+  <input
+    name="case_number"
+    id="caseId"
+    type="text"
+    value="{{ edit_case.case_number|default:'' }}"
+    class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-slate-100"
+    placeholder="Generated automatically when saved"
+    readonly
+  >
+
+  <p class="text-xs text-slate-500 mt-1">
+    Case numbers are automatically generated using the school year,
+    term, sequence, and incident campus.
+  </p>
+</div>
+
+
+          <!-- STUDENT ID -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium text-slate-800">
+              Student ID
+            </label>
+
+            <select
+              name="student_id"
+              id="studentId"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              required
+            >
+
+              <option value="">
+                Select student
+              </option>
+
+              {% for student in students %}
+
+                <option
+                  value="{{ student.id }}"
+                  data-name="{{ student.first_name }} {{ student.last_name }}"
+                  data-course="{{ student.course }}"
+                  data-year="{{ student.year_level }}"
+                  {% if edit_case and edit_case.student.id == student.id %}
+                    selected
+                  {% endif %}
+                >
+
+                  {{ student.student_id }} -
+                  {{ student.first_name }}
+                  {{ student.last_name }}
+
+                </option>
+
+              {% endfor %}
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="grid md:grid-cols-2 gap-4">
+
+          <!-- STUDENT NAME -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium">
+              Student Name
+            </label>
+
+            <input
+              id="studentName"
+              type="text"
+              value="{% if edit_case %}{{ edit_case.student.first_name }} {{ edit_case.student.last_name }}{% endif %}"
+              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-100"
+              placeholder="Student name"
+              readonly
+            >
+
+          </div>
+
+
+          <!-- COURSE -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium">
+              Course
+            </label>
+
+            <input
+              id="program"
+              type="text"
+              value="{% if edit_case %}{{ edit_case.student.course }}{% endif %}"
+              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-100"
+              placeholder="Course"
+              readonly
+            >
+
+          </div>
+
+        </div>
+
+
+
+        <div class="grid md:grid-cols-3 gap-4">
+
+          <!-- YEAR LEVEL -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium">
+              Year Level
+            </label>
+
+            <select
+              name="year_level"
+              id="yearLevel"
+              class="w-full border border-slate-300 rounded-xl p-3"
+              required
+            >
+
+              <option value="">
+                Select year
+              </option>
+
+              <option
+                value="1"
+                {% if edit_case and edit_case.year_level == "1" %}selected{% endif %}
+              >
+                1st Year
+              </option>
+
+              <option
+                value="2"
+                {% if edit_case and edit_case.year_level == "2" %}selected{% endif %}
+              >
+                2nd Year
+              </option>
+
+              <option
+                value="3"
+                {% if edit_case and edit_case.year_level == "3" %}selected{% endif %}
+              >
+                3rd Year
+              </option>
+
+              <option
+                value="4"
+                {% if edit_case and edit_case.year_level == "4" %}selected{% endif %}
+              >
+                4th Year
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- TERM -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium">
+              Term
+            </label>
+
+            <select
+              name="term"
+              class="w-full border border-slate-300 rounded-xl p-3"
+              required
+            >
+
+              <option value="">
+                Select term
+              </option>
+
+              <option
+                value="1st"
+                {% if edit_case and edit_case.term == "1st" %}selected{% endif %}
+              >
+                1st
+              </option>
+
+              <option
+                value="2nd"
+                {% if edit_case and edit_case.term == "2nd" %}selected{% endif %}
+              >
+                2nd
+              </option>
+
+              <option
+                value="3rd"
+                {% if edit_case and edit_case.term == "3rd" %}selected{% endif %}
+              >
+                3rd
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <!-- SCHOOL YEAR -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium">
+              School Year
+            </label>
+
+            <input
+              name="school_year"
+              type="text"
+              value="{{ edit_case.school_year|default:'' }}"
+              class="w-full border border-slate-300 rounded-xl p-3"
+              placeholder="2025-2026"
+              required
+            >
+
+          </div>
+
+        </div>
+
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+
+  <!-- DATE FILED -->
+  <div class="w-full">
+    <label
+      for="dateFiled"
+      class="block mb-2 text-sm font-medium text-slate-800"
+    >
+      Date Filed
+    </label>
+
+    <input
+      type="date"
+      name="date_filed"
+      id="dateFiled"
+      value="{% if edit_case and edit_case.date_filed %}{{ edit_case.date_filed|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}"
+      class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+      required
+    >
+
+    <p class="text-xs text-slate-500 mt-1">
+      Select the official filing date.
+    </p>
+  </div>
+
+  <!-- INCIDENT CAMPUS -->
+  <div class="w-full">
+    <label
+      for="campus"
+      class="block mb-2 text-sm font-medium text-slate-800"
+    >
+      Incident Campus
+    </label>
+
+    <select
+      name="campus"
+      id="campus"
+      class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+      required
+    >
+      <option value="">Select incident campus</option>
+
+      <option value="A" {% if edit_case and edit_case.campus == "A" %}selected{% endif %}>
+        A - Design and Arts Campus (DAC)
+      </option>
+
+      <option value="I" {% if edit_case and edit_case.campus == "I" %}selected{% endif %}>
+        I - Angelo King International Center (AKIC)
+      </option>
+
+      <option value="R" {% if edit_case and edit_case.campus == "R" %}selected{% endif %}>
+        R - The Atrium
+      </option>
+
+      <option value="B" {% if edit_case and edit_case.campus == "B" %}selected{% endif %}>
+        B - St. Benilde Hall (Taft Campus)
+      </option>
+
+      <option value="D" {% if edit_case and edit_case.campus == "D" %}selected{% endif %}>
+        D - Duerr Hall (Taft Campus)
+      </option>
+
+      <option value="S" {% if edit_case and edit_case.campus == "S" %}selected{% endif %}>
+        S - Blessed Solomon Hall (Taft Campus)
+      </option>
+
+      <option value="M" {% if edit_case and edit_case.campus == "M" %}selected{% endif %}>
+        M - St. Mutien Marie Hall (Taft Campus)
+      </option>
+    </select>
+  </div>
+
+</div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+
+<!-- PERSON HANDLING CASE -->
+
+<div>
+  <label
+    for="handledBy"
+    class="block mb-2 text-sm font-medium text-slate-800"
+  >
+    Person Handling Case
+  </label>
+
+  <select
+    name="handled_by"
+    id="handledBy"
+    class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+  >
+    <option value="">Select person handling the case</option>
+
+    {% for handler in handlers %}
+      <option
+        value="{{ handler.id }}"
+        {% if edit_case and edit_case.handled_by_id == handler.id %}selected{% endif %}
+      >
+        {% if handler.get_full_name %}
+          {{ handler.get_full_name }}
+        {% else %}
+          {{ handler.username }}
+        {% endif %}
+      </option>
+    {% endfor %}
+  </select>
+</div>
+
+          <!-- VIOLATION -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium">
+              Violation
+            </label>
+
+            <select
+              name="offense_id"
+              id="violation"
+              class="w-full border border-slate-300 rounded-xl p-3"
+              required
+            >
+
+              <option value="">
+                Select violation
+              </option>
+
+              {% for offense in offenses %}
+
+                {% if offense.status == "Active" %}
+
+                  <option
+                    value="{{ offense.id }}"
+                    data-severity="{% if offense.accumulation_type == 'accumulating' %}Infraction{% elif offense.accumulation_type == 'direct_major' %}Major Offense{% else %}Minor Offense{% endif %}"
+                    {% if edit_case and edit_case.offense.id == offense.id %}
+                      selected
+                    {% endif %}
+                  >
+
+                    {{ offense.offense_name }}
+
+                  </option>
+
+                {% endif %}
+
+              {% endfor %}
+
+            </select>
+
+          </div>
+
+
+          <!-- SEVERITY -->
+
+          <div>
+
+            <label class="block mb-2 text-sm font-medium">
+              Severity
+            </label>
+
+            <input
+              id="severity"
+              type="text"
+              class="w-full border border-slate-300 rounded-xl p-3 bg-slate-100"
+              placeholder="Automatically selected"
+              readonly
+            >
+
+          </div>
+
+
+          <!-- CASE STATUS -->
+
+<div>
+  <label class="block mb-2 text-sm font-medium">
+    Case Status
+  </label>
+
+  <select
+    name="status"
+    class="w-full border border-slate-300 rounded-xl p-3"
+    required
+  >
+    <option value="Reported"
+      {% if edit_case and edit_case.status == "Reported" %}selected{% endif %}>
+      Reported
+    </option>
+
+    <option value="Preliminary"
+      {% if edit_case and edit_case.status == "Preliminary" %}selected{% endif %}>
+      Preliminary
+    </option>
+
+    <option value="Notice of Complaint Sent"
+      {% if edit_case and edit_case.status == "Notice of Complaint Sent" %}selected{% endif %}>
+      Notice of Complaint Sent
+    </option>
+
+    <option value="Under Review"
+      {% if edit_case and edit_case.status == "Under Review" %}selected{% endif %}>
+      Under Review
+    </option>
+
+    <option value="Resolved by DO"
+      {% if edit_case and edit_case.status == "Resolved by DO" %}selected{% endif %}>
+      Resolved by DO
+    </option>
+
+    <option value="Resolved by Director"
+      {% if edit_case and edit_case.status == "Resolved by Director" %}selected{% endif %}>
+      Resolved by Director
+    </option>
+
+    <option value="Resolved by Other"
+      {% if edit_case and edit_case.status == "Resolved by Other" %}selected{% endif %}>
+      Resolved by Other
+    </option>
+
+    <option value="Resolved by CRD Director"
+      {% if edit_case and edit_case.status == "Resolved by CRD Director" %}selected{% endif %}>
+      Resolved by CRD Director
+    </option>
+
+    <option value="Resolved by Discipline Board"
+      {% if edit_case and edit_case.status == "Resolved by Discipline Board" %}selected{% endif %}>
+      Resolved by Discipline Board
+    </option>
+
+    <option value="Resolved by CODI"
+      {% if edit_case and edit_case.status == "Resolved by CODI" %}selected{% endif %}>
+      Resolved by CODI
+    </option>
+
+    <option value="Resolved"
+      {% if edit_case and edit_case.status == "Resolved" %}selected{% endif %}>
+      Resolved
+    </option>
+  </select>
+</div>
+
+        </div>
+
+{% if edit_case %}
+
+<!-- RESOLUTION AUTHORITY -->
+
+<div>
+  <label class="block mb-2 text-sm font-medium">
+    Resolution Authority
+  </label>
+
+  <select
+    name="resolution_authority"
+    class="w-full border border-slate-300 rounded-xl p-3"
+  >
+    <option value="">Not yet resolved</option>
+
+    <option value="CRD Director"
+      {% if edit_case.resolution_authority == "CRD Director" %}selected{% endif %}>
+      CRD Director
+    </option>
+
+    <option value="Discipline Board"
+      {% if edit_case.resolution_authority == "Discipline Board" %}selected{% endif %}>
+      Discipline Board
+    </option>
+
+    <option value="CODI"
+      {% if edit_case.resolution_authority == "CODI" %}selected{% endif %}>
+      Committee on Decorum and Investigation (CODI)
+    </option>
+  </select>
+</div>
+
+<!-- APPEAL RESOLUTION -->
+
+<div>
+  <label class="block mb-2 text-sm font-medium">
+    Appeal Resolved By
+  </label>
+
+  <select
+    name="appeal_resolution"
+    class="w-full border border-slate-300 rounded-xl p-3"
+  >
+    <option value="">Not applicable</option>
+
+    <option value="VP LMSL"
+      {% if edit_case and edit_case.appeal_resolution == "VP LMSL" %}selected{% endif %}>
+      VP LMSL
+    </option>
+
+    <option value="Chancellor"
+      {% if edit_case and edit_case.appeal_resolution == "Chancellor" %}selected{% endif %}>
+      Chancellor
+    </option>
+  </select>
+</div>
+
+{% endif %}
+
+{% if edit_case %}
+
+<!-- SANCTIONS -->
+
+<div class="border border-slate-200 rounded-xl p-4 space-y-4">
+
+  <div>
+    <h3 class="text-lg font-semibold text-slate-800">
+      Sanctions
+    </h3>
+
+    <p class="text-sm text-slate-500 mt-1">
+      View existing sanctions or add a new sanction to this case.
+    </p>
+  </div>
+
+  <!-- EXISTING SANCTIONS -->
+
+  <div>
+    <label class="block mb-2 text-sm font-medium text-slate-800">
+      Existing Sanctions
+    </label>
+
+    {% if edit_case.sanctions.all %}
+
+      <div class="space-y-3">
+
+        {% for sanction in edit_case.sanctions.all %}
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+
+            <p class="font-semibold text-slate-800">
+              {{ sanction.sanction_name }}
+            </p>
+
+            <p class="text-xs text-slate-500 mt-1">
+              Added: {{ sanction.date_added|date:"M. d, Y - h:i A" }}
+            </p>
+
+            {% if sanction.remarks %}
+              <p class="text-sm text-slate-600 mt-2">
+                {{ sanction.remarks }}
+              </p>
+            {% endif %}
+
+          </div>
+
+        {% endfor %}
+
+      </div>
+
+    {% else %}
+
+      <p class="text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-3">
+        No sanctions recorded for this case.
+      </p>
+
+    {% endif %}
+
+  </div>
+
+  <!-- ADD NEW SANCTION -->
+
+  <div class="border-t border-slate-200 pt-4 space-y-3">
+
+    <h4 class="font-semibold text-slate-800">
+      Add New Sanction
+    </h4>
+
+    <div>
+      <label class="block mb-2 text-sm font-medium text-slate-800">
+        Sanction Name
+      </label>
+
+      <input
+        type="text"
+        name="sanction_name"
+        class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+        placeholder="Enter sanction name"
+      >
+    </div>
+
+    <div>
+      <label class="block mb-2 text-sm font-medium text-slate-800">
+        Sanction Remarks
+      </label>
+
+      <textarea
+        name="new_sanction_remarks"
+        rows="3"
+        class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+        placeholder="Enter additional remarks about the sanction"
+      ></textarea>
+    </div>
+
+    <p class="text-xs text-slate-500">
+      Leave the sanction name blank if you do not want to add another sanction.
+    </p>
+
+  </div>
+
+</div>
+
+{% endif %}
+
+         <!-- EVIDENCE AND CASE ATTACHMENTS -->
+
+        <div>
+
+          <label
+            for="attachments"
+            class="block mb-2 text-sm font-medium text-slate-800"
+          >
+            Evidence
+          </label>
+
+          <div
+            class="flex items-center gap-3 w-full border border-slate-300 rounded-xl p-2 bg-slate-50"
+          >
+
+            <input
+              type="file"
+              name="attachments"
+              id="attachments"
+              multiple
+              accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+              class="hidden"
+            >
+
+            <label
+              for="attachments"
+              class="inline-flex items-center gap-2 px-5 py-3 theme-bg text-white rounded-xl theme-hover font-semibold shadow-sm cursor-pointer whitespace-nowrap"
+            >
+
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 16V4m0 0L8 8m4-4l4 4M5 20h14"
+                />
+              </svg>
+
+              Choose Files
+
+            </label>
+
+          </div>
+
+          <!-- SELECTED FILES DISPLAY -->
+
+          <div
+            id="selected-files"
+            class="mt-3 text-sm text-slate-600"
+          >
+            No files selected.
+          </div>
+
+          <p class="text-xs text-slate-500 mt-2">
+            Accepted files: JPG, JPEG, PNG, PDF, DOC, DOCX
+          </p>
+
+        </div>
+
+
+        <!-- CASE DETAILS -->
+
+        <div>
+
+          <label class="block mb-2 text-sm font-medium">
+            Case Details
+          </label>
+
+          <textarea
+            name="remarks"
+            class="w-full border border-slate-300 rounded-xl p-3"
+            rows="5"
+            placeholder="Enter case details"
+          >{{ edit_case.remarks|default:'' }}</textarea>
+
+        </div>
+
+
+
+        <!-- BUTTONS -->
+
+        <div class="flex gap-3">
+
+          <button
+            type="submit"
+            class="px-5 py-3 theme-bg text-white rounded-xl theme-hover font-medium shadow-sm"
+          >
+
+            {% if edit_case %}
+              Update Case Record
+            {% else %}
+              Save Case Record
+            {% endif %}
+
+          </button>
+
+
+          {% if edit_case %}
+
+            <a
+              href="{% url 'case_record' %}"
+              class="px-5 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 font-medium"
+            >
+              Cancel Edit
+            </a>
+
+          {% else %}
+
+            <button
+              type="reset"
+              class="px-5 py-3 bg-slate-200 text-slate-700 rounded-xl hover:bg-slate-300 font-medium"
+            >
+              Clear Form
+            </button>
+
+          {% endif %}
+
+        </div>
+
+      </form>
+
+      {% endif %}
+
+
+
+      
+<!-- DATABASE CASE RECORDS -->
+
+<div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
+
+  <!-- HEADER -->
+  <div class="flex items-center justify-between gap-3 mb-4 flex-wrap">
+
+    <div>
+      <h3 class="text-xl font-bold text-slate-800">
+        Case Records
+      </h3>
+
+      <p class="text-slate-500 mt-1 text-sm">
+        Records retrieved from PostgreSQL database
+      </p>
+    </div>
+
+    <!-- TOTAL CASES -->
+    <div class="px-4 py-2 rounded-xl bg-green-50 border border-green-200">
+      <p class="text-xs text-green-700 font-medium">
+        Total Cases
+      </p>
+      <p class="text-xl font-bold text-green-800">
+        {{ total_cases }}
+      </p>
+    </div>
+
+  </div>
+
+  <!-- SEARCH -->
+  <div class="mb-4">
+    <input
+      type="text"
+      id="caseSearch"
+      placeholder="Search case ID, student ID, name, course, or violation..."
+      class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+    >
+  </div>
+
+  <!-- TABLE -->
+  <div class="overflow-x-auto">
+
+    <table class="case-table text-left text-sm">
+
+      <thead class="theme-bg text-white">
+        <tr>
+          <th class="case-id-column font-bold">Case ID</th>
+          <th class="student-id-column font-bold">Student ID</th>
+          <th class="count-column font-bold">Offense Count</th>
+          <th class="name-column font-bold">Name</th>
+          <th class="handler-column font-bold">Person Handling Case</th>
+          <th class="program-column font-bold">Course</th>
+          <th class="violation-column font-bold">Violation</th>
+          <th class="severity-column font-bold">Severity</th>
+          <th class="record-status-column font-bold">Record Status</th>
+          <th class="status-column font-bold">Status</th>
+          <th class="date-column font-bold">Date</th>
+          <th class="actions-column font-bold">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="caseTableBody" class="divide-y divide-slate-200">
+
+        {% for record in case_records %}
+
+        <tr class="hover:bg-slate-50">
+
+          <td class="case-id-column font-medium whitespace-nowrap">
+            {{ record.case_number }}
+          </td>
+
+          <td class="student-id-column whitespace-nowrap">
+            {{ record.student.student_id }}
+          </td>
+
+          <td class="count-column">
+  <span class="inline-flex items-center justify-center min-w-8 h-8 px-2 rounded-lg bg-slate-100 text-slate-700 font-semibold">
+    {{ record.offense_count }}
+  </span>
+</td>
+
+          <td class="name-column">
+  {{ record.student.first_name }}
+  {{ record.student.last_name }}
+</td>
+
+<!-- PERSON HANDLING CASE -->
+<td class="handler-column">
+  {% if record.handled_by %}
+    {{ record.handled_by.get_full_name|default:record.handled_by.username }}
+  {% else %}
+    <span class="text-slate-400">Not assigned</span>
+  {% endif %}
+</td>
+
+<td class="program-column">
+  {{ record.student.course }}
+</td>
+
+          <td class="violation-column">
+            {{ record.offense.offense_name }}
+          </td>
+
+          
+<!-- CLASSIFICATION -->
+<td class="severity-column">
+  {% with classification=record.classification_override %}
+    {% if classification == "Major Offense" or classification == "Major" %}
+      <span class="inline-flex flex-col items-center text-center px-2 py-1 rounded-lg bg-red-100 text-red-700 leading-tight">
+        <span>Major</span>
+        <span>Offenses</span>
+      </span>
+    {% elif classification == "Infraction" %}
+      <span class="inline-block px-2 py-1 rounded-lg bg-blue-100 text-blue-700 whitespace-nowrap">
+        Infraction
+      </span>
+    {% elif classification == "Minor Offense" or classification == "Minor" %}
+      <span class="inline-flex flex-col items-center text-center px-2 py-1 rounded-lg bg-green-100 text-green-700 leading-tight">
+        <span>Minor</span>
+        <span>Offenses</span>
+      </span>
+    {% else %}
+      <span class="inline-block px-2 py-1 rounded-lg bg-slate-100 text-slate-700 whitespace-nowrap">
+        {{ classification }}
+      </span>
+    {% endif %}
+  {% endwith %}
+</td>
+
+          <!-- RECORD STATUS -->
+          <td class="record-status-column">
+            {% if record.is_active %}
+              <span class="inline-block px-2 py-1 rounded-lg bg-green-100 text-green-700 whitespace-nowrap">
+                Active
+              </span>
+            {% else %}
+              <span class="inline-block px-2 py-1 rounded-lg bg-slate-200 text-slate-600 whitespace-nowrap">
+                Inactive
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- CASE STATUS -->
+          <td class="status-column">
+            {% if record.status == "Resolved" or record.status == "Resolved by DO" or record.status == "Resolved by Director" or record.status == "Resolved by Other" or record.status == "Resolved by CRD Director" or record.status == "Resolved by Discipline Board" or record.status == "Resolved by CODI" %}
+              <span class="inline-block px-2 py-1 rounded-lg bg-green-100 text-green-700 whitespace-nowrap">
+                Resolved
+              </span>
+            {% elif record.status == "Reported" %}
+              <span class="inline-block px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 whitespace-nowrap">
+                Reported
+              </span>
+            {% else %}
+              <span class="inline-block px-2 py-1 rounded-lg bg-blue-100 text-blue-700 whitespace-nowrap">
+                Under Review
+              </span>
+            {% endif %}
+          </td>
+
+          <!-- DATE -->
+          <td class="date-column whitespace-nowrap">
+            {{ record.date_filed|date:"M. d, Y" }}
+          </td>
+
+          <!-- ACTIONS -->
+<td class="actions-column">
+
+  <div class="action-buttons">
+
+    <a
+      href="{% url 'case_record_details' record.id %}"
+      class="px-3 py-2 theme-bg text-white rounded-lg text-sm font-medium theme-hover whitespace-nowrap"
+    >
+      {% if request.user.is_superuser %}
+        View Details
+      {% else %}
+        View
+      {% endif %}
+    </a>
+
+    {% if can_edit_cases %}
+      <a
+        href="?edit={{ record.id }}"
+        class="px-3 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-300 whitespace-nowrap"
+      >
+        Edit
+      </a>
+    {% endif %}
+
+  </div>
+
+</td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+          <td colspan="12" class="px-4 py-8 text-center text-slate-500">
+            No case records found in the database.
+          </td>
+        </tr>
+
+        {% endfor %}
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+
+    </div>
+
+  </main>
+
+
+
+  <!-- JAVASCRIPT -->
+
+  <script>
+
+    /* ==============================
+       STUDENT INFORMATION
+       ============================== */
+
+    const studentId =
+      document.getElementById("studentId");
+
+
+    function displayStudentInformation() {
+
+      if (!studentId) {
+        return;
+      }
+
+
+      const selectedOption =
+        studentId.options[studentId.selectedIndex];
+
+
+      if (!selectedOption) {
+        return;
+      }
+
+
+      const studentName =
+        selectedOption.getAttribute("data-name");
+
+
+      const course =
+        selectedOption.getAttribute("data-course");
+
+
+      const year =
+        selectedOption.getAttribute("data-year");
+
+
+      const studentNameField =
+        document.getElementById("studentName");
+
+
+      const courseField =
+        document.getElementById("program");
+
+
+      const yearLevelField =
+        document.getElementById("yearLevel");
+
+
+      /* STUDENT NAME */
+
+      if (studentNameField) {
+
+        studentNameField.value =
+          studentName || "";
+
+      }
+
+
+      /* COURSE */
+
+      if (courseField) {
+
+        courseField.value =
+          course || "";
+
+      }
+
+
+      /*
+        Automatically update Year Level
+        only when creating a new case.
+
+        When editing an existing case,
+        keep the saved Case Record Year Level.
+      */
+
+      if (
+        yearLevelField &&
+        year &&
+        document.body.dataset.editing !== "true"
+      ) {
+
+        yearLevelField.value =
+          year;
+
+      }
+
+    }
+
+
+    studentId?.addEventListener(
+      "change",
+      displayStudentInformation
+    );
+
+
+    displayStudentInformation();
+
+
+
+    /* ==============================
+       VIOLATION SEVERITY
+       ============================== */
+
+    const violation =
+      document.getElementById("violation");
+
+
+    function displaySeverity() {
+  if (!violation) {
+    return;
+  }
+
+  const selectedOption =
+    violation.options[violation.selectedIndex];
+
+  const severityField =
+    document.getElementById("severity");
+
+  if (severityField) {
+    severityField.value =
+      selectedOption
+        ? selectedOption.getAttribute("data-severity") || ""
+        : "";
+  }
+}
+
+
+    violation?.addEventListener(
+      "change",
+      displaySeverity
+    );
+
+
+    displaySeverity();
+
+
+
+    /* ==============================
+       FILE NAME
+       ============================== */
+
+    function showFileName(input) {
+
+      const fileName =
+        document.getElementById("fileName");
+
+
+      if (!fileName) {
+        return;
+      }
+
+
+      if (input.files.length > 0) {
+
+        fileName.textContent =
+          input.files[0].name;
+
+
+        fileName.classList.remove(
+          "text-slate-500"
+        );
+
+
+        fileName.classList.add(
+          "text-slate-700"
+        );
+
+      } else {
+
+        fileName.textContent =
+          "No file chosen";
+
+
+        fileName.classList.remove(
+          "text-slate-700"
+        );
+
+
+        fileName.classList.add(
+          "text-slate-500"
+        );
+
+      }
+
+    }
+
+     /* ==============================
+       ADDITIONAL ATTACHMENTS
+       ============================== */
+
+    const attachmentInput =
+      document.getElementById("attachments");
+
+    const selectedFiles =
+      document.getElementById("selected-files");
+
+     attachmentInput?.addEventListener(
+      "change",
+      function() {
+
+        if (!selectedFiles) {
+          return;
+        }
+
+        selectedFiles.innerHTML = "";
+
+        if (this.files.length === 0) {
+          selectedFiles.textContent =
+            "No files selected.";
+          return;
+        }
+
+        const fileList =
+          document.createElement("ul");
+
+        fileList.className =
+          "list-disc pl-5 space-y-1";
+
+        const fileCount =
+          document.createElement("p");
+
+        fileCount.className =
+          "font-medium mb-2";
+
+        fileCount.textContent =
+          this.files.length +
+          (this.files.length === 1
+            ? " file selected:"
+            : " files selected:");
+
+        selectedFiles.appendChild(fileCount);
+
+        for (const file of this.files) {
+
+          const item =
+            document.createElement("li");
+
+          item.textContent = file.name;
+
+          fileList.appendChild(item);
+
+        }
+
+        selectedFiles.appendChild(fileList);
+
+      }
+    );
+
+    /* ==============================
+       CASE SEARCH
+       ============================== */
+
+    const caseSearch =
+      document.getElementById("caseSearch");
+
+
+    caseSearch?.addEventListener(
+      "keyup",
+      function() {
+
+        const searchValue =
+          this.value.toLowerCase();
+
+
+        const rows =
+          document.querySelectorAll(
+            "#caseTableBody tr"
+          );
+
+
+        rows.forEach(function(row) {
+
+          const rowText =
+            row.textContent.toLowerCase();
+
+
+          row.style.display =
+            rowText.includes(searchValue)
+              ? ""
+              : "none";
+
+        });
+
+      }
+    );
+
+  </script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+
+</body>
+
+</html>
