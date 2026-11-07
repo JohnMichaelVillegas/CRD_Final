@@ -44,7 +44,10 @@ def staff_has_permission(user, permission):
 
 def staff_has_any_case_permission(user):
     return any(staff_has_permission(user, p) for p in (
-        "case_view", "case_full", "case_create"
+        "case_view",
+        "case_full",
+        "case_create",
+        "case_information",
     ))
 
 
@@ -1116,7 +1119,11 @@ def case_record(request):
     }))
     can_create_cases = is_admin or bool(permissions.intersection({"case_full", "case_create"}))
     can_edit_cases = is_admin or "case_full" in permissions
-    can_add_case_information = is_admin or "case_full" in permissions
+    can_add_case_information = (
+    is_admin
+    or "case_full" in permissions
+    or "case_information" in permissions
+)
 
     if not can_view_cases:
         return HttpResponseForbidden("You do not have permission to view Case Record.")
