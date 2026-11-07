@@ -701,31 +701,31 @@
 
     <div class="rounded-xl border theme-border bg-slate-50 p-3">
       <p class="text-slate-500 text-sm">Major Incidents</p>
-      <h4 class="text-2xl font-bold text-slate-800 mt-1">
-        {{ major_incidents }}
+      <h4 id="majorIncidentsCount" class="text-2xl font-bold text-slate-800 mt-1">
+      {{ major_incidents }}
       </h4>
     </div>
 
     <div class="rounded-xl border theme-border bg-slate-50 p-3">
       <p class="text-slate-500 text-sm">Minor Incidents</p>
-      <h4 class="text-2xl font-bold text-slate-800 mt-1">
+      <h4 id="minorIncidentsCount" class="text-2xl font-bold text-slate-800 mt-1">
         {{ minor_incidents }}
       </h4>
     </div>
 
-    <div class="rounded-xl border theme-border bg-slate-50 p-3">
-      <p class="text-slate-500 text-sm">Infraction Incidents</p>
-      <h4 class="text-2xl font-bold text-slate-800 mt-1">
-        {{ infraction_incidents }}
-      </h4>
-    </div>
+  <div class="rounded-xl border theme-border bg-slate-50 p-3">
+    <p class="text-slate-500 text-sm">Resolved Incidents</p>
+    <h4 id="resolvedIncidentsCount" class="text-2xl font-bold text-slate-800 mt-1">
+      {{ resolved_incidents }}
+    </h4>
+  </div>
 
     <div class="rounded-xl border theme-border bg-slate-50 p-3">
-      <p class="text-slate-500 text-sm">Resolved Incidents</p>
-      <h4 class="text-2xl font-bold text-slate-800 mt-1">
-        {{ resolved_incidents }}
-      </h4>
-    </div>
+  <p class="text-slate-500 text-sm">Infraction Incidents</p>
+  <h4 id="infractionIncidentsCount" class="text-2xl font-bold text-slate-800 mt-1">
+    {{ infraction_incidents }}
+  </h4>
+</div>
 
   </div>
 </div>
@@ -788,6 +788,40 @@
       });
     }
 
+  function updateAnalytics() {
+    const visibleRows = getVisibleRows();
+
+    let majorCount = 0;
+    let minorCount = 0;
+    let infractionCount = 0;
+    let resolvedCount = 0;
+
+    visibleRows.forEach(function(row) {
+      const classification = row.children[3].textContent
+        .trim()
+        .toLowerCase();
+
+    const status = row.dataset.status || "";
+
+    if (classification === "major offense" || classification === "major") {
+      majorCount++;
+    } else if (classification === "minor offense" || classification === "minor") {
+      minorCount++;
+    } else if (classification === "infraction") {
+      infractionCount++;
+    }
+
+    if (isResolved(status)) {
+      resolvedCount++;
+    }
+  });
+
+  document.getElementById("majorIncidentsCount").textContent = majorCount;
+  document.getElementById("minorIncidentsCount").textContent = minorCount;
+  document.getElementById("infractionIncidentsCount").textContent = infractionCount;
+  document.getElementById("resolvedIncidentsCount").textContent = resolvedCount;
+}
+
     function applyDashboardFilter() {
       const schoolYear = schoolYearFilter.value.trim().toLowerCase();
       const term = termFilter.value.trim().toLowerCase();
@@ -838,7 +872,9 @@
 
       noFilteredRecords.classList.toggle("hidden", visibleCount > 0);
 
+      updateAnalytics();
       renderCalendar();
+    
     }
 
     function renderCalendar() {
@@ -935,6 +971,7 @@
       tableViewBtn.className =
         "px-4 py-2 bg-slate-200 text-slate-700 rounded-xl font-medium";
 
+      updateAnalytics();
       renderCalendar();
     }
 
@@ -959,16 +996,6 @@
 
     applyFilterBtn.addEventListener("click", applyDashboardFilter);
     resetFilterBtn.addEventListener("click", resetDashboardFilters);
-
-    [
-      schoolYearFilter,
-      termFilter,
-      statusFilter,
-      dateFromFilter,
-      dateToFilter
-    ].forEach(function(filter) {
-      filter.addEventListener("change", applyDashboardFilter);
-    });
 
     document.getElementById("previousMonthBtn").addEventListener(
       "click",
