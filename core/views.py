@@ -47,7 +47,6 @@ def staff_has_any_case_permission(user):
         "case_view",
         "case_full",
         "case_create",
-        "case_information",
     ))
 
 
@@ -1122,7 +1121,6 @@ def case_record(request):
     can_add_case_information = (
     is_admin
     or "case_full" in permissions
-    or "case_information" in permissions
 )
 
     if not can_view_cases:
@@ -3303,6 +3301,23 @@ def case_record_details(request, case_id):
         or staff_has_permission(request.user, "case_full")
     )
 
+    can_view_student_records = (
+        is_main_admin(request.user)
+        or staff_has_permission(request.user, "student_records")
+    )
+    can_view_student_archive = (
+        is_main_admin(request.user)
+        or staff_has_permission(request.user, "student_archive")
+    )
+
+    profile = get_profile(request.user)
+
+    print("USER:", request.user.username)
+    print("IS SUPERUSER:", request.user.is_superuser)
+    print("SAVED PERMISSIONS:", profile.permissions if profile else None)
+    print("CAN VIEW STUDENT RECORDS:", can_view_student_records)
+    print("CAN VIEW STUDENT ARCHIVE:", can_view_student_archive)
+
     # Add a sanction
     if request.method == "POST":
         if request.POST.get("action") == "add_sanction":
@@ -3355,6 +3370,8 @@ def case_record_details(request, case_id):
     context = {
         "case": case,
         "settings": settings,
+        "can_view_student_records": can_view_student_records,
+        "can_view_student_archive": can_view_student_archive,
         "case_count": CaseRecord.objects.filter(
             student=case.student
         ).count(),

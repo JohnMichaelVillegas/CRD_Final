@@ -198,25 +198,37 @@
 
         <!-- STUDENT RECORDS -->
 
-        <li>
+{% if can_view_student_records %}
 
-          <a
-            href="{% url 'student_records' %}"
-            class="block p-3 rounded-xl hover:bg-slate-800"
-          >
-            Student Records
-          </a>
+<li>
 
-        </li>
+  <a
+    href="{% url 'student_records' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Student Records
+  </a>
 
-          <li>
+</li>
+
+{% endif %}
+
+          <!-- STUDENT ARCHIVE -->
+
+{% if can_view_student_archive %}
+
+<li>
+
   <a
     href="{% url 'student_archive' %}"
     class="block p-3 rounded-xl hover:bg-slate-800"
   >
     Student Archive
   </a>
-</li> 
+
+</li>
+
+{% endif %}
 
         <!-- CASE RECORD -->
 
@@ -233,19 +245,20 @@
 
         <!-- GENERATE REPORTS -->
 
-        <li>
+{% if request.user.is_superuser or "report_dashboard" in request.user.userprofile.permissions or "case_report" in request.user.userprofile.permissions or "print_reports" in request.user.userprofile.permissions %}
 
-          <a
-            href="{% url 'generate_reports' %}"
-            class="block p-3 rounded-xl hover:bg-slate-800"
-          >
-            Generate Reports
-          </a>
+<li>
+  <a
+    href="{% url 'generate_reports' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Generate Reports
+  </a>
+</li>
 
-        </li>
+{% endif %}
 
-        {% if request.user.is_superuser %}
-
+{% if request.user.is_superuser %}
 
         <!-- OFFENSE MASTER LIST -->
 
@@ -313,19 +326,20 @@
 
         </li>
 
+                {% endif %}
 
         <!-- SETTINGS -->
 
-        <li>
+{% if request.user.is_superuser or "settings_login_background" in request.user.userprofile.permissions or "settings_theme_color" in request.user.userprofile.permissions or "settings_student_api_url" in request.user.userprofile.permissions %}
 
-          <a
-            href="{% url 'settings' %}"
-            class="block p-3 rounded-xl hover:bg-slate-800"
-          >
-            Settings
-          </a>
-
-        </li>
+<li>
+  <a
+    href="{% url 'settings' %}"
+    class="block p-3 rounded-xl hover:bg-slate-800"
+  >
+    Settings
+  </a>
+</li>
 
         {% endif %}
 
@@ -375,7 +389,7 @@
 
           <div class="flex gap-2">
 
-            {% if request.user.is_superuser and not case.is_archived %}
+            {% if can_edit_cases and not case.is_archived %}
 
             <a
               href="{% url 'case_record' %}?edit={{ case.id }}"

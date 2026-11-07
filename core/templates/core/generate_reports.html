@@ -43,7 +43,7 @@
 
     <!-- PAGE TITLE -->
     <h1 class="text-lg sm:text-xl font-bold text-slate-800 whitespace-nowrap">
-      CRD Admin Panel
+      CRD Staff Panel
     </h1>
 
     <!-- USER PROFILE AND LOGOUT -->
@@ -108,7 +108,9 @@
       <h2 class="text-sm font-bold">
         {{ request.user.userprofile.full_name|default:request.user.username }}
       </h2>
-      <p class="text-xs text-green-100 mt-1">CRD Case Management System</p>
+      <p class="text-[10px] text-green-100 mt-1 whitespace-normal break-words leading-tight">
+  CRD Case Management System
+</p>
     </div>
     <ul class="space-y-2">
   <!-- Dashboard -->

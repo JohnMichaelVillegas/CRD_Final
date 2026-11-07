@@ -406,7 +406,6 @@ class UserProfile(models.Model):
         ("case_view", "Case Record - View Only"),
         ("case_full", "Case Record - Full Access"),
         ("case_create", "Case Record - View and Create"),
-        ("case_information", "Case Record - Add Case Information"),
 
         # Individual report permissions
         ("report_dashboard", "Reports - View Dashboard"),
