@@ -1,4 +1,4 @@
-from django.db import migrations, models
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -8,12 +8,4 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name='student',
-            name='program',
-            field=models.CharField(
-                blank=True,
-                max_length=100
-            ),
-        ),
     ]
