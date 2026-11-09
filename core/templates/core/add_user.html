@@ -293,12 +293,28 @@
                 class="w-4 h-4 mt-1"
               >
               <span class="text-sm text-slate-700">
-                <strong>View Only</strong>
+                <span class="font-normal">View Only</span>
+
                 <span class="block text-xs text-slate-500">
                   View case records without creating or editing them.
                 </span>
               </span>
             </label>
+
+            <label class="flex items-start gap-3">
+  <input
+    type="checkbox"
+    name="permissions"
+    value="case_create"
+    class="w-4 h-4 mt-1"
+  >
+  <span class="text-sm text-slate-700">
+    <span class="font-normal">View and Create</span>
+    <span class="block text-xs text-slate-500">
+      View existing cases and create new ones, without editing existing case details.
+    </span>
+  </span>
+</label>
 
             <label class="flex items-start gap-3">
               <input
@@ -308,7 +324,7 @@
                 class="w-4 h-4 mt-1"
               >
               <span class="text-sm text-slate-700">
-                <strong>Full Access</strong>
+                <span class="font-normal">Full Access</span>
                 <span class="block text-xs text-slate-500">
                   View, create, and edit case records.
                 </span>

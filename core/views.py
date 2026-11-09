@@ -616,7 +616,16 @@ def staff_dashboard(request):
         status="Under Review"
     ).count()
 
-    recent_cases = cases[:5]
+    status_counts = cases.values("status").annotate(
+        total=Count("id")
+        ).order_by("status")
+
+    print("ACTUAL CASE STATUS COUNTS:", list(status_counts))
+    print("TOTAL CASES:", cases.count())
+    print("UNDER REVIEW:", cases.filter(status="Under Review").count())
+    print("PENDING REVIEWS:", pending_reviews)
+
+    recent_cases = cases
 
     return render(
         request,
