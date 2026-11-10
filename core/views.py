@@ -2748,7 +2748,7 @@ def add_user(request):
         username = request.POST.get("username", "").strip()
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
-        role = request.POST.get("role", "Staff")
+        role = "Staff"
 
         if not username:
             messages.error(request, "Username is required.")

@@ -448,39 +448,22 @@
     </div>
 
     <!-- ROLE -->
-    <div>
-        <label class="block text-sm font-semibold text-slate-700 mb-2">
-            Role
-        </label>
+<div>
+    <label class="block text-sm font-semibold text-slate-700 mb-2">
+        Role
+    </label>
 
-        <select
-            id="role"
-            name="role"
-            required
-            onchange="toggleStaffPermissions()"
-            {% if account.is_superuser %}disabled{% endif %}
-            class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
-        >
-            <option value="Staff" {% if not account.is_superuser %}selected{% endif %}>
-                Staff
-            </option>
+    <input
+        type="text"
+        value="Staff"
+        disabled
+        class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-slate-100 text-slate-500 text-sm"
+    >
 
-            <option value="Administrator" {% if account.is_superuser %}selected{% endif %}>
-                Administrator
-            </option>
-        </select>
-
-        {% if account.is_superuser %}
-            <input type="hidden" name="role" value="Administrator">
-            <p class="text-xs text-amber-700 mt-2">
-                Administrator accounts cannot be demoted here.
-            </p>
-        {% else %}
-            <p class="text-xs text-slate-500 mt-2">
-                Administrators have full access. Staff access is based on assigned permissions.
-            </p>
-        {% endif %}
-    </div>
+    <p class="text-xs text-slate-500 mt-2">
+        All user accounts are assigned the Staff role. Access is based on assigned permissions.
+    </p>
+</div>
 
 </div>
 
@@ -811,15 +794,6 @@
       }
     });
 
-    function toggleStaffPermissions() {
-      const role = document.getElementById("role").value;
-      const permissions = document.getElementById("staffPermissions");
-
-      permissions.style.display =
-        role === "Staff" ? "block" : "none";
-    }
-
-    toggleStaffPermissions();
   </script>
 
 </body>

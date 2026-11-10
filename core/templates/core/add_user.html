@@ -176,19 +176,14 @@
             Role
           </label>
 
-          <select
-            id="role"
-            name="role"
-            required
-            onchange="toggleStaffPermissions()"
-            class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
-          >
-            <option value="Staff" selected>Staff</option>
-            <option value="Administrator">Administrator</option>
-          </select>
+          <input type="hidden" name="role" value="Staff">
+
+<div class="w-full border border-slate-300 rounded-xl p-3 bg-slate-100 text-slate-600">
+    Staff
+</div>
 
           <p class="text-xs text-slate-500 mt-2">
-            Administrators have full access. Staff can access their assigned functions.
+            Staff can access their assigned functions.
           </p>
         </div>
 
