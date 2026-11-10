@@ -1389,7 +1389,7 @@ def case_record(request):
                         offense,
                         exclude_case_id=case.id,
                     )
-                    
+
                 case.term = term
                 case.school_year = school_year
                 case.year_level = year_level
@@ -2132,7 +2132,9 @@ def generate_reports(request):
             "You do not have permission to view reports."
         )
 
-    report_queryset = CaseRecord.objects.all()
+    report_queryset = CaseRecord.objects.filter(
+    is_archived=False
+)
 
     # Only provide individual case and student data
     # to users who have Case Report permission.
