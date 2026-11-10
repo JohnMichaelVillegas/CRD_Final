@@ -1373,13 +1373,23 @@ def case_record(request):
                     )
                     return redirect("case_record")
 
+                # Check whether the student or offense changed.
+                student_or_offense_changed = (
+                    case.student_id != student.id
+                    or case.offense_id != offense.id
+                )
+
                 case.student = student
                 case.offense = offense
-                case.classification_override = get_case_classification(
-                    student,
-                    offense,
-                    exclude_case_id=case.id,
-                )
+
+                # Preserve classification when editing an existing case.
+                if student_or_offense_changed:
+                    case.classification_override = get_case_classification(
+                        student,
+                        offense,
+                        exclude_case_id=case.id,
+                    )
+                    
                 case.term = term
                 case.school_year = school_year
                 case.year_level = year_level
