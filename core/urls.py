@@ -6,6 +6,12 @@ urlpatterns = [
     path("", views.login_view, name="login"),
 
     path(
+        "login-background/",
+        views.login_background_image,
+        name="login_background_image"
+    ),
+
+    path(
         "activate-account/",
         views.activate_account,
         name="activate_account"

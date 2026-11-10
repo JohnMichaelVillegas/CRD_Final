@@ -13,7 +13,7 @@
     :root {
       --theme-color: {{ settings.theme_color|default:"#15803d" }};
       --theme-color-dark: {{ settings.theme_color|default:"#166534" }};
-      --login-bg-image: url("{% if settings.login_background %}{{ settings.login_background.url }}{% else %}/static/core/crd.png{% endif %}");
+      --login-bg-image: url("{% if settings.login_background_data %}{% url 'login_background_image' %}{% else %}/static/core/crd.png{% endif %}");
     }
 
     * {

@@ -390,7 +390,7 @@
             </p>
 
 
-            {% if settings.login_background %}
+            {% if settings.login_background_data %}
 
               <div class="mb-4">
 
@@ -399,7 +399,7 @@
                 </p>
 
                 <img
-                  src="{{ settings.login_background.url }}"
+                  src="{% url 'login_background_image' %}"
                   class="w-64 h-32 object-cover rounded-xl border border-slate-200"
                 >
 

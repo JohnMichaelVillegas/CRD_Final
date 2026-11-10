@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Count, Q
-from django.http import FileResponse, Http404, HttpResponseForbidden, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -1063,11 +1063,9 @@ def get_case_classification(student, offense, exclude_case_id=None):
     if offense.accumulation_type == "direct_major":
         return "Major Offense"
 
-    # Count previous cases for this student and offense.
     previous_cases = CaseRecord.objects.filter(
         student=student,
         offense=offense,
-        is_archived=False,
     )
 
     if exclude_case_id is not None:
@@ -1684,26 +1682,31 @@ def case_record(request):
         status="Active"
     ).order_by("offense_name")
 
-    # Show active case records only
-    case_records = list(
-        CaseRecord.objects.filter(
-            is_archived=False
-        ).select_related(
+    # Count occurrences using all original cases,
+    # including archived cases.
+    all_cases = list(
+        CaseRecord.objects.select_related(
             "student",
-            "offense",
-            "handled_by"
-        )
+            "offense"
+        ).order_by("id")
     )
 
-     # Count occurrences based on when cases were added
     offense_counts = {}
 
-    for case in sorted(case_records, key=lambda item: item.id):
+    for case in all_cases:
         key = (case.student_id, case.offense_id)
         offense_counts[key] = offense_counts.get(key, 0) + 1
-        case.offense_count = offense_counts[key]
 
-      # Show the newest-added case first
+        if not case.is_archived:
+            case.offense_count = offense_counts[key]
+
+    # Display only active cases.
+    case_records = [
+        case for case in all_cases
+        if not case.is_archived
+    ]
+
+    # Show the newest-added case first.
     case_records.sort(
         key=lambda case: case.id,
         reverse=True
@@ -1711,30 +1714,34 @@ def case_record(request):
 
     total_cases = len(case_records)
 
-    
-    # Available users for the handler dropdown
+    # Available users for the handler dropdown.
     User = get_user_model()
+
     handlers = User.objects.filter(
         is_active=True
-    ).order_by("first_name", "last_name", "username")
+    ).order_by(
+        "first_name",
+        "last_name",
+        "username"
+    )
 
     return render(
-    request,
-    "core/case_record.html",
-    {
-        "students": students,
-        "offenses": offenses,
-        "case_records": case_records,
-        "total_cases": total_cases,
-        "edit_case": edit_case,
-        "handlers": handlers,
-        "settings": SystemSettings.objects.get_or_create(id=1)[0],
-        "can_view_cases": can_view_cases,
-        "can_create_cases": can_create_cases,
-        "can_edit_cases": can_edit_cases,
-        "can_add_case_information": can_add_case_information,
-    }
-)
+        request,
+        "core/case_record.html",
+        {
+            "students": students,
+            "offenses": offenses,
+            "case_records": case_records,
+            "total_cases": total_cases,
+            "edit_case": edit_case,
+            "handlers": handlers,
+            "settings": SystemSettings.objects.get_or_create(id=1)[0],
+            "can_view_cases": can_view_cases,
+            "can_create_cases": can_create_cases,
+            "can_edit_cases": can_edit_cases,
+            "can_add_case_information": can_add_case_information,
+        }
+    )
 
 # =========================================================
 # OFFENSE MASTER LIST
@@ -2927,8 +2934,34 @@ def settings_view(request):
                 changed.append("student API URL")
 
         if (is_admin or "settings_login_background" in granted) and request.FILES.get("login_background"):
-            settings.login_background = request.FILES["login_background"]
-            changed.append("login background")
+            uploaded_image = request.FILES["login_background"]
+
+            if uploaded_image.size > 5 * 1024 * 1024:
+                messages.error(request, "Image size must not exceed 5 MB.")
+                return redirect("settings")
+
+            try:
+                from PIL import Image
+
+                image_bytes = uploaded_image.read()
+                image = Image.open(BytesIO(image_bytes))
+                image.verify()
+
+                content_type = uploaded_image.content_type or ""
+
+                if content_type not in ["image/jpeg", "image/png", "image/webp"]:
+                    messages.error(request, "Only JPG, PNG, and WEBP images are allowed.")
+                    return redirect("settings")
+
+                settings.login_background_data = image_bytes
+                settings.login_background_content_type = content_type
+                settings.login_background_filename = uploaded_image.name
+
+                changed.append("login background")
+
+            except Exception:
+                messages.error(request, "Invalid image file. Please upload a valid JPG, PNG, or WEBP image.")
+                return redirect("settings")
 
         if not changed:
             return HttpResponseForbidden("You do not have permission to change these settings.")
@@ -3469,3 +3502,18 @@ def case_attachment_view(request, attachment_id):
         as_attachment=False,
         filename=os.path.basename(attachment.file.name),
     )
+
+def login_background_image(request):
+    settings = SystemSettings.objects.filter(id=1).first()
+
+    if not settings or not settings.login_background_data:
+        raise Http404("Login background not found.")
+
+    response = HttpResponse(
+        bytes(settings.login_background_data),
+        content_type=settings.login_background_content_type or "image/png"
+    )
+
+    response["Cache-Control"] = "no-store"
+
+    return response

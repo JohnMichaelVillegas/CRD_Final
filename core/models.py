@@ -471,6 +471,23 @@ class SystemSettings(models.Model):
         null=True
     )
 
+    login_background_data = models.BinaryField(
+        blank=True,
+        null=True
+    )
+
+    login_background_content_type = models.CharField(
+        max_length=100,
+        blank=True,
+        default=""
+    )
+
+    login_background_filename = models.CharField(
+        max_length=255,
+        blank=True,
+        default=""
+    )
+
     theme_color = models.CharField(
         max_length=20,
         default="#15803d"
