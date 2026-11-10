@@ -2485,13 +2485,18 @@ def archive_records(request):
                     case.archived_at = None
                     case.status = "Under Review"
 
-                    case.save(
-                        update_fields=[
-                            "is_archived",
-                            "archived_at",
-                            "status"
-                        ]
-                    )
+                    # Reset resolution fields when restoring
+                    case.resolution_authority = ""
+                    case.appeal_resolution = ""
+
+                    case.save(update_fields=[
+                    "is_archived",
+                    "archived_at",
+                    "status",
+                    "resolution_authority",
+                    "appeal_resolution",
+                    ]
+                )
 
                     # Remove the archived snapshot
                     archived.delete()
