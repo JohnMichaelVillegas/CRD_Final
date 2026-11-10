@@ -21,6 +21,34 @@ from .models import (
     CaseSanction, CaseDiaryEntry, CaseAttachment,
 )
 
+def validate_case_uploads(uploaded_files):
+    max_size = 4 * 1024 * 1024
+
+    for uploaded_file in uploaded_files:
+
+        if uploaded_file.size > max_size:
+            return (
+                f"{uploaded_file.name} exceeds the 4 MB limit. "
+                "Please upload a smaller PDF file."
+            )
+
+        if not uploaded_file.name.lower().endswith(".pdf"):
+            return (
+                "Invalid file format. Only PDF files are allowed. "
+                "Please upload a PDF file."
+            )
+
+        uploaded_file.seek(0)
+        file_header = uploaded_file.read(1024)
+        uploaded_file.seek(0)
+
+        if b"%PDF-" not in file_header:
+            return (
+                "Invalid file. Please upload a valid PDF document."
+            )
+
+    return None
+
 def is_main_admin(user):
     return user.is_authenticated and user.is_active and user.is_superuser
 
@@ -1160,26 +1188,39 @@ def case_record(request):
         if action == "add_information":
             if not can_add_case_information:
                 return HttpResponseForbidden("You cannot add case information.")
+
+            # Validate uploaded attachments
+            uploaded_files = request.FILES.getlist("attachments")
+            upload_error = validate_case_uploads(uploaded_files)
+
+            if upload_error:
+                messages.error(request, upload_error)
+                return redirect("case_record")
             case_id_for_info = request.POST.get("case_id")
             note = request.POST.get("note", "").strip()
             if not case_id_for_info or not note:
                 messages.error(request, "Select a case and enter case information.")
                 return redirect("case_record")
+
             try:
                 info_case = CaseRecord.objects.get(id=case_id_for_info, is_archived=False)
             except (CaseRecord.DoesNotExist, ValueError, TypeError):
                 messages.error(request, "Case not found or it has been archived.")
                 return redirect("case_record")
+
             CaseDiaryEntry.objects.create(
                 case=info_case,
                 entry_date=parse_date(request.POST.get("entry_date", "")) or timezone.localdate(),
                 note=note,
                 created_by=request.user,
             )
-            for uploaded_file in request.FILES.getlist("attachments"):
+
+            for uploaded_file in uploaded_files:
                 CaseAttachment.objects.create(
-                    case=info_case, file=uploaded_file,
-                    file_name=uploaded_file.name, uploaded_by=request.user
+                    case=info_case,
+                    file=uploaded_file,
+                    file_name=uploaded_file.name,
+                    uploaded_by=request.user
                 )
             AuditLog.objects.create(
                 user=request.user, page="Case Record", action="Added Case Information",
@@ -1232,15 +1273,22 @@ def case_record(request):
 
         sanction_name = request.POST.get("sanction_name", "").strip()
         new_sanction_remarks = request.POST.get(
-        "new_sanction_remarks", ""
+            "new_sanction_remarks", ""
         ).strip()
 
-        evidence = request.FILES.get("evidence")    
-
+        evidence = request.FILES.get("evidence")
         attachments = request.FILES.getlist("attachments")
 
         print("FILES RECEIVED:", len(attachments))
         print("FILE NAMES:", [f.name for f in attachments])
+
+        # Validate evidence and attachments
+        all_uploaded_files = attachments + ([evidence] if evidence else [])
+        upload_error = validate_case_uploads(all_uploaded_files)
+
+        if upload_error:
+            messages.error(request, upload_error)
+            return redirect("case_record")
 
         try:
             student = Student.objects.get(id=student_id)

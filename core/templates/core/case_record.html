@@ -323,17 +323,21 @@
 
       {% if messages %}
 
-        {% for message in messages %}
+  {% for message in messages %}
 
-          <div class="p-4 rounded-xl bg-green-100 text-green-800 border border-green-300">
-
-            {{ message }}
-
-          </div>
-
-        {% endfor %}
-
+    <div class="p-4 rounded-xl border
+      {% if 'error' in message.tags %}
+        bg-red-100 text-red-800 border-red-300
+      {% else %}
+        bg-green-100 text-green-800 border-green-300
       {% endif %}
+    ">
+      {{ message }}
+    </div>
+
+  {% endfor %}
+
+{% endif %}
 
 
       {% if error %}
@@ -1037,7 +1041,7 @@
               name="attachments"
               id="attachments"
               multiple
-              accept=".jpg,.jpeg,.png,.pdf,.doc,.docx"
+              accept=".pdf,application/pdf"
               class="hidden"
             >
 
@@ -1077,7 +1081,7 @@
           </div>
 
           <p class="text-xs text-slate-500 mt-2">
-            Accepted files: JPG, JPEG, PNG, PDF, DOC, DOCX
+            Accepted file: PDF only. Maximum file size: 4 MB per file.
           </p>
 
         </div>
