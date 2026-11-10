@@ -3075,22 +3075,26 @@ def retrieve_students_from_api(request):
             "You do not have permission to retrieve student records."
         )
 
-    settings, _ = SystemSettings.objects.get_or_create(id=1)
-
-    if not settings.student_api_url:
-        messages.error(request, "Please save a Student API URL first.")
-        return redirect("settings")
-
     try:
-        response = requests.get(
-            settings.student_api_url,
-            timeout=15
-        )
+        from django.test import RequestFactory
+        import json
 
-        response.raise_for_status()
+        # Call the local mock Student API directly.
+        api_request = RequestFactory().get("/api/mock-students/")
+        api_response = mock_student_api(api_request)
 
-        data = response.json()
+        if api_response.status_code != 200:
+            error_data = json.loads(api_response.content.decode("utf-8"))
+            messages.error(
+                request,
+                error_data.get(
+                    "error",
+                    "Unable to retrieve student records."
+                )
+            )
+            return redirect("settings")
 
+        data = json.loads(api_response.content.decode("utf-8"))
         students = data.get("students") if isinstance(data, dict) else None
 
         if not isinstance(students, list):
@@ -3147,19 +3151,16 @@ def retrieve_students_from_api(request):
             "Please review the preview before importing."
         )
 
-    except requests.exceptions.Timeout:
-        messages.error(request, "The Student API request timed out.")
-
-    except requests.exceptions.RequestException as e:
-        messages.error(
-            request,
-            f"Unable to connect to the Student API: {str(e)}"
-        )
-
     except ValueError:
         messages.error(
             request,
             "The Student API did not return valid JSON data."
+        )
+
+    except Exception as e:
+        messages.error(
+            request,
+            f"Unable to retrieve student records: {str(e)}"
         )
 
     return redirect("settings")
