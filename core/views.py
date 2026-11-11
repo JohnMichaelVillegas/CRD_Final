@@ -2818,10 +2818,14 @@ def add_user(request):
 def edit_user(request, user_id):
     if account_is_inactive(request):
         return redirect("login")
+
     if not is_main_admin(request.user):
-        return HttpResponseForbidden("Only the Main Admin can edit users.")
+        return HttpResponseForbidden(
+            "Only the Main Admin can edit users."
+        )
 
     User = get_user_model()
+
     try:
         user = User.objects.get(id=user_id)
     except (User.DoesNotExist, ValueError, TypeError):
@@ -2829,40 +2833,45 @@ def edit_user(request, user_id):
         return redirect("user_management")
 
     profile = get_profile(user)
+
     if request.method == "POST":
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
         password = request.POST.get("password", "")
-        requested_role = request.POST.get("role", "Staff")
-        is_admin_role = requested_role == "Administrator"
 
-        # Do not allow a superuser account to be demoted or deactivated here.
-        if user.is_superuser and not is_admin_role:
-            messages.error(request, "A Main Admin account cannot be changed to Staff.")
-            return redirect("edit_user", user_id=user.id)
+        # Preserve the account's existing role.
+        is_admin_role = user.is_superuser
 
         user.first_name = first_name
         user.last_name = last_name
-        user.is_superuser = is_admin_role
-        user.is_staff = is_admin_role
 
         if password:
             user.set_password(password)
 
-        # Allow common status field names from the user-management form.
-        status_value = request.POST.get("is_active", request.POST.get("account_status", ""))
-        if status_value:
-            user.is_active = status_value.lower() in {"1", "true", "active", "on", "yes"}
-        elif user.is_superuser:
+        # Main Admin accounts must remain active.
+        if is_admin_role:
             user.is_active = True
+        else:
+            status_value = request.POST.get(
+                "is_active",
+                request.POST.get("account_status", "")
+            )
+
+            if status_value:
+                user.is_active = status_value.lower() in {
+                    "1", "true", "active", "on", "yes"
+                }
 
         user.save()
 
+        # Create a profile if one does not exist.
         if profile is None:
             profile = UserProfile.objects.create(
-                user=user, full_name=f"{first_name} {last_name}".strip(),
+                user=user,
+                full_name=f"{first_name} {last_name}".strip(),
                 role="Administrator" if is_admin_role else "Staff",
             )
+
         profile.full_name = f"{first_name} {last_name}".strip()
         profile.role = "Administrator" if is_admin_role else "Staff"
 
@@ -2871,23 +2880,35 @@ def edit_user(request, user_id):
         else:
             profile.permissions = []
 
+        # Update profile picture only if a new image was selected.
         if request.FILES.get("image"):
             profile.image = request.FILES["image"]
+
         profile.save()
 
         AuditLog.objects.create(
-            user=request.user, page="User Management", action="Edit User",
+            user=request.user,
+            page="User Management",
+            action="Edit User",
             description=f"Updated user account {user.username}"
         )
-        messages.success(request, f"User account {user.username} was updated successfully.")
+
+        messages.success(
+            request,
+            f"User account {user.username} was updated successfully."
+        )
+
         return redirect("user_management")
 
-    return render(request, "core/edit_user.html", {
-        "account": user,
-        "profile": profile,
-        "settings": SystemSettings.objects.get_or_create(id=1)[0],
-    })
-
+    return render(
+        request,
+        "core/edit_user.html",
+        {
+            "account": user,
+            "profile": profile,
+            "settings": SystemSettings.objects.get_or_create(id=1)[0],
+        }
+    )
 
 
 # =========================================================

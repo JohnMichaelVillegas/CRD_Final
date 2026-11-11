@@ -455,54 +455,55 @@
 
     <input
         type="text"
-        value="Staff"
+        value="{% if account.is_superuser %}Main Admin{% else %}Staff{% endif %}"
         disabled
         class="w-full border border-slate-300 rounded-lg px-3 py-2.5 bg-slate-100 text-slate-500 text-sm"
     >
 
     <p class="text-xs text-slate-500 mt-2">
-        All user accounts are assigned the Staff role. Access is based on assigned permissions.
+        {% if account.is_superuser %}
+            The Main Admin role cannot be changed.
+        {% else %}
+            All user accounts are assigned the Staff role. Access is based on assigned permissions.
+        {% endif %}
     </p>
 </div>
 
 </div>
 
           <!-- ACCOUNT STATUS -->
-          <div class="mb-5 max-w-full md:max-w-[calc(50%-0.625rem)]">
-            <label class="block text-sm font-semibold text-slate-700 mb-2">
-              Account Status
-            </label>
+<div class="mb-6">
+    <label class="block text-sm font-semibold text-slate-700 mb-2">
+        Account Status
+    </label>
 
-            <select
-              name="is_active"
-              required
-              {% if account.is_superuser %}disabled{% endif %}
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
-            >
-              <option value="True" {% if account.is_active %}selected{% endif %}>
-                Active
-              </option>
+    <select
+    name="is_active"
+    required
+    {% if account.is_superuser %}disabled{% endif %}
+        class="w-full md:max-w-md border border-slate-300 rounded-xl px-4 py-3 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-green-200 focus:border-green-600"
+    >
+        <option value="True" {% if account.is_active %}selected{% endif %}>
+            Active
+        </option>
 
-              <option value="False" {% if not account.is_active %}selected{% endif %}>
-                Inactive
-              </option>
-            </select>
+        <option value="False" {% if not account.is_active %}selected{% endif %}>
+            Inactive
+        </option>
+    </select>
 
-            {% if account.is_superuser %}
-              <input type="hidden" name="is_active" value="True">
-              <p class="text-xs text-amber-700 mt-2">
-                Administrator accounts cannot be deactivated here.
-              </p>
-            {% else %}
-              <p class="text-xs text-slate-500 mt-2">
-                Inactive accounts cannot log in.
-              </p>
-            {% endif %}
-          </div>
+    {% if account.is_superuser %}
+    <input type="hidden" name="is_active" value="True">
+    {% endif %}
+
+    <p class="text-xs text-slate-500 mt-2">
+        Inactive accounts cannot log in.
+    </p>
+</div>
 
           <!-- STAFF PERMISSIONS -->
-          <div id="staffPermissions" class="mb-6 border border-slate-200 rounded-xl p-5 bg-slate-50">
-
+          {% if not account.is_superuser %}
+<div id="staffPermissions" class="w-full mb-6 border border-slate-200 rounded-xl p-5 bg-slate-50">
             <h2 class="text-sm font-semibold text-slate-800 mb-2">
               Staff Permissions
             </h2>
@@ -721,6 +722,8 @@
             </div>
 
           </div>
+
+          {% endif %}
 
           <!-- PASSWORD -->
           <div class="mb-6">
