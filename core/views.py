@@ -14,6 +14,7 @@ from django.utils.dateparse import parse_date
 import requests
 import secrets
 from django.contrib.auth.hashers import make_password, check_password
+from django.urls import reverse
 
 from .models import (
     Student, ArchivedStudent, Offense, CaseRecord, ArchivedRecord,
@@ -1127,6 +1128,22 @@ def get_case_classification(student, offense, exclude_case_id=None):
 
     # Do not silently substitute Minor/Major if no rule matches.
     return "Unconfigured"
+
+def case_record_validation_error(request, error_message):
+    # Preserve submitted text fields and selections.
+    request.session["case_record_form_data"] = request.POST.dict()
+
+    # Preserve the case being edited, if applicable.
+    case_id = request.POST.get("case_id", "")
+
+    messages.error(request, error_message)
+
+    url = reverse("case_record")
+
+    if case_id:
+        url += f"?edit={case_id}"
+
+    return redirect(url)
 
 # =========================================================
 # CASE RECORD
@@ -2740,15 +2757,16 @@ def _permissions_from_post(request):
 def add_user(request):
     if account_is_inactive(request):
         return redirect("login")
+
     if not is_main_admin(request.user):
         return HttpResponseForbidden("Only the Main Admin can add users.")
 
     if request.method == "POST":
         User = get_user_model()
+
         username = request.POST.get("username", "").strip()
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
-        role = "Staff"
 
         if not username:
             messages.error(request, "Username is required.")
@@ -2758,50 +2776,45 @@ def add_user(request):
             messages.error(request, "Username already exists.")
             return redirect("add_user")
 
-        is_admin_role = role == "Administrator"
-
-        # Generate a random 5-digit activation code
         activation_code = f"{secrets.randbelow(100000):05d}"
 
-        # Create the account as inactive until activation
         new_user = User.objects.create_user(
             username=username,
             password=None,
             first_name=first_name,
             last_name=last_name,
-            is_superuser=is_admin_role,
-            is_staff=is_admin_role,
+            is_superuser=False,
+            is_staff=False,
             is_active=False,
         )
 
         profile = UserProfile.objects.create(
             user=new_user,
             full_name=f"{first_name} {last_name}".strip(),
-            role="Administrator" if is_admin_role else "Staff",
+            role="Staff",
             activation_code_hash=make_password(activation_code),
             is_activated=False,
         )
 
-        if not is_admin_role:
-            profile.permissions = _permissions_from_post(request)
-            profile.save(update_fields=["permissions"])
+        profile.permissions = _permissions_from_post(request)
+        profile.save(update_fields=["permissions"])
 
         AuditLog.objects.create(
             user=request.user,
             page="User Management",
             action="Create User",
-            description=f"Created {profile.role} account {username}"
+            description=f"Created Staff account {username}"
         )
 
-        # Keep the code temporarily so it can be shown to the Main Admin
         request.session["new_activation_code"] = activation_code
         request.session["new_activation_username"] = username
 
         messages.success(
             request,
-            f"{profile.role} account {username} was created successfully. "
+            f"Staff account {username} was created successfully. "
             "Give the activation code to the account holder."
         )
+
         return redirect("user_management")
 
     return render(request, "core/add_user.html", {
