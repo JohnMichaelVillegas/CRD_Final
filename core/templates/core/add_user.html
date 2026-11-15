@@ -121,6 +121,7 @@
           <input
             type="text"
             name="username"
+            value="{{ form_data.username }}"
             required
             autocomplete="off"
             class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
@@ -149,6 +150,7 @@
           <input
             type="text"
             name="first_name"
+            value="{{ form_data.first_name }}"
             required
             class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
             placeholder="Enter first name"
@@ -164,6 +166,7 @@
           <input
             type="text"
             name="last_name"
+            value="{{ form_data.last_name }}"
             required
             class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
             placeholder="Enter last name"
@@ -249,6 +252,7 @@
                 name="permissions"
                 value="student_records"
                 class="w-4 h-4"
+                {% if "student_records" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 Student Records — View
@@ -261,6 +265,7 @@
                 name="permissions"
                 value="student_archive"
                 class="w-4 h-4"
+                {% if "student_archive" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 Student Archive — View Only
@@ -286,6 +291,7 @@
                 name="permissions"
                 value="case_view"
                 class="w-4 h-4 mt-1"
+                {% if "case_view" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 <span class="font-normal">View Only</span>
@@ -302,6 +308,7 @@
     name="permissions"
     value="case_create"
     class="w-4 h-4 mt-1"
+    {% if "case_create" in selected_permissions %}checked{% endif %}
   >
   <span class="text-sm text-slate-700">
     <span class="font-normal">View and Create</span>
@@ -317,6 +324,7 @@
                 name="permissions"
                 value="case_full"
                 class="w-4 h-4 mt-1"
+                {% if "case_full" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 <span class="font-normal">Full Access</span>
@@ -339,6 +347,7 @@
                 name="permissions"
                 value="report_dashboard"
                 class="w-4 h-4"
+                {% if "report_dashboard" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 View Report Dashboard and Charts
@@ -351,6 +360,7 @@
                 name="permissions"
                 value="case_report"
                 class="w-4 h-4"
+                {% if "case_report" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 View Case Reports and Records
@@ -363,6 +373,7 @@
                 name="permissions"
                 value="print_reports"
                 class="w-4 h-4"
+                {% if "print_reports" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 Print Selected Case Reports
@@ -384,6 +395,7 @@
                 name="permissions"
                 value="settings_login_background"
                 class="w-4 h-4"
+                {% if "settings_login_background" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 Change Login Background
@@ -396,6 +408,7 @@
                 name="permissions"
                 value="settings_theme_color"
                 class="w-4 h-4"
+                {% if "settings_theme_color" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 Change Theme Color
@@ -408,6 +421,7 @@
                 name="permissions"
                 value="settings_student_api_url"
                 class="w-4 h-4"
+                {% if "settings_student_api_url" in selected_permissions %}checked{% endif %}
               >
               <span class="text-sm text-slate-700">
                 Change Student API URL
@@ -447,22 +461,6 @@
       </form>
     </div>
   </main>
-
-  <!-- ROLE SCRIPT -->
-  <script>
-    function toggleStaffPermissions() {
-      const role = document.getElementById("role").value;
-      const permissions = document.getElementById("staffPermissions");
-
-      if (role === "Staff") {
-        permissions.style.display = "block";
-      } else {
-        permissions.style.display = "none";
-      }
-    }
-
-    toggleStaffPermissions();
-  </script>
 
 </body>
 </html>

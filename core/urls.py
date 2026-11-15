@@ -157,6 +157,12 @@ urlpatterns = [
     ),
 
     path(
+        "audit-log/export/",
+        views.export_audit_logs,
+        name="export_audit_logs"
+    ),
+
+    path(
         "logout/",
         views.logout_view,
         name="logout"

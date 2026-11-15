@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+import csv
 from io import BytesIO
 from openpyxl import load_workbook
 from django.contrib import messages
@@ -1264,6 +1265,23 @@ def case_record(request):
         term = request.POST.get("term", "")
         school_year = request.POST.get("school_year", "")
 
+        # Validate School Year format (YYYY-YYYY)
+        school_year_parts = school_year.strip().split("-")
+
+        if (
+            len(school_year_parts) != 2
+            or not all(
+            len(year) == 4 and year.isdigit()
+            for year in school_year_parts
+        )
+        or int(school_year_parts[1]) != int(school_year_parts[0]) + 1
+    ):
+            return case_record_validation_error(
+                request,
+                "Invalid school year. Please use the format YYYY-YYYY, "
+                "such as 2026-2027."
+            )
+
         status = request.POST.get("status", "Reported")
         remarks = request.POST.get("remarks", "")
 
@@ -1304,8 +1322,7 @@ def case_record(request):
         upload_error = validate_case_uploads(all_uploaded_files)
 
         if upload_error:
-            messages.error(request, upload_error)
-            return redirect("case_record")
+            return case_record_validation_error(request, upload_error)
 
         try:
             student = Student.objects.get(id=student_id)
@@ -1318,8 +1335,10 @@ def case_record(request):
             ]
 
             if status not in valid_statuses:
-                messages.error(request, "Invalid case status.")
-                return redirect("case_record")
+                return case_record_validation_error(
+                    request,
+                    "Invalid case status."
+                )
 
             # Validate formative status
             valid_formative_statuses = [
@@ -1328,8 +1347,10 @@ def case_record(request):
             ]
 
             if formative_status not in valid_formative_statuses:
-                messages.error(request, "Invalid formative status.")
-                return redirect("case_record")
+                return case_record_validation_error(
+                    request,
+                    "Invalid formative status."
+                )
 
             # Validate ID violation
             valid_id_violations = [
@@ -1338,8 +1359,10 @@ def case_record(request):
             ]
 
             if id_violation not in valid_id_violations:
-                messages.error(request, "Invalid ID violation.")
-                return redirect("case_record")
+                return case_record_validation_error(
+                    request,
+                    "Invalid ID violation."
+                )
 
 
             # Validate appeal resolution
@@ -1349,8 +1372,10 @@ def case_record(request):
             ]
 
             if appeal_resolution not in valid_appeal_resolutions:
-                messages.error(request, "Invalid appeal resolution.")
-                return redirect("case_record")
+                return case_record_validation_error(
+                    request,
+                    "Invalid appeal resolution."
+                )
 
             valid_resolution_authorities = [
                 choice[0]
@@ -1358,8 +1383,10 @@ def case_record(request):
             ]
 
             if resolution_authority not in valid_resolution_authorities:
-                messages.error(request, "Invalid resolution authority.")
-                return redirect("case_record")  
+                return case_record_validation_error(
+                    request,
+                    "Invalid resolution authority."
+                )  
 
             # Parse Date Filed
             date_filed = None
@@ -1367,12 +1394,11 @@ def case_record(request):
             if date_filed_input:
                 date_filed = parse_date(date_filed_input)
 
-                if date_filed is None:
-                    messages.error(
-                        request,
-                        "Please enter a valid Date Filed."
-                    )
-                    return redirect("case_record")
+            if date_filed is None:
+                return case_record_validation_error(
+                    request,
+                    "Please enter a valid Date Filed."
+                )
 
             # Find the assigned handler, if provided
             handled_by = None
@@ -1386,11 +1412,10 @@ def case_record(request):
                         is_active=True
                     )
                 except (User.DoesNotExist, ValueError, TypeError):
-                    messages.error(
+                    return case_record_validation_error(
                         request,
                         "The selected case handler was not found or is inactive."
                     )
-                    return redirect("case_record")
 
             # Update existing case
             if case_id:
@@ -1398,11 +1423,10 @@ def case_record(request):
                 case = CaseRecord.objects.get(id=case_id)
 
                 if case.is_archived:
-                    messages.error(
+                    return case_record_validation_error(
                         request,
                         "Archived case records cannot be modified."
                     )
-                    return redirect("case_record")
 
                 previous_values = {
                     "status": case.status,
@@ -1432,11 +1456,10 @@ def case_record(request):
                 if CaseRecord.objects.filter(
                     case_number=case_number
                 ).exclude(id=case.id).exists():
-                    messages.error(
+                    return case_record_validation_error(
                         request,
                         "That case number is already in use."
                     )
-                    return redirect("case_record")
 
                 # Check whether the student or offense changed.
                 student_or_offense_changed = (
@@ -1653,13 +1676,12 @@ def case_record(request):
 
                 try:
                     case_number = generate_case_number(
-                        school_year,
-                        term,
-                        campus
+                    school_year,
+                    term,
+                    campus
                     )
                 except ValueError as error:
-                    messages.error(request, str(error))
-                    return redirect("case_record")
+                    return case_record_validation_error(request, str(error))
 
                 case = CaseRecord.objects.create(
                     case_number=case_number,
@@ -1730,22 +1752,28 @@ def case_record(request):
 
 
         except Student.DoesNotExist:
-            messages.error(request, "Student ID was not found.")
-            return redirect("case_record")
+            return case_record_validation_error(
+                request,
+                "Student ID was not found."
+            )
 
         except Offense.DoesNotExist:
-            messages.error(
+            return case_record_validation_error(
                 request,
                 "The selected violation was not found."
             )
-            return redirect("case_record")
 
         except CaseRecord.DoesNotExist:
-            messages.error(
+            return case_record_validation_error(
                 request,
                 "Case not found or it has already been archived."
             )
-            return redirect("case_record")
+
+    # Retrieve previously submitted form data after a validation error.
+    form_data = request.session.pop(
+        "case_record_form_data",
+        {}
+    )
 
     # Get students and active offenses
     students = Student.objects.all().order_by(
@@ -1810,6 +1838,7 @@ def case_record(request):
             "total_cases": total_cases,
             "edit_case": edit_case,
             "handlers": handlers,
+            "form_data": form_data,
             "settings": SystemSettings.objects.get_or_create(id=1)[0],
             "can_view_cases": can_view_cases,
             "can_create_cases": can_create_cases,
@@ -2761,6 +2790,13 @@ def add_user(request):
     if not is_main_admin(request.user):
         return HttpResponseForbidden("Only the Main Admin can add users.")
 
+    form_data = {
+        "username": "",
+        "first_name": "",
+        "last_name": "",
+    }
+    selected_permissions = []
+
     if request.method == "POST":
         User = get_user_model()
 
@@ -2768,13 +2804,29 @@ def add_user(request):
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
 
+        form_data = {
+            "username": username,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
+
+        selected_permissions = request.POST.getlist("permissions")
+
         if not username:
             messages.error(request, "Username is required.")
-            return redirect("add_user")
+            return render(request, "core/add_user.html", {
+                "settings": SystemSettings.objects.get_or_create(id=1)[0],
+                "form_data": form_data,
+                "selected_permissions": selected_permissions,
+            })
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "Username already exists.")
-            return redirect("add_user")
+            return render(request, "core/add_user.html", {
+                "settings": SystemSettings.objects.get_or_create(id=1)[0],
+                "form_data": form_data,
+                "selected_permissions": selected_permissions,
+            })
 
         activation_code = f"{secrets.randbelow(100000):05d}"
 
@@ -2819,6 +2871,8 @@ def add_user(request):
 
     return render(request, "core/add_user.html", {
         "settings": SystemSettings.objects.get_or_create(id=1)[0],
+        "form_data": form_data,
+        "selected_permissions": selected_permissions,
     })
 
 
@@ -3570,16 +3624,77 @@ def audit_log_view(request):
         "-date_created"
     )
 
+    filter_users = sorted({
+        log.user.username if log.user else "System"
+        for log in audit_logs
+    })
+
+    filter_actions = sorted({
+        log.action for log in audit_logs if log.action
+    })
+
+    filter_pages = sorted({
+        log.page or "Not specified"
+        for log in audit_logs
+    })
+
     return render(
-        request,
-        "core/audit_log.html",
-        {
-            "audit_logs": audit_logs,
-            "settings": SystemSettings.objects.get_or_create(
-                id=1
-            )[0],
-        }
+    request,
+    "core/audit_log.html",
+    {
+        "audit_logs": audit_logs,
+        "settings": SystemSettings.objects.get_or_create(
+            id=1
+        )[0],
+        "filter_users": filter_users,
+        "filter_actions": filter_actions,
+        "filter_pages": filter_pages,
+    }
+)
+
+@login_required
+def export_audit_logs(request):
+    if account_is_inactive(request):
+        return redirect("login")
+
+    if not is_main_admin(request.user):
+        return HttpResponseForbidden(
+            "Only the Main Admin can export audit logs."
+        )
+
+    audit_logs = AuditLog.objects.select_related(
+        "user"
+    ).order_by("-date_created")
+
+    response = HttpResponse(
+        content_type="text/csv"
     )
+    response["Content-Disposition"] = (
+        'attachment; filename="CRD_Audit_Logs.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        "Date and Time",
+        "User",
+        "Action",
+        "Description",
+        "Page",
+    ])
+
+    for log in audit_logs:
+        writer.writerow([
+            timezone.localtime(log.date_created).strftime(
+                "%b %d, %Y %I:%M %p"
+            ),
+            log.user.username if log.user else "System",
+            log.action,
+            log.description,
+            log.page or "Not specified",
+        ])
+
+    return response
 
 # =========================================================
 # CASE ATTACHMENT VIEW

@@ -62,8 +62,8 @@
     }
 
 .case-table {
-  width: 100%;
-  min-width: 1200px;
+  width: max-content;
+  min-width: 100%;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0;
@@ -74,6 +74,21 @@
   padding: 12px 10px;
   vertical-align: middle;
   overflow-wrap: break-word;
+}
+
+/* CENTER STATUS, DATE, AND ACTIONS */
+.case-table th:nth-child(10),
+.case-table td:nth-child(10),
+.case-table th:nth-child(11),
+.case-table td:nth-child(11),
+.case-table th:nth-child(12),
+.case-table td:nth-child(12) {
+    text-align: center;
+}
+
+/* CENTER ACTION BUTTONS */
+.case-table .action-buttons {
+    justify-content: center;
 }
 
 .case-id-column {
@@ -126,12 +141,26 @@
 
 .case-table .action-buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 6px;
-  align-items: flex-start;
+  align-items: center;
+  white-space: nowrap;
 }
 
-  </style>
+/* CASE TABLE SCROLLING */
+.case-table-container {
+  max-height: 460px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.case-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+</style>
 
 </head>
 
@@ -139,6 +168,7 @@
 <body
   class="bg-slate-100"
   data-editing="{% if edit_case %}true{% else %}false{% endif %}"
+  data-has-form-data-year="{% if form_data.year_level %}true{% else %}false{% endif %}"
 >
 
 
@@ -360,6 +390,9 @@
   method="POST"
   enctype="multipart/form-data"
   class="bg-white rounded-2xl border theme-border shadow-sm p-5 space-y-5"
+  {% if edit_case %}
+    onsubmit="return confirm('Are you sure you want to update this case record?');"
+  {% endif %}
 >
 
         {% csrf_token %}
@@ -424,15 +457,17 @@
 
               {% for student in students %}
 
-                <option
-                  value="{{ student.id }}"
-                  data-name="{{ student.first_name }} {{ student.last_name }}"
-                  data-course="{{ student.course }}"
-                  data-year="{{ student.year_level }}"
-                  {% if edit_case and edit_case.student.id == student.id %}
-                    selected
-                  {% endif %}
-                >
+            <option
+              value="{{ student.id }}"
+              data-name="{{ student.first_name }} {{ student.last_name }}"
+              data-course="{{ student.course }}"
+              data-year="{{ student.year_level }}"
+              {% if form_data.student_id %}
+                {% if form_data.student_id == student.id|stringformat:"s" %}selected{% endif %}
+              {% elif edit_case and edit_case.student.id == student.id %}
+                selected
+              {% endif %}
+          >
 
                   {{ student.student_id }} -
                   {{ student.first_name }}
@@ -517,32 +552,48 @@
               </option>
 
               <option
-                value="1"
-                {% if edit_case and edit_case.year_level == "1" %}selected{% endif %}
-              >
-                1st Year
-              </option>
+    value="1"
+    {% if form_data.year_level == "1" %}
+        selected
+    {% elif not form_data and edit_case and edit_case.year_level == "1" %}
+        selected
+    {% endif %}
+>
+    1st Year
+</option>
 
-              <option
-                value="2"
-                {% if edit_case and edit_case.year_level == "2" %}selected{% endif %}
-              >
-                2nd Year
-              </option>
+<option
+    value="2"
+    {% if form_data.year_level == "2" %}
+        selected
+    {% elif not form_data and edit_case and edit_case.year_level == "2" %}
+        selected
+    {% endif %}
+>
+    2nd Year
+</option>
 
-              <option
-                value="3"
-                {% if edit_case and edit_case.year_level == "3" %}selected{% endif %}
-              >
-                3rd Year
-              </option>
+<option
+    value="3"
+    {% if form_data.year_level == "3" %}
+        selected
+    {% elif not form_data and edit_case and edit_case.year_level == "3" %}
+        selected
+    {% endif %}
+>
+    3rd Year
+</option>
 
-              <option
-                value="4"
-                {% if edit_case and edit_case.year_level == "4" %}selected{% endif %}
-              >
-                4th Year
-              </option>
+<option
+    value="4"
+    {% if form_data.year_level == "4" %}
+        selected
+    {% elif not form_data and edit_case and edit_case.year_level == "4" %}
+        selected
+    {% endif %}
+>
+    4th Year
+</option>
 
             </select>
 
@@ -567,26 +618,35 @@
                 Select term
               </option>
 
-              <option
-                value="1st"
-                {% if edit_case and edit_case.term == "1st" %}selected{% endif %}
-              >
-                1st
-              </option>
+              <option value="1st"
+  {% if form_data.term == "1st" %}
+    selected
+  {% elif not form_data and edit_case and edit_case.term == "1st" %}
+    selected
+  {% endif %}
+>
+  1st
+</option>
 
-              <option
-                value="2nd"
-                {% if edit_case and edit_case.term == "2nd" %}selected{% endif %}
-              >
-                2nd
-              </option>
+<option value="2nd"
+  {% if form_data.term == "2nd" %}
+    selected
+  {% elif not form_data and edit_case and edit_case.term == "2nd" %}
+    selected
+  {% endif %}
+>
+  2nd
+</option>
 
-              <option
-                value="3rd"
-                {% if edit_case and edit_case.term == "3rd" %}selected{% endif %}
-              >
-                3rd
-              </option>
+<option value="3rd"
+  {% if form_data.term == "3rd" %}
+    selected
+  {% elif not form_data and edit_case and edit_case.term == "3rd" %}
+    selected
+  {% endif %}
+>
+  3rd
+</option>
 
             </select>
 
@@ -602,13 +662,16 @@
             </label>
 
             <input
-              name="school_year"
-              type="text"
-              value="{{ edit_case.school_year|default:'' }}"
-              class="w-full border border-slate-300 rounded-xl p-3"
-              placeholder="2025-2026"
-              required
-            >
+  name="school_year"
+  type="text"
+  value="{% if form_data.school_year %}{{ form_data.school_year }}{% else %}{{ edit_case.school_year|default:'' }}{% endif %}"
+  class="w-full border border-slate-300 rounded-xl p-3"
+  placeholder="2025-2026"
+  pattern="[0-9]{4}-[0-9]{4}"
+  title="Enter the school year in YYYY-YYYY format (e.g., 2025-2026)."
+  maxlength="9"
+  required
+>
 
           </div>
 
@@ -630,7 +693,7 @@
       type="date"
       name="date_filed"
       id="dateFiled"
-      value="{% if edit_case and edit_case.date_filed %}{{ edit_case.date_filed|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}"
+      value="{% if form_data.date_filed %}{{ form_data.date_filed }}{% elif edit_case and edit_case.date_filed %}{{ edit_case.date_filed|date:'Y-m-d' }}{% else %}{% now 'Y-m-d' %}{% endif %}"
       class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
       required
     >
@@ -657,33 +720,33 @@
     >
       <option value="">Select incident campus</option>
 
-      <option value="A" {% if edit_case and edit_case.campus == "A" %}selected{% endif %}>
-        A - Design and Arts Campus (DAC)
-      </option>
+      <option value="A" {% if form_data.campus == "A" %}selected{% elif not form_data and edit_case and edit_case.campus == "A" %}selected{% endif %}>
+  A - Design and Arts Campus (DAC)
+</option>
 
-      <option value="I" {% if edit_case and edit_case.campus == "I" %}selected{% endif %}>
-        I - Angelo King International Center (AKIC)
-      </option>
+<option value="I" {% if form_data.campus == "I" %}selected{% elif not form_data and edit_case and edit_case.campus == "I" %}selected{% endif %}>
+  I - Angelo King International Center (AKIC)
+</option>
 
-      <option value="R" {% if edit_case and edit_case.campus == "R" %}selected{% endif %}>
-        R - The Atrium
-      </option>
+<option value="R" {% if form_data.campus == "R" %}selected{% elif not form_data and edit_case and edit_case.campus == "R" %}selected{% endif %}>
+  R - The Atrium
+</option>
 
-      <option value="B" {% if edit_case and edit_case.campus == "B" %}selected{% endif %}>
-        B - St. Benilde Hall (Taft Campus)
-      </option>
+<option value="B" {% if form_data.campus == "B" %}selected{% elif not form_data and edit_case and edit_case.campus == "B" %}selected{% endif %}>
+  B - St. Benilde Hall (Taft Campus)
+</option>
 
-      <option value="D" {% if edit_case and edit_case.campus == "D" %}selected{% endif %}>
-        D - Duerr Hall (Taft Campus)
-      </option>
+<option value="D" {% if form_data.campus == "D" %}selected{% elif not form_data and edit_case and edit_case.campus == "D" %}selected{% endif %}>
+  D - Duerr Hall (Taft Campus)
+</option>
 
-      <option value="S" {% if edit_case and edit_case.campus == "S" %}selected{% endif %}>
-        S - Blessed Solomon Hall (Taft Campus)
-      </option>
+<option value="S" {% if form_data.campus == "S" %}selected{% elif not form_data and edit_case and edit_case.campus == "S" %}selected{% endif %}>
+  S - Blessed Solomon Hall (Taft Campus)
+</option>
 
-      <option value="M" {% if edit_case and edit_case.campus == "M" %}selected{% endif %}>
-        M - St. Mutien Marie Hall (Taft Campus)
-      </option>
+<option value="M" {% if form_data.campus == "M" %}selected{% elif not form_data and edit_case and edit_case.campus == "M" %}selected{% endif %}>
+  M - St. Mutien Marie Hall (Taft Campus)
+</option>
     </select>
   </div>
 
@@ -711,7 +774,11 @@
     {% for handler in handlers %}
       <option
         value="{{ handler.id }}"
-        {% if edit_case and edit_case.handled_by_id == handler.id %}selected{% endif %}
+        {% if form_data.handled_by == handler.id|stringformat:"s" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.handled_by_id == handler.id %}
+          selected
+        {% endif %}
       >
         {% if handler.get_full_name %}
           {{ handler.get_full_name }}
@@ -749,9 +816,11 @@
                   <option
                     value="{{ offense.id }}"
                     data-severity="{% if offense.accumulation_type == 'accumulating' %}Infraction{% elif offense.accumulation_type == 'direct_major' %}Major Offense{% else %}Minor Offense{% endif %}"
-                    {% if edit_case and edit_case.offense.id == offense.id %}
-                      selected
-                    {% endif %}
+                    {% if form_data.offense_id == offense.id|stringformat:"s" %}
+  selected
+{% elif not form_data and edit_case and edit_case.offense.id == offense.id %}
+  selected
+{% endif %}
                   >
 
                     {{ offense.offense_name }}
@@ -799,7 +868,11 @@
     required
   >
     <option value="Reported"
-      {% if edit_case and edit_case.status == "Reported" %}selected{% endif %}>
+      {% if form_data.status == "Reported" %}
+  selected
+{% elif not form_data and edit_case and edit_case.status == "Reported" %}
+  selected
+{% endif %}>
       Reported
     </option>
 
@@ -873,19 +946,31 @@
     <option value="">Not yet resolved</option>
 
     <option value="CRD Director"
-      {% if edit_case.resolution_authority == "CRD Director" %}selected{% endif %}>
-      CRD Director
-    </option>
+  {% if form_data.resolution_authority == "CRD Director" %}
+    selected
+  {% elif not form_data and edit_case.resolution_authority == "CRD Director" %}
+    selected
+  {% endif %}>
+  CRD Director
+</option>
 
-    <option value="Discipline Board"
-      {% if edit_case.resolution_authority == "Discipline Board" %}selected{% endif %}>
-      Discipline Board
-    </option>
+<option value="Discipline Board"
+  {% if form_data.resolution_authority == "Discipline Board" %}
+    selected
+  {% elif not form_data and edit_case.resolution_authority == "Discipline Board" %}
+    selected
+  {% endif %}>
+  Discipline Board
+</option>
 
-    <option value="CODI"
-      {% if edit_case.resolution_authority == "CODI" %}selected{% endif %}>
-      Committee on Decorum and Investigation (CODI)
-    </option>
+<option value="CODI"
+  {% if form_data.resolution_authority == "CODI" %}
+    selected
+  {% elif not form_data and edit_case.resolution_authority == "CODI" %}
+    selected
+  {% endif %}>
+  Committee on Decorum and Investigation (CODI)
+</option>
   </select>
 </div>
 
@@ -903,12 +988,20 @@
     <option value="">Not applicable</option>
 
     <option value="VP LMSL"
-      {% if edit_case and edit_case.appeal_resolution == "VP LMSL" %}selected{% endif %}>
+      {% if form_data.appeal_resolution == "VP LMSL" %}
+  selected
+{% elif not form_data and edit_case and edit_case.appeal_resolution == "VP LMSL" %}
+  selected
+{% endif %}>
       VP LMSL
     </option>
 
     <option value="Chancellor"
-      {% if edit_case and edit_case.appeal_resolution == "Chancellor" %}selected{% endif %}>
+      {% if form_data.appeal_resolution == "Chancellor" %}
+  selected
+{% elif not form_data and edit_case and edit_case.appeal_resolution == "Chancellor" %}
+  selected
+{% endif %}>
       Chancellor
     </option>
   </select>
@@ -993,6 +1086,7 @@
       <input
         type="text"
         name="sanction_name"
+        value="{{ form_data.sanction_name|default:'' }}"
         class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
         placeholder="Enter sanction name"
       >
@@ -1008,7 +1102,7 @@
         rows="3"
         class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
         placeholder="Enter additional remarks about the sanction"
-      ></textarea>
+      >{{ form_data.new_sanction_remarks|default:'' }}></textarea>
     </div>
 
     <p class="text-xs text-slate-500">
@@ -1096,11 +1190,11 @@
           </label>
 
           <textarea
-            name="remarks"
-            class="w-full border border-slate-300 rounded-xl p-3"
-            rows="5"
-            placeholder="Enter case details"
-          >{{ edit_case.remarks|default:'' }}</textarea>
+  name="remarks"
+  class="w-full border border-slate-300 rounded-xl p-3"
+  rows="5"
+  placeholder="Enter case details"
+>{% if form_data.remarks %}{{ form_data.remarks }}{% else %}{{ edit_case.remarks|default:'' }}{% endif %}</textarea>
 
         </div>
 
@@ -1193,7 +1287,7 @@
   </div>
 
   <!-- TABLE -->
-  <div class="overflow-x-auto">
+  <div class="case-table-container">
 
     <table class="case-table text-left text-sm">
 
@@ -1454,15 +1548,15 @@
       */
 
       if (
-        yearLevelField &&
-        year &&
-        document.body.dataset.editing !== "true"
-      ) {
+    yearLevelField &&
+    year &&
+    document.body.dataset.editing !== "true" &&
+    !document.body.dataset.hasFormDataYear
+) {
 
-        yearLevelField.value =
-          year;
+    yearLevelField.value = year;
 
-      }
+}
 
     }
 
@@ -1625,6 +1719,26 @@
 
       }
     );
+
+    /* RESET CASE TABLE HORIZONTAL POSITION */
+
+function resetCaseTablePosition() {
+    const container = document.querySelector(".case-table-container");
+
+    if (container) {
+        container.scrollLeft = 0;
+    }
+}
+
+window.addEventListener("load", function () {
+    resetCaseTablePosition();
+    setTimeout(resetCaseTablePosition, 100);
+});
+
+window.addEventListener("pageshow", function () {
+    resetCaseTablePosition();
+    setTimeout(resetCaseTablePosition, 100);
+});
 
     /* ==============================
        CASE SEARCH

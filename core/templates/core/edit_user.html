@@ -332,7 +332,11 @@
       <!-- FORM -->
       <div class="bg-white rounded-xl shadow-sm border theme-border p-5 form-card">
 
-        <form method="POST" enctype="multipart/form-data">
+        <form
+  method="POST"
+  enctype="multipart/form-data"
+  onsubmit="return confirm('Are you sure you want to save these changes to this user account?');"
+>
           {% csrf_token %}
 
           <!-- PROFILE PICTURE -->

@@ -108,7 +108,64 @@
     .audit-table {
         min-width: 950px;
     }
-}   
+}
+
+/* PRINT LAYOUT */
+@media print {
+
+    body {
+        background: white !important;
+    }
+
+    nav,
+    aside {
+        display: none !important;
+    }
+
+    main {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    main > div {
+        max-width: none !important;
+    }
+
+    .print-hidden {
+        display: none !important;
+    }
+
+    .audit-table {
+        width: 100% !important;
+        min-width: 0 !important;
+        font-size: 10px !important;
+    }
+
+    .audit-table th,
+    .audit-table td {
+        padding: 8px 6px !important;
+        border: 1px solid #ccc !important;
+        white-space: normal !important;
+    }
+
+    .audit-table thead {
+        display: table-header-group;
+    }
+
+    tr {
+        page-break-inside: avoid;
+    }
+
+    .overflow-x-auto {
+        overflow: visible !important;
+    }
+
+    .shadow,
+    .shadow-sm {
+        box-shadow: none !important;
+    }
+}
+
     </style>
 </head>
 
@@ -380,20 +437,107 @@
                         </p>
                     </div>
 
-                    <!-- SEARCH -->
+                    <!-- ACTION BUTTONS -->
 
-                    <div class="w-full sm:w-64 shrink-0">
-                        <input
-                            type="text"
-                            id="auditSearch"
-                            placeholder="Search audit logs..."
-                            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
-                            aria-label="Search audit logs"
-                        >
-                    </div>
+<div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto print-hidden">
+
+    <button
+        type="button"
+        onclick="window.print()"
+        class="px-4 py-3 rounded-xl text-white theme-bg theme-hover font-medium"
+    >
+        Print Logs
+    </button>
+
+    <a
+        href="{% url 'export_audit_logs' %}"
+        class="px-4 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 font-medium text-center"
+    >
+        Export CSV
+    </a>
+
+</div>
 
                 </div>
 
+                <!-- AUDIT LOG FILTERS -->
+<div class="border border-green-700 rounded-2xl p-4 mb-5 print-hidden">
+
+    <h3 class="text-lg font-bold text-slate-800">
+        Audit Log Filters
+    </h3>
+
+    <p class="text-sm text-slate-500 mt-1 mb-4">
+        Filter audit logs by user, action, page, and date range.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+
+        <!-- USER -->
+        <div>
+            <label class="block text-sm font-medium mb-2">User</label>
+            <select id="filterUser" class="w-full border border-slate-300 rounded-xl p-3">
+                <option value="">All Users</option>
+                {% for user in filter_users %}
+                    <option value="{{ user }}">{{ user }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- ACTION -->
+        <div>
+            <label class="block text-sm font-medium mb-2">Action</label>
+            <select id="filterAction" class="w-full border border-slate-300 rounded-xl p-3">
+                <option value="">All Actions</option>
+                {% for action in filter_actions %}
+                    <option value="{{ action }}">{{ action }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- PAGE -->
+        <div>
+            <label class="block text-sm font-medium mb-2">Page</label>
+            <select id="filterPage" class="w-full border border-slate-300 rounded-xl p-3">
+                <option value="">All Pages</option>
+                {% for page in filter_pages %}
+                    <option value="{{ page }}">{{ page }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- DATE FROM -->
+        <div>
+            <label class="block text-sm font-medium mb-2">Date From</label>
+            <input type="date" id="filterDateFrom"
+                   class="w-full border border-slate-300 rounded-xl p-3">
+        </div>
+
+        <!-- DATE TO -->
+        <div>
+            <label class="block text-sm font-medium mb-2">Date To</label>
+            <input type="date" id="filterDateTo"
+                   class="w-full border border-slate-300 rounded-xl p-3">
+        </div>
+
+    </div>
+
+    <!-- FILTER BUTTONS -->
+    <div class="flex gap-3 mt-4">
+
+        <button type="button" id="applyAuditFilter"
+                class="px-5 py-3 rounded-xl bg-green-700 text-white hover:bg-green-800 font-medium">
+            Apply Filter
+        </button>
+
+        <button type="button" id="resetAuditFilter"
+                class="px-5 py-3 rounded-xl bg-slate-200 text-slate-700 hover:bg-slate-300 font-medium">
+            Reset Filter
+        </button>
+
+    </div>
+
+</div>  
 
                 <!-- TABLE -->
 
@@ -432,7 +576,10 @@
 
                             {% for log in audit_logs %}
 
-                                <tr class="audit-row hover:bg-slate-50">
+                            <tr
+                                class="audit-row hover:bg-slate-50"
+                                data-date="{{ log.date_created|localtime|date:'Y-m-d' }}"
+                            >
 
                                     <!-- DATE AND TIME -->
 
@@ -530,43 +677,104 @@
     </main>
 
 
-    <!-- SEARCH FUNCTION -->
+    <!-- AUDIT LOG FILTER FUNCTION -->
 
-    <script>
-        const auditSearch = document.getElementById("auditSearch");
-        const auditRows = document.querySelectorAll(".audit-row");
-        const auditCount = document.getElementById("auditCount");
-        const noSearchResults = document.getElementById("noSearchResults");
+<script>
+    const auditRows = document.querySelectorAll(".audit-row");
+    const auditCount = document.getElementById("auditCount");
+    const noSearchResults = document.getElementById("noSearchResults");
 
-        auditSearch.addEventListener("input", function () {
+    const filterUser = document.getElementById("filterUser");
+    const filterAction = document.getElementById("filterAction");
+    const filterPage = document.getElementById("filterPage");
+    const filterDateFrom = document.getElementById("filterDateFrom");
+    const filterDateTo = document.getElementById("filterDateTo");
 
-            const searchText = auditSearch.value.toLowerCase().trim();
-            let visibleCount = 0;
+    const applyButton = document.getElementById("applyAuditFilter");
+    const resetButton = document.getElementById("resetAuditFilter");
 
-            auditRows.forEach(function (row) {
+    // APPLY FILTERS
+    applyButton.addEventListener("click", function () {
 
-                const rowText = row.textContent.toLowerCase();
-                const matches = rowText.includes(searchText);
+        const selectedUser = filterUser.value.toLowerCase();
+        const selectedAction = filterAction.value.toLowerCase();
+        const selectedPage = filterPage.value.toLowerCase();
+        const dateFrom = filterDateFrom.value;
+        const dateTo = filterDateTo.value;
 
-                row.style.display = matches ? "" : "none";
+        let visibleCount = 0;
 
-                if (matches) {
-                    visibleCount++;
-                }
+        auditRows.forEach(function (row) {
 
-            });
+            const cells = row.querySelectorAll("td");
 
-            auditCount.textContent = visibleCount;
+            const rowUser = cells[1].textContent.trim().toLowerCase();
+            const rowAction = cells[2].textContent.trim().toLowerCase();
+            const rowPage = cells[4].textContent.trim().toLowerCase();
+            const rowDate = row.dataset.date;
 
-            if (noSearchResults) {
-                noSearchResults.classList.toggle(
-                    "hidden",
-                    visibleCount > 0 || auditRows.length === 0
-                );
+            const matchesUser =
+                !selectedUser || rowUser === selectedUser;
+
+            const matchesAction =
+                !selectedAction || rowAction === selectedAction;
+
+            const matchesPage =
+                !selectedPage || rowPage === selectedPage;
+
+            const matchesDateFrom =
+                !dateFrom || rowDate >= dateFrom;
+
+            const matchesDateTo =
+                !dateTo || rowDate <= dateTo;
+
+            const matches =
+                matchesUser &&
+                matchesAction &&
+                matchesPage &&
+                matchesDateFrom &&
+                matchesDateTo;
+
+            row.style.display = matches ? "" : "none";
+
+            if (matches) {
+                visibleCount++;
             }
 
         });
-    </script>
+
+        auditCount.textContent = visibleCount;
+
+        if (noSearchResults) {
+            noSearchResults.classList.toggle(
+                "hidden",
+                visibleCount > 0 || auditRows.length === 0
+            );
+        }
+
+    });
+
+    // RESET FILTERS
+    resetButton.addEventListener("click", function () {
+
+        filterUser.value = "";
+        filterAction.value = "";
+        filterPage.value = "";
+        filterDateFrom.value = "";
+        filterDateTo.value = "";
+
+        auditRows.forEach(function (row) {
+            row.style.display = "";
+        });
+
+        auditCount.textContent = auditRows.length;
+
+        if (noSearchResults) {
+            noSearchResults.classList.add("hidden");
+        }
+
+    });
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
 
