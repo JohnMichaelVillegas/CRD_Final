@@ -80,6 +80,13 @@
                 Edit Student
             </h2>
 
+            {% if messages %}
+    {% for message in messages %}
+        <div class="mb-4 p-3 rounded-lg bg-red-100 text-red-700">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
 
             <form
                 method="POST"
@@ -152,7 +159,7 @@
                         type="text"
                         name="student_id"
                         id="student_id"
-                        value="{{ student.student_id }}"
+                        value="{% if form_data %}{{ form_data.student_id }}{% else %}{{ student.student_id }}{% endif %}"
                         required
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
@@ -174,7 +181,7 @@
                         type="text"
                         name="first_name"
                         id="first_name"
-                        value="{{ student.first_name }}"
+                        value="{% if form_data %}{{ form_data.first_name }}{% else %}{{ student.first_name }}{% endif %}"
                         required
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
@@ -196,7 +203,7 @@
                         type="text"
                         name="last_name"
                         id="last_name"
-                        value="{{ student.last_name }}"
+                        value="{% if form_data %}{{ form_data.last_name }}{% else %}{{ student.last_name }}{% endif %}"
                         required
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
@@ -218,7 +225,7 @@
                         type="text"
                         name="course"
                         id="course"
-                        value="{{ student.course }}"
+                        value="{% if form_data %}{{ form_data.course }}{% else %}{{ student.course }}{% endif %}"
                         required
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
@@ -240,7 +247,7 @@
                         type="text"
                         name="program"
                         id="program"
-                        value="{{ student.program }}"
+                        value="{% if form_data %}{{ form_data.program }}{% else %}{{ student.program }}{% endif %}"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
 
@@ -261,7 +268,7 @@
                         type="text"
                         name="year_level"
                         id="year_level"
-                        value="{{ student.year_level }}"
+                        vvalue="{% if form_data %}{{ form_data.year_level }}{% else %}{{ student.year_level }}{% endif %}"
                         required
                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
                     >
@@ -290,18 +297,26 @@
                         </option>
 
                         <option
-                            value="Male"
-                            {% if student.sex == "Male" %}selected{% endif %}
-                        >
-                            Male
-                        </option>
+    value="Male"
+    {% if form_data %}
+        {% if form_data.sex == "Male" %}selected{% endif %}
+    {% elif student.sex == "Male" %}
+        selected
+    {% endif %}
+>
+    Male
+</option>
 
-                        <option
-                            value="Female"
-                            {% if student.sex == "Female" %}selected{% endif %}
-                        >
-                            Female
-                        </option>
+<option
+    value="Female"
+    {% if form_data %}
+        {% if form_data.sex == "Female" %}selected{% endif %}
+    {% elif student.sex == "Female" %}
+        selected
+    {% endif %}
+>
+    Female
+</option>
 
                     </select>
 

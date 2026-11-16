@@ -888,6 +888,7 @@
 
     <select
       name="status"
+      id="caseStatus"
       class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
       required
     >
@@ -1002,6 +1003,7 @@
 
     <select
       name="resolution_authority"
+      id="resolutionAuthority"
       class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
     >
       <option value=""
@@ -1048,6 +1050,7 @@
 
     <select
       name="appeal_resolution"
+      id="appealResolution"
       class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
     >
       <option value=""
@@ -2020,6 +2023,42 @@ updateColumnVisibility();
 
       }
     );
+
+    const caseRecordForm = document.querySelector(
+  'main form[method="POST"][enctype="multipart/form-data"]'
+);
+
+const caseStatus = document.getElementById("caseStatus");
+const resolutionAuthority = document.getElementById("resolutionAuthority");
+
+const resolvedStatuses = [
+  "Resolved",
+  "Resolved by DO",
+  "Resolved by Director",
+  "Resolved by Other",
+  "Resolved by CRD Director",
+  "Resolved by Discipline Board",
+  "Resolved by CODI"
+];
+
+caseRecordForm?.addEventListener("submit", function(event) {
+
+  if (
+    caseStatus &&
+    resolutionAuthority &&
+    resolvedStatuses.includes(caseStatus.value) &&
+    !resolutionAuthority.value
+  ) {
+    event.preventDefault();
+
+    alert(
+      "Please select a Resolution Authority before marking the case as resolved."
+    );
+
+    resolutionAuthority.focus();
+  }
+
+});
 
   </script>
 

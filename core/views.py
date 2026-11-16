@@ -763,10 +763,15 @@ def student_records(request):
     if account_is_inactive(request):
         return redirect("login")
 
-    if not is_main_admin(request.user) and not staff_has_permission(request.user, "student_records"):
-        return HttpResponseForbidden("You do not have permission to view Student Records.")
+    if not is_main_admin(request.user) and not staff_has_permission(
+        request.user, "student_records"
+    ):
+        return HttpResponseForbidden(
+            "You do not have permission to view Student Records."
+        )
 
-    def render_page(form_data=None):
+    def render_page(form_data=None, edit_form_data=None,
+                    edit_student_id=None, edit_form_error=None):
         return render(request, "core/student_records.html", {
             "students": Student.objects.exclude(
                 status="Graduated"
@@ -774,25 +779,266 @@ def student_records(request):
             "settings": SystemSettings.objects.get_or_create(id=1)[0],
             "can_edit_students": is_main_admin(request.user),
             "add_form_data": form_data or {},
+            "edit_form_data": edit_form_data or {},
+            "edit_student_id": edit_student_id,
+            "edit_form_error": edit_form_error,
         })
 
     if request.method == "POST":
-        if not is_main_admin(request.user):
-            return HttpResponseForbidden("Only the Main Admin can add student records.")
 
+        if not is_main_admin(request.user):
+            return HttpResponseForbidden(
+                "Only the Main Admin can modify student records."
+            )
+
+        action = request.POST.get("action", "add_student")
+
+        # =============================================
+        # EDIT STUDENT THROUGH MODAL
+        # =============================================
+        if action == "edit_student":
+
+            form_data = request.POST.dict()
+            student_id = request.POST.get("student_pk")
+
+            try:
+                student = Student.objects.get(id=student_id)
+            except (Student.DoesNotExist, ValueError, TypeError):
+                messages.error(request, "Student record not found.")
+                return redirect("student_records")
+
+            if student.status == "Graduated":
+                messages.error(
+                    request,
+                    "Graduated student records cannot be edited."
+                )
+                return redirect("student_records")
+
+            new_student_id = request.POST.get(
+                "student_id", ""
+            ).strip()
+
+            # Validation helper
+            def edit_error(message):
+                return render_page(
+                    edit_form_data=form_data,
+                    edit_student_id=student.id,
+                    edit_form_error=message,
+                )
+
+            # Validate Student ID
+            if not new_student_id.isdigit():
+                return edit_error(
+                    "Student ID must contain numbers only."
+                )
+
+            first_name = request.POST.get(
+                "first_name", ""
+            ).strip()
+
+            middle_name = request.POST.get(
+                "middle_name", ""
+            ).strip()
+
+            last_name = request.POST.get(
+                "last_name", ""
+            ).strip()
+
+            course = request.POST.get("course", "").strip()
+            program = request.POST.get("program", "").strip()
+            year_level = request.POST.get("year_level", "").strip()
+            sex = request.POST.get("sex", "").strip()
+
+            new_status = request.POST.get("status", "Active")
+            graduation_date_input = request.POST.get(
+                "graduation_date", ""
+            ).strip()
+
+            # Required fields
+            if not all([
+                new_student_id,
+                first_name,
+                last_name,
+                course,
+                program,
+                year_level,
+            ]):
+                return edit_error(
+                    "Please complete all required student information."
+                )
+
+            # Validate status
+            valid_statuses = [
+                "Active", "LOA", "AWOL", "Graduated"
+            ]
+
+            if new_status not in valid_statuses:
+                return edit_error("Invalid student status.")
+
+            # Validate graduation date
+            graduation_date = None
+
+            if new_status == "Graduated":
+
+                if not graduation_date_input:
+                    return edit_error(
+                        "Please enter the graduation date."
+                    )
+
+                graduation_date = parse_date(
+                    graduation_date_input
+                )
+
+                if graduation_date is None:
+                    return edit_error(
+                        "Please enter a valid graduation date."
+                    )
+
+            # Duplicate Student ID validation
+            if Student.objects.filter(
+                student_id=new_student_id
+            ).exclude(id=student.id).exists():
+
+                return edit_error(
+                    "Another student already uses this Student ID."
+                )
+
+            # Update student information
+            student.student_id = new_student_id
+            student.first_name = first_name
+            student.middle_name = middle_name
+            student.last_name = last_name
+            student.course = course
+            student.program = program
+            student.year_level = year_level
+            student.sex = sex
+            student.status = new_status
+            student.graduation_date = graduation_date
+
+            # Mother information
+            student.mother_name = request.POST.get("mother_name", "")
+            student.mother_address = request.POST.get("mother_address", "")
+            student.mother_email = request.POST.get("mother_email", "")
+            student.mother_contact_no = request.POST.get(
+                "mother_contact_no", ""
+            )
+
+            # Father information
+            student.father_name = request.POST.get("father_name", "")
+            student.father_address = request.POST.get("father_address", "")
+            student.father_email = request.POST.get("father_email", "")
+            student.father_contact_no = request.POST.get(
+                "father_contact_no", ""
+            )
+
+            # Guardian information
+            student.guardian_name = request.POST.get("guardian_name", "")
+            student.guardian_address = request.POST.get("guardian_address", "")
+            student.guardian_email = request.POST.get("guardian_email", "")
+            student.guardian_contact_no = request.POST.get(
+                "guardian_contact_no", ""
+            )
+
+            # Preserve existing image unless a new one is uploaded
+            if request.FILES.get("image"):
+                student.image = request.FILES["image"]
+
+            student.save()
+
+            # Synchronize student archive
+            if student.status == "Graduated":
+
+                ArchivedStudent.objects.update_or_create(
+                    student_id=student.student_id,
+                    defaults={
+                        "first_name": student.first_name,
+                        "last_name": student.last_name,
+                        "course": student.course,
+                        "program": student.program,
+                        "year_level": student.year_level,
+                        "sex": student.sex,
+                        "graduation_date": student.graduation_date,
+                        "mother_name": student.mother_name,
+                        "mother_address": student.mother_address,
+                        "mother_email": student.mother_email,
+                        "mother_contact_no": student.mother_contact_no,
+                        "father_name": student.father_name,
+                        "father_address": student.father_address,
+                        "father_email": student.father_email,
+                        "father_contact_no": student.father_contact_no,
+                        "guardian_name": student.guardian_name,
+                        "guardian_address": student.guardian_address,
+                        "guardian_email": student.guardian_email,
+                        "guardian_contact_no": student.guardian_contact_no,
+                    }
+                )
+
+            else:
+                ArchivedStudent.objects.filter(
+                    student_id=student.student_id
+                ).delete()
+
+            # Audit log
+            if new_status == "Graduated":
+                AuditLog.objects.create(
+                    user=request.user,
+                    page="Student Archive",
+                    action="Student Archived",
+                    description=(
+                        f"Archived student {student.student_id} - "
+                        f"{student.first_name} {student.last_name} "
+                        f"with graduation date {student.graduation_date}."
+                    )
+                )
+            else:
+                AuditLog.objects.create(
+                    user=request.user,
+                    page="Student Records",
+                    action="Student Updated",
+                    description=(
+                        f"Updated student {student.student_id} - "
+                        f"{student.first_name} {student.last_name}; "
+                        f"Status: {student.status}"
+                    )
+                )
+
+            messages.success(
+                request,
+                "Student record updated successfully."
+            )
+
+            return redirect("student_records")
+
+        # =============================================
+        # ADD STUDENT
+        # =============================================
         form_data = request.POST.dict()
 
         student_id = request.POST.get("student_id", "").strip()
+
+        if not student_id.isdigit():
+            messages.error(
+                request,
+                "Student ID must contain numbers only."
+            )
+            return render_page(form_data)
+
         first_name = request.POST.get("first_name", "").strip()
         middle_name = request.POST.get("middle_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
 
         if not student_id or not first_name or not last_name:
-            messages.error(request, "Student ID, first name, and last name are required.")
+            messages.error(
+                request,
+                "Student ID, first name, and last name are required."
+            )
             return render_page(form_data)
 
         if Student.objects.filter(student_id=student_id).exists():
-            messages.error(request, "A student with this Student ID already exists.")
+            messages.error(
+                request,
+                "A student with this Student ID already exists."
+            )
             return render_page(form_data)
 
         status = request.POST.get("status", "Active")
@@ -830,10 +1076,17 @@ def student_records(request):
             user=request.user,
             page="Student Records",
             action="Student Added",
-            description=f"Added student {student.student_id} - {student.first_name} {student.last_name}"
+            description=(
+                f"Added student {student.student_id} - "
+                f"{student.first_name} {student.last_name}"
+            )
         )
 
-        messages.success(request, "Student record added successfully.")
+        messages.success(
+            request,
+            "Student record added successfully."
+        )
+
         return redirect("student_records")
 
     return render_page()
@@ -866,7 +1119,20 @@ def edit_student(request, student_id):
         )
         return redirect("student_records")
 
+    def render_edit_page(form_data=None):
+        return render(
+            request,
+            "core/edit_student.html",
+            {
+                "student": student,
+                "settings": SystemSettings.objects.get_or_create(id=1)[0],
+                "form_data": form_data or {},
+            }
+        )
+
     if request.method == "POST":
+
+        form_data = request.POST.dict()
 
         new_student_id = request.POST.get("student_id", "").strip()
         first_name = request.POST.get("first_name", "").strip()
@@ -884,7 +1150,7 @@ def edit_student(request, student_id):
 
         if new_status not in valid_statuses:
             messages.error(request, "Invalid student status.")
-            return redirect("student_records")
+            return render_edit_page(form_data)
 
         # Graduation date is required for Graduated students
         graduation_date = None
@@ -896,7 +1162,7 @@ def edit_student(request, student_id):
                     request,
                     "Please enter the graduation date."
                 )
-                return redirect("student_records")
+                return render_edit_page(form_data)
 
             graduation_date = parse_date(graduation_date_input)
 
@@ -905,11 +1171,11 @@ def edit_student(request, student_id):
                     request,
                     "Please enter a valid graduation date."
                 )
-                return redirect("student_records")
+                return render_edit_page(form_data)
 
         if not new_student_id:
             messages.error(request, "Student ID is required.")
-            return redirect("student_records")
+            return render_edit_page(form_data)
 
         # Check for duplicate Student ID
         if Student.objects.filter(
@@ -920,7 +1186,7 @@ def edit_student(request, student_id):
                 request,
                 "Another student already uses this Student ID."
             )
-            return redirect("student_records")
+            return render_edit_page(form_data)
 
         # Update student information
         student.student_id = new_student_id

@@ -465,13 +465,16 @@
             Student ID
           </label>
           <input
-    type="text"
-    id="student_id"
+     type="text"
     name="student_id"
+    id="addStudentID"
+    inputmode="numeric"
+    pattern="[0-9]+"
+    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
     value="{{ add_form_data.student_id|default:'' }}"
     class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
-    placeholder="Enter student ID"
     required
+>
 >
         </div>
 
@@ -763,7 +766,7 @@
   {% if request.user.is_superuser %}
   <div
     id="editStudentModal"
-    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+    class="{% if edit_form_data %}flex{% else %}hidden{% endif %} fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
   >
     <div class="bg-white rounded-xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
 
@@ -784,12 +787,31 @@
 
       <!-- EDIT FORM -->
       <form
-        id="editStudentForm"
-        method="POST"
-        enctype="multipart/form-data"
-        class="p-5"
-      >
-        {% csrf_token %}
+    id="editStudentForm"
+    method="POST"
+    action="{% url 'student_records' %}"
+    enctype="multipart/form-data"
+    class="p-5"
+>
+    {% csrf_token %}
+
+    <!-- Identifies this as an Edit Student submission -->
+    <input type="hidden" name="action" value="edit_student">
+
+    <!-- Identifies which student is being edited -->
+    <input
+        type="hidden"
+        name="student_pk"
+        id="editStudentPK"
+        value="{{ edit_student_id|default:'' }}"
+    >
+
+    <!-- Validation Error -->
+    {% if edit_form_error %}
+    <div class="p-3 mb-4 rounded-lg bg-red-100 border border-red-300 text-red-800 text-sm">
+        {{ edit_form_error }}
+    </div>
+    {% endif %}
 
         <!-- PROFILE PICTURE -->
         <div class="mb-5">
@@ -1281,6 +1303,8 @@
     </div>
   </div>
 
+  {{ edit_form_data|json_script:"editStudentFormData" }}
+
   <!-- JAVASCRIPT -->
   <script>
     /* SEARCH */
@@ -1391,7 +1415,7 @@
         if (!editStudentForm || !editStudentModal) return;
 
         /* FORM ACTION */
-        editStudentForm.action = "/edit-student/" + studentId + "/";
+        document.getElementById("editStudentPK").value = studentId;
 
         /* FILL FORM */
         document.getElementById("editStudentID").value =
@@ -1654,6 +1678,40 @@
         fileName.classList.add("text-slate-500");
       }
     }
+
+    const savedEditDataElement = document.getElementById(
+  "editStudentFormData"
+);
+
+if (savedEditDataElement && editStudentForm) {
+
+  const savedData = JSON.parse(savedEditDataElement.textContent);
+
+  Object.entries(savedData).forEach(function ([name, value]) {
+
+    if (
+      name === "csrfmiddlewaretoken" ||
+      name === "action" ||
+      name === "student_pk" ||
+      name === "image"
+    ) {
+      return;
+    }
+
+    const field = editStudentForm.elements.namedItem(name);
+
+    if (field && typeof field.value !== "undefined") {
+      field.value = value;
+    }
+  });
+
+  // Restore the student being edited.
+  document.getElementById("editStudentPK").value =
+    "{{ edit_student_id|default:'' }}";
+
+  updateGraduationDateRequirement();
+}
+
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
