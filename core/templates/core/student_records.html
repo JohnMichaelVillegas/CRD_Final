@@ -289,9 +289,9 @@
         </div>
 
         <!-- TABLE -->
-        <div class="overflow-x-auto">
+        <div class="max-h-[480px] overflow-auto">
           <table class="w-full text-left text-sm">
-            <thead class="theme-bg text-white">
+            <thead class="theme-bg text-white sticky top-0 z-8">
               <tr>
                 <th class="px-4 py-3 font-bold">Student ID</th>
                 <th class="px-4 py-3 font-bold">Name</th>
@@ -428,7 +428,7 @@
   {% if request.user.is_superuser %}
   <div
     id="addStudentModal"
-    class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
+    class="{% if add_form_data %}flex{% else %}hidden{% endif %} fixed inset-0 z-50 items-center justify-center bg-black/50 p-4"
   >
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
 
@@ -465,13 +465,14 @@
             Student ID
           </label>
           <input
-            type="text"
-            id="student_id"
-            name="student_id"
-            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
-            placeholder="Enter student ID"
-            required
-          >
+    type="text"
+    id="student_id"
+    name="student_id"
+    value="{{ add_form_data.student_id|default:'' }}"
+    class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+    placeholder="Enter student ID"
+    required
+>
         </div>
 
         <!-- NAME -->
@@ -481,13 +482,14 @@
               First Name
             </label>
             <input
-              type="text"
-              id="first_name"
-              name="first_name"
-              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
-              placeholder="Enter first name"
-              required
-            >
+    type="text"
+    id="first_name"
+    name="first_name"
+    value="{{ add_form_data.first_name|default:'' }}"
+    class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+    placeholder="Enter first name"
+    required
+>
           </div>
 
           <div>
@@ -498,6 +500,7 @@
               type="text"
               id="middle_name"
               name="middle_name"
+              value="{{ add_form_data.first_name|default:'' }}"
               class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
               placeholder="Enter full middle name"
             >
@@ -511,6 +514,7 @@
               type="text"
               id="last_name"
               name="last_name"
+              value="{{ add_form_data.last_name|default:'' }}"
               class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
               placeholder="Enter last name"
               required
@@ -578,6 +582,7 @@
     type="text"
     id="course"
     name="course"
+    value="{{ add_form_data.course|default:'' }}"
     class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
     placeholder="Example: BS - IS"
     required
@@ -590,20 +595,20 @@
             Year Level
           </label>
           <select
-            id="year_level"
-            name="year_level"
-            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
-            required
+              id="year_level"
+              name="year_level"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              required
           >
-            <option value="">Select year level</option>
-            <option value="1">1st Year</option>
-            <option value="2">2nd Year</option>
-            <option value="3">3rd Year</option>
-            <option value="4">4th Year</option>
-            <option value="5">5th Year</option>
-            <option value="6">6th Year</option>
-            <option value="7">7th Year</option>
-          </select>
+              <option value="">Select year level</option>
+              <option value="1" {% if add_form_data.year_level == "1" %}selected{% endif %}>1st Year</option>
+              <option value="2" {% if add_form_data.year_level == "2" %}selected{% endif %}>2nd Year</option>
+              <option value="3" {% if add_form_data.year_level == "3" %}selected{% endif %}>3rd Year</option>
+              <option value="4" {% if add_form_data.year_level == "4" %}selected{% endif %}>4th Year</option>
+              <option value="5" {% if add_form_data.year_level == "5" %}selected{% endif %}>5th Year</option>
+              <option value="6" {% if add_form_data.year_level == "6" %}selected{% endif %}>6th Year</option>
+              <option value="7" {% if add_form_data.year_level == "7" %}selected{% endif %}>7th Year</option>
+        </select>
         </div>
 
         <!-- STUDENT STATUS -->
@@ -613,14 +618,14 @@
           </label>
 
           <select
-            id="student_status"
-            name="status"
-            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
-            required
+              id="student_status"
+              name="status"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              required
           >
-            <option value="Active" selected>Active</option>
-            <option value="LOA">LOA</option>
-            <option value="AWOL">AWOL</option>
+              <option value="Active" {% if add_form_data.status == "Active" or not add_form_data.status %}selected{% endif %}>Active</option>
+              <option value="LOA" {% if add_form_data.status == "LOA" %}selected{% endif %}>LOA</option>
+              <option value="AWOL" {% if add_form_data.status == "AWOL" %}selected{% endif %}>AWOL</option>
           </select>
         </div>
 
@@ -630,22 +635,22 @@
             School
           </label>
           <select
-            id="program"
-            name="program"
-            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
-            required
+              id="program"
+              name="program"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              required
           >
-            <option value="">Select school</option>
-            <option value="SMIT">SMIT</option>
-            <option value="SDEAS">SDEAS</option>
-            <option value="SMS">SMS</option>
-            <option value="SNMA">SNMA</option>
-            <option value="SED">SED</option>
-            <option value="SACP">SACP</option>
-            <option value="SHRIM">SHRIM</option>
-            <option value="SDG">SDG</option>
-            <option value="SPACE">SPACE</option>
-          </select>
+              <option value="">Select school</option>
+              <option value="SMIT" {% if add_form_data.program == "SMIT" %}selected{% endif %}>SMIT</option>
+              <option value="SDEAS" {% if add_form_data.program == "SDEAS" %}selected{% endif %}>SDEAS</option>
+              <option value="SMS" {% if add_form_data.program == "SMS" %}selected{% endif %}>SMS</option>
+              <option value="SNMA" {% if add_form_data.program == "SNMA" %}selected{% endif %}>SNMA</option>
+              <option value="SED" {% if add_form_data.program == "SED" %}selected{% endif %}>SED</option>
+              <option value="SACP" {% if add_form_data.program == "SACP" %}selected{% endif %}>SACP</option>
+              <option value="SHRIM" {% if add_form_data.program == "SHRIM" %}selected{% endif %}>SHRIM</option>
+              <option value="SDG" {% if add_form_data.program == "SDG" %}selected{% endif %}>SDG</option>
+              <option value="SPACE" {% if add_form_data.program == "SPACE" %}selected{% endif %}>SPACE</option>
+        </select>
         </div>
 
         <!-- SEX -->
@@ -654,15 +659,15 @@
             Sex
           </label>
           <select
-            name="sex"
-            id="sex"
-            class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+              name="sex"
+              id="sex"
+              class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
           >
-            <option value="">Select sex</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
-          </select>
+              <option value="">Select sex</option>
+              <option value="Male" {% if add_form_data.sex == "Male" %}selected{% endif %}>Male</option>
+              <option value="Female" {% if add_form_data.sex == "Female" %}selected{% endif %}>Female</option>
+              <option value="Other" {% if add_form_data.sex == "Other" %}selected{% endif %}>Other</option>
+        </select>
         </div>
 
         <!-- PARENT AND GUARDIAN INFORMATION -->
@@ -672,62 +677,62 @@
 
         <div class="mb-4">
           <label for="MotherName" class="block mb-1 text-sm font-medium text-slate-800">Mother Name</label>
-          <input type="text" id="MotherName" name="mother_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="text" id="MotherName" name="mother_name" value="{{ add_form_data.mother_name|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="MotherAddress" class="block mb-1 text-sm font-medium text-slate-800">Mother Address</label>
-          <input type="text" id="MotherAddress" name="mother_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="text" id="MotherAddress" name="mother_address" value="{{ add_form_data.mother_address|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="MotherEmail" class="block mb-1 text-sm font-medium text-slate-800">Mother Email</label>
-          <input type="email" id="MotherEmail" name="mother_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="email" id="MotherEmail" name="mother_email" value="{{ add_form_data.mother_email|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="MotherContactNo" class="block mb-1 text-sm font-medium text-slate-800">Mother Contact Number</label>
-          <input type="tel" id="MotherContactNo" name="mother_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="tel" id="MotherContactNo" name="mother_contact_no" value="{{ add_form_data.mother_contact_no|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="FatherName" class="block mb-1 text-sm font-medium text-slate-800">Father Name</label>
-          <input type="text" id="FatherName" name="father_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="text" id="FatherName" name="father_name" value="{{ add_form_data.father_name|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="FatherAddress" class="block mb-1 text-sm font-medium text-slate-800">Father Address</label>
-          <input type="text" id="FatherAddress" name="father_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="text" id="FatherAddress" name="father_address" value="{{ add_form_data.father_address|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="FatherEmail" class="block mb-1 text-sm font-medium text-slate-800">Father Email</label>
-          <input type="email" id="FatherEmail" name="father_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="email" id="FatherEmail" name="father_email" value="{{ add_form_data.father_email|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="FatherContactNo" class="block mb-1 text-sm font-medium text-slate-800">Father Contact Number</label>
-          <input type="tel" id="FatherContactNo" name="father_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="tel" id="FatherContactNo" name="father_contact_no" value="{{ add_form_data.father_contact_no|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="GuardianName" class="block mb-1 text-sm font-medium text-slate-800">Guardian Name</label>
-          <input type="text" id="GuardianName" name="guardian_name" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="text" id="GuardianName" name="guardian_name" value="{{ add_form_data.guardian_name|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="GuardianAddress" class="block mb-1 text-sm font-medium text-slate-800">Guardian Address</label>
-          <input type="text" id="GuardianAddress" name="guardian_address" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="text" id="GuardianAddress" name="guardian_address" value="{{ add_form_data.guardian_address|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="GuardianEmail" class="block mb-1 text-sm font-medium text-slate-800">Guardian Email</label>
-          <input type="email" id="GuardianEmail" name="guardian_email" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="email" id="GuardianEmail" name="guardian_email" value="{{ add_form_data.guardian_email|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <div class="mb-4">
           <label for="GuardianContactNo" class="block mb-1 text-sm font-medium text-slate-800">Guardian Contact Number</label>
-          <input type="tel" id="GuardianContactNo" name="guardian_contact_no" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
+          <input type="tel" id="GuardianContactNo" name="guardian_contact_no" value="{{ add_form_data.guardian_contact_no|default:'' }}" class="w-full border border-slate-300 rounded-lg px-3 py-2 theme-ring">
         </div>
 
         <!-- BUTTONS -->

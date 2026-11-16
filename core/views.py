@@ -120,7 +120,6 @@ def case_number_sort_key(case):
 
             return (school_year, sequence, term)
 
-        # Keep older case numbers sortable.
         return (0, 0, int(parts[0].replace("CASE", "")))
 
     except (ValueError, IndexError):
@@ -177,7 +176,6 @@ def generate_case_number(school_year, term, campus):
     if campus_code not in campus_codes:
         raise ValueError("Select a valid incident campus.")
 
-    # Find the highest sequence used by existing case numbers.
     existing_numbers = CaseRecord.objects.values_list(
         "case_number",
         flat=True
@@ -224,7 +222,6 @@ def login_view(request):
 
         User = get_user_model()
 
-        # Check if the username exists
         try:
 
             user_account = User.objects.get(
@@ -235,7 +232,6 @@ def login_view(request):
 
             user_account = None
 
-        # Reject disabled accounts even if their username/password are correct.
         if user_account is not None and not user_account.is_active:
             return render(
                 request,
@@ -246,7 +242,6 @@ def login_view(request):
                 },
             )
 
-        # Check if the Staff account is already locked
         if user_account is not None:
 
             if (
@@ -274,17 +269,14 @@ def login_view(request):
                         }
                     )
 
-        # Check username and password
         user = authenticate(
             request,
             username=username,
             password=password
         )
 
-        # Correct username and password
         if user is not None:
 
-            # Reset failed attempts after successful login
             if hasattr(user, "userprofile"):
 
                 profile = user.userprofile
@@ -294,12 +286,10 @@ def login_view(request):
 
             login(request, user)
 
-            # Administrator
             if user.is_superuser:
 
                 return redirect("admin_dashboard")
 
-            # Staff
             if (
                 hasattr(user, "userprofile")
                 and user.userprofile.role == "Staff"
@@ -309,12 +299,10 @@ def login_view(request):
 
             return redirect("login")
 
-        # Wrong username or password
         else:
 
             if user_account is not None:
 
-                # Only Staff accounts use the 3-attempt lock system
                 if (
                     not user_account.is_superuser
                     and hasattr(user_account, "userprofile")
@@ -774,12 +762,25 @@ def mock_student_api(request):
 def student_records(request):
     if account_is_inactive(request):
         return redirect("login")
+
     if not is_main_admin(request.user) and not staff_has_permission(request.user, "student_records"):
         return HttpResponseForbidden("You do not have permission to view Student Records.")
+
+    def render_page(form_data=None):
+        return render(request, "core/student_records.html", {
+            "students": Student.objects.exclude(
+                status="Graduated"
+            ).order_by("last_name", "first_name"),
+            "settings": SystemSettings.objects.get_or_create(id=1)[0],
+            "can_edit_students": is_main_admin(request.user),
+            "add_form_data": form_data or {},
+        })
 
     if request.method == "POST":
         if not is_main_admin(request.user):
             return HttpResponseForbidden("Only the Main Admin can add student records.")
+
+        form_data = request.POST.dict()
 
         student_id = request.POST.get("student_id", "").strip()
         first_name = request.POST.get("first_name", "").strip()
@@ -788,24 +789,28 @@ def student_records(request):
 
         if not student_id or not first_name or not last_name:
             messages.error(request, "Student ID, first name, and last name are required.")
-            return redirect("student_records")
+            return render_page(form_data)
+
         if Student.objects.filter(student_id=student_id).exists():
             messages.error(request, "A student with this Student ID already exists.")
-            return redirect("student_records")
+            return render_page(form_data)
 
         status = request.POST.get("status", "Active")
 
         if status not in ["Active", "LOA", "AWOL"]:
             messages.error(request, "Invalid student status.")
-            return redirect("student_records")
-
-        print("COURSE RECEIVED:", repr(request.POST.get("course")))
+            return render_page(form_data)
 
         student = Student.objects.create(
-            student_id=student_id, first_name=first_name, middle_name=middle_name,
-            last_name=last_name, image=request.FILES.get("image"),
-            course=request.POST.get("course"), year_level=request.POST.get("year_level"),
-            program=request.POST.get("program"), sex=request.POST.get("sex"),
+            student_id=student_id,
+            first_name=first_name,
+            middle_name=middle_name,
+            last_name=last_name,
+            image=request.FILES.get("image"),
+            course=request.POST.get("course"),
+            year_level=request.POST.get("year_level"),
+            program=request.POST.get("program"),
+            sex=request.POST.get("sex"),
             status=status,
             mother_name=request.POST.get("mother_name"),
             mother_address=request.POST.get("mother_address"),
@@ -820,21 +825,18 @@ def student_records(request):
             guardian_email=request.POST.get("guardian_email"),
             guardian_contact_no=request.POST.get("guardian_contact_no"),
         )
+
         AuditLog.objects.create(
-            user=request.user, page="Student Records", action="Student Added",
+            user=request.user,
+            page="Student Records",
+            action="Student Added",
             description=f"Added student {student.student_id} - {student.first_name} {student.last_name}"
         )
+
         messages.success(request, "Student record added successfully.")
         return redirect("student_records")
 
-    return render(request, "core/student_records.html", {
-        "students": Student.objects.exclude(
-    status="Graduated"
-).order_by("last_name", "first_name"),
-        "settings": SystemSettings.objects.get_or_create(id=1)[0],
-        "can_edit_students": is_main_admin(request.user),
-    })
-
+    return render_page()
 
 
 # =========================================================
