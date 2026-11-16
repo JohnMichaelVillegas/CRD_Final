@@ -874,160 +874,212 @@
 
           </div>
 
+        </div> <!-- CLOSE PERSON, VIOLATION, AND SEVERITY GRID -->
 
-          <!-- CASE STATUS -->
+        <!-- CASE STATUS AND RESOLUTION DETAILS -->
 
-<div>
-  <label class="block mb-2 text-sm font-medium">
-    Case Status
-  </label>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-  <select
-    name="status"
-    class="w-full border border-slate-300 rounded-xl p-3"
-    required
-  >
-    <option value="Reported"
-      {% if form_data.status == "Reported" %}
-  selected
-{% elif not form_data and edit_case and edit_case.status == "Reported" %}
-  selected
-{% endif %}>
-      Reported
-    </option>
+  <!-- CASE STATUS -->
+  <div>
+    <label class="block mb-2 text-sm font-medium text-slate-800">
+      Case Status
+    </label>
 
-    <option value="Preliminary"
-      {% if edit_case and edit_case.status == "Preliminary" %}selected{% endif %}>
-      Preliminary
-    </option>
+    <select
+      name="status"
+      class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+      required
+    >
+      <option value="Reported"
+        {% if form_data.status == "Reported" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Reported" %}
+          selected
+        {% endif %}>
+        Reported
+      </option>
 
-    <option value="Notice of Complaint Sent"
-      {% if edit_case and edit_case.status == "Notice of Complaint Sent" %}selected{% endif %}>
-      Notice of Complaint Sent
-    </option>
+      <option value="Preliminary"
+        {% if form_data.status == "Preliminary" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Preliminary" %}
+          selected
+        {% endif %}>
+        Preliminary
+      </option>
 
-    <option value="Under Review"
-      {% if edit_case and edit_case.status == "Under Review" %}selected{% endif %}>
-      Under Review
-    </option>
+      <option value="Notice of Complaint Sent"
+        {% if form_data.status == "Notice of Complaint Sent" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Notice of Complaint Sent" %}
+          selected
+        {% endif %}>
+        Notice of Complaint Sent
+      </option>
 
-    <option value="Resolved by DO"
-      {% if edit_case and edit_case.status == "Resolved by DO" %}selected{% endif %}>
-      Resolved by DO
-    </option>
+      <option value="Under Review"
+        {% if form_data.status == "Under Review" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Under Review" %}
+          selected
+        {% endif %}>
+        Under Review
+      </option>
 
-    <option value="Resolved by Director"
-      {% if edit_case and edit_case.status == "Resolved by Director" %}selected{% endif %}>
-      Resolved by Director
-    </option>
+      <option value="Resolved by DO"
+        {% if form_data.status == "Resolved by DO" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Resolved by DO" %}
+          selected
+        {% endif %}>
+        Resolved by DO
+      </option>
 
-    <option value="Resolved by Other"
-      {% if edit_case and edit_case.status == "Resolved by Other" %}selected{% endif %}>
-      Resolved by Other
-    </option>
+      <option value="Resolved by Director"
+        {% if form_data.status == "Resolved by Director" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Resolved by Director" %}
+          selected
+        {% endif %}>
+        Resolved by Director
+      </option>
 
-    <option value="Resolved by CRD Director"
-      {% if edit_case and edit_case.status == "Resolved by CRD Director" %}selected{% endif %}>
-      Resolved by CRD Director
-    </option>
+      <option value="Resolved by Other"
+        {% if form_data.status == "Resolved by Other" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Resolved by Other" %}
+          selected
+        {% endif %}>
+        Resolved by Other
+      </option>
 
-    <option value="Resolved by Discipline Board"
-      {% if edit_case and edit_case.status == "Resolved by Discipline Board" %}selected{% endif %}>
-      Resolved by Discipline Board
-    </option>
+      <option value="Resolved by CRD Director"
+        {% if form_data.status == "Resolved by CRD Director" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Resolved by CRD Director" %}
+          selected
+        {% endif %}>
+        Resolved by CRD Director
+      </option>
 
-    <option value="Resolved by CODI"
-      {% if edit_case and edit_case.status == "Resolved by CODI" %}selected{% endif %}>
-      Resolved by CODI
-    </option>
+      <option value="Resolved by Discipline Board"
+        {% if form_data.status == "Resolved by Discipline Board" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Resolved by Discipline Board" %}
+          selected
+        {% endif %}>
+        Resolved by Discipline Board
+      </option>
 
-    <option value="Resolved"
-      {% if edit_case and edit_case.status == "Resolved" %}selected{% endif %}>
-      Resolved
-    </option>
-  </select>
+      <option value="Resolved by CODI"
+        {% if form_data.status == "Resolved by CODI" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Resolved by CODI" %}
+          selected
+        {% endif %}>
+        Resolved by CODI
+      </option>
+
+      <option value="Resolved"
+        {% if form_data.status == "Resolved" %}
+          selected
+        {% elif not form_data and edit_case and edit_case.status == "Resolved" %}
+          selected
+        {% endif %}>
+        Resolved
+      </option>
+    </select>
+  </div>
+
+  {% if edit_case %}
+
+  <!-- RESOLUTION AUTHORITY -->
+  <div>
+    <label class="block mb-2 text-sm font-medium text-slate-800">
+      Resolution Authority
+    </label>
+
+    <select
+      name="resolution_authority"
+      class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+    >
+      <option value=""
+        {% if not form_data.resolution_authority and not edit_case.resolution_authority %}
+          selected
+        {% endif %}>
+        Not yet resolved
+      </option>
+
+      <option value="CRD Director"
+        {% if form_data.resolution_authority == "CRD Director" %}
+          selected
+        {% elif not form_data and edit_case.resolution_authority == "CRD Director" %}
+          selected
+        {% endif %}>
+        CRD Director
+      </option>
+
+      <option value="Discipline Board"
+        {% if form_data.resolution_authority == "Discipline Board" %}
+          selected
+        {% elif not form_data and edit_case.resolution_authority == "Discipline Board" %}
+          selected
+        {% endif %}>
+        Discipline Board
+      </option>
+
+      <option value="CODI"
+        {% if form_data.resolution_authority == "CODI" %}
+          selected
+        {% elif not form_data and edit_case.resolution_authority == "CODI" %}
+          selected
+        {% endif %}>
+        Committee on Decorum and Investigation (CODI)
+      </option>
+    </select>
+  </div>
+
+  <!-- APPEAL RESOLVED BY -->
+  <div>
+    <label class="block mb-2 text-sm font-medium text-slate-800">
+      Appeal Resolved By
+    </label>
+
+    <select
+      name="appeal_resolution"
+      class="w-full border border-slate-300 rounded-xl p-3 theme-ring bg-white"
+    >
+      <option value=""
+        {% if not form_data.appeal_resolution and not edit_case.appeal_resolution %}
+          selected
+        {% endif %}>
+        Not applicable
+      </option>
+
+      <option value="VP LMSL"
+        {% if form_data.appeal_resolution == "VP LMSL" %}
+          selected
+        {% elif not form_data and edit_case.appeal_resolution == "VP LMSL" %}
+          selected
+        {% endif %}>
+        VP LMSL
+      </option>
+
+      <option value="Chancellor"
+        {% if form_data.appeal_resolution == "Chancellor" %}
+          selected
+        {% elif not form_data and edit_case.appeal_resolution == "Chancellor" %}
+          selected
+        {% endif %}>
+        Chancellor
+      </option>
+    </select>
+  </div>
+
+  {% endif %}
+
 </div>
-
-        </div>
-
-{% if edit_case %}
-
-<!-- RESOLUTION AUTHORITY -->
-
-<div>
-  <label class="block mb-2 text-sm font-medium">
-    Resolution Authority
-  </label>
-
-  <select
-    name="resolution_authority"
-    class="w-full border border-slate-300 rounded-xl p-3"
-  >
-    <option value="">Not yet resolved</option>
-
-    <option value="CRD Director"
-  {% if form_data.resolution_authority == "CRD Director" %}
-    selected
-  {% elif not form_data and edit_case.resolution_authority == "CRD Director" %}
-    selected
-  {% endif %}>
-  CRD Director
-</option>
-
-<option value="Discipline Board"
-  {% if form_data.resolution_authority == "Discipline Board" %}
-    selected
-  {% elif not form_data and edit_case.resolution_authority == "Discipline Board" %}
-    selected
-  {% endif %}>
-  Discipline Board
-</option>
-
-<option value="CODI"
-  {% if form_data.resolution_authority == "CODI" %}
-    selected
-  {% elif not form_data and edit_case.resolution_authority == "CODI" %}
-    selected
-  {% endif %}>
-  Committee on Decorum and Investigation (CODI)
-</option>
-  </select>
-</div>
-
-<!-- APPEAL RESOLUTION -->
-
-<div>
-  <label class="block mb-2 text-sm font-medium">
-    Appeal Resolved By
-  </label>
-
-  <select
-    name="appeal_resolution"
-    class="w-full border border-slate-300 rounded-xl p-3"
-  >
-    <option value="">Not applicable</option>
-
-    <option value="VP LMSL"
-      {% if form_data.appeal_resolution == "VP LMSL" %}
-  selected
-{% elif not form_data and edit_case and edit_case.appeal_resolution == "VP LMSL" %}
-  selected
-{% endif %}>
-      VP LMSL
-    </option>
-
-    <option value="Chancellor"
-      {% if form_data.appeal_resolution == "Chancellor" %}
-  selected
-{% elif not form_data and edit_case and edit_case.appeal_resolution == "Chancellor" %}
-  selected
-{% endif %}>
-      Chancellor
-    </option>
-  </select>
-</div>
-
-{% endif %}
 
 {% if edit_case %}
 

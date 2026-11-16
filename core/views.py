@@ -1388,6 +1388,25 @@ def case_record(request):
                 return case_record_validation_error(
                     request,
                     "Invalid resolution authority."
+                )
+
+            resolved_statuses = [
+                "Resolved",
+                "Resolved by DO",
+                "Resolved by Director",
+                "Resolved by Other",
+                "Resolved by CRD Director",
+                "Resolved by Discipline Board",
+                "Resolved by CODI",
+            ]
+
+            if status in resolved_statuses and resolution_authority in [
+                "",
+                "Not yet resolved",
+            ]:
+                return case_record_validation_error(
+                    request,
+                    "Please select a Resolution Authority before marking the case as resolved."
                 )  
 
             # Parse Date Filed
