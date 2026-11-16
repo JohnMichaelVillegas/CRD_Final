@@ -160,6 +160,11 @@
         overflow: visible !important;
     }
 
+    .max-h-\[600px\] {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
     .shadow,
     .shadow-sm {
         box-shadow: none !important;
@@ -541,11 +546,11 @@
 
                 <!-- TABLE -->
 
-                <div class="overflow-x-auto w-full rounded-lg">
+                <div class="max-h-[600px] overflow-auto w-full rounded-lg">
 
                     <table class="audit-table text-left text-sm text-slate-700">
 
-                        <thead class="theme-bg text-white">
+                        <thead class="theme-bg text-white sticky top-0 z-10">
                             <tr>
                                 <th class="date-column font-bold">
                                     Date and Time

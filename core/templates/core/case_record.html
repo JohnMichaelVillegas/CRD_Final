@@ -1276,15 +1276,103 @@
 
   </div>
 
+  <!-- SEARCH AND COLUMN VISIBILITY -->
+<div class="mb-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+
   <!-- SEARCH -->
-  <div class="mb-4">
-    <input
-      type="text"
-      id="caseSearch"
-      placeholder="Search case ID, student ID, name, course, or violation..."
-      class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
+  <input
+    type="text"
+    id="caseSearch"
+    placeholder="Search case ID, student ID, name, course, or violation..."
+    class="w-full sm:flex-1 border border-slate-300 rounded-xl p-3 theme-ring"
+  >
+
+  <!-- COLUMN VISIBILITY -->
+  <div class="relative">
+    <button
+      type="button"
+      id="columnVisibilityBtn"
+      class="px-4 py-3 border border-slate-300 rounded-xl bg-white text-slate-700 hover:bg-slate-50 font-medium whitespace-nowrap"
     >
+      Manage Columns
+    </button>
+
+    <div
+      id="columnVisibilityMenu"
+      class="hidden absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-lg p-4 z-30"
+    >
+      <div class="flex justify-between items-center mb-3">
+        <h4 class="font-semibold text-slate-800">Visible Columns</h4>
+      </div>
+
+      <div class="space-y-3 text-sm text-slate-700">
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="0" checked>
+          Case ID
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="1" checked>
+          Student ID
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="2" checked>
+          Offense Count
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="3" checked>
+          Name
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="4" checked>
+          Person Handling Case
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="5" checked>
+          Course
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="6" checked>
+          Violation
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="7" checked>
+          Severity
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="8" checked>
+          Record Status
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="9" checked>
+          Status
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="10" checked>
+          Date
+        </label>
+
+        <label class="flex items-center gap-2">
+          <input type="checkbox" class="column-toggle" data-column="11" checked>
+          Actions
+        </label>
+
+      </div>
+
+    </div>
   </div>
+
+</div>
 
   <!-- TABLE -->
   <div class="case-table-container">
@@ -1739,6 +1827,88 @@ window.addEventListener("pageshow", function () {
     resetCaseTablePosition();
     setTimeout(resetCaseTablePosition, 100);
 });
+
+/* ==============================
+   COLUMN VISIBILITY
+   ============================== */
+
+const columnVisibilityBtn =
+  document.getElementById("columnVisibilityBtn");
+
+const columnVisibilityMenu =
+  document.getElementById("columnVisibilityMenu");
+
+const columnToggles =
+  document.querySelectorAll(".column-toggle");
+
+const caseTable =
+  document.querySelector(".case-table");
+
+columnVisibilityBtn?.addEventListener("click", function() {
+  columnVisibilityMenu.classList.toggle("hidden");
+});
+
+document.addEventListener("click", function(event) {
+  if (
+    columnVisibilityMenu &&
+    columnVisibilityBtn &&
+    !columnVisibilityMenu.contains(event.target) &&
+    !columnVisibilityBtn.contains(event.target)
+  ) {
+    columnVisibilityMenu.classList.add("hidden");
+  }
+});
+
+function updateColumnVisibility() {
+
+  if (!caseTable) {
+    return;
+  }
+
+  columnToggles.forEach(function(checkbox) {
+
+    const columnIndex =
+      parseInt(checkbox.dataset.column);
+
+    const isVisible = checkbox.checked;
+
+    const header =
+      caseTable.querySelector("thead tr")
+        ?.children[columnIndex];
+
+    if (header) {
+      header.style.display =
+        isVisible ? "" : "none";
+    }
+
+    const rows =
+      caseTable.querySelectorAll("tbody tr");
+
+    rows.forEach(function(row) {
+
+      const cell = row.children[columnIndex];
+
+      if (cell && !cell.hasAttribute("colspan")) {
+        cell.style.display =
+          isVisible ? "" : "none";
+      }
+
+    });
+
+  });
+
+}
+
+columnToggles.forEach(function(checkbox) {
+
+  checkbox.addEventListener(
+    "change",
+    updateColumnVisibility
+  );
+
+});
+
+updateColumnVisibility();
 
     /* ==============================
        CASE SEARCH
