@@ -74,6 +74,21 @@
   padding: 12px 10px;
   vertical-align: middle;
   overflow-wrap: break-word;
+
+  /* Visible lines separating each cell */
+  border-right: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+/* Left outer border */
+.case-table th:first-child,
+.case-table td:first-child {
+  border-left: 1px solid #cbd5e1;
+}
+
+/* Top outer border */
+.case-table thead th {
+  border-top: 1px solid #cbd5e1;
 }
 
 /* CENTER STATUS, DATE, AND ACTIONS */
@@ -158,6 +173,11 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  vertical-align: middle;
+  height: 48px;
+  padding: 12px 10px;
+  line-height: 1.3;
+  background-color: var(--theme-color);
 }
 
 </style>
@@ -1815,6 +1835,7 @@ function resetCaseTablePosition() {
 
     if (container) {
         container.scrollLeft = 0;
+        container.scrollTop = 0;
     }
 }
 
