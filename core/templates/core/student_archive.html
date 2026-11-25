@@ -7,15 +7,89 @@
   <title>Student Archive</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.css" rel="stylesheet">
+  
   <style>
-    :root { --theme-color: {{ settings.theme_color|default:"#15803d" }}; --theme-color-dark: {{ settings.theme_color|default:"#15803d" }}; }
+    :root {
+      --theme-color: {{ settings.theme_color|default:"#15803d" }};
+      --theme-color-dark: {{ settings.theme_color|default:"#15803d" }};
+    }
+
     .theme-bg { background-color: var(--theme-color) !important; }
     .theme-text { color: var(--theme-color) !important; }
     .theme-border { border-color: var(--theme-color) !important; }
-    .theme-ring:focus { --tw-ring-color: var(--theme-color) !important; border-color: var(--theme-color) !important; }
+    .theme-ring:focus {
+      --tw-ring-color: var(--theme-color) !important;
+      border-color: var(--theme-color) !important;
+    }
     .theme-hover:hover { filter: brightness(.95); }
-    .hero-gradient { background: linear-gradient(135deg, var(--theme-color), var(--theme-color-dark)); }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, var(--theme-color), var(--theme-color-dark));
+    }
+
+    /* STUDENT ARCHIVE TABLE SORTING */
+    .sort-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      width: 100%;
+      white-space: nowrap;
+    }
+
+    .sort-menu {
+      position: relative;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .sort-menu summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 3px 5px;
+      border-radius: 5px;
+      user-select: none;
+    }
+
+    .sort-menu summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .sort-menu summary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .sort-dropdown {
+      position: absolute;
+      top: calc(100% + 5px);
+      right: 0;
+      min-width: 190px;
+      background: white;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .sort-option {
+      display: block;
+      width: 100%;
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 14px;
+      white-space: nowrap;
+      cursor: pointer;
+      color: #1e293b;
+    }
+
+    .sort-option:hover {
+      background: #f1f5f9;
+    }
   </style>
+
+
 </head>
 <body class="bg-slate-100">
   <nav class="fixed top-0 z-50 w-full bg-white border-b border-slate-200">
@@ -102,26 +176,450 @@
       <div class="bg-white rounded-2xl border theme-border shadow-sm p-4">
         <div class="mb-4"><h3 class="text-xl font-bold text-slate-800">Graduated Students</h3><p class="text-slate-500 mt-1 text-sm">Records retrieved from the database.</p></div>
         <div class="mb-4"><input type="text" id="archiveSearch" placeholder="Search student ID, name, program, or school..." class="w-full border border-slate-300 rounded-xl p-3 theme-ring"></div>
-        <div class="max-h-[480px] overflow-auto"><table class="w-full text-left text-sm">
-          <thead class="theme-bg text-white sticky top-0 z-10"><tr><th class="px-4 py-3 font-bold">Student ID</th><th class="px-4 py-3 font-bold">Name</th><th class="px-4 py-3 font-bold">Program</th><th class="px-4 py-3 font-bold">School</th><th class="px-4 py-3 font-bold">Year Level</th><th class="px-4 py-3 font-bold">Graduation Date</th><th class="px-4 py-3 font-bold">Archived At</th><th class="px-4 py-3 font-bold text-center">Action</th></tr></thead>
-          <tbody id="archiveTableBody" class="divide-y divide-slate-200">
-            {% for archived in archived_students %}
-            <tr class="hover:bg-slate-50"><td class="px-4 py-3 font-medium">{{ archived.student_id }}</td><td class="px-4 py-3">{{ archived.first_name }} {{ archived.last_name }}</td><td class="px-4 py-3">{{ archived.course|default:"—" }}</td><td class="px-4 py-3">{{ archived.program|default:"—" }}</td><td class="px-4 py-3">{{ archived.year_level|default:"—" }}</td><td class="px-4 py-3">{{ archived.graduation_date|date:"M d, Y"|default:"—" }}</td><td class="px-4 py-3">{{ archived.archived_at|date:"M d, Y"|default:"—" }}</td><td class="px-4 py-3 text-center"><form method="POST" action="{% url 'student_archive' %}" onsubmit="return confirm('Restore this student to Active status?');">{% csrf_token %}<input type="hidden" name="action" value="restore"><input type="hidden" name="archived_id" value="{{ archived.id }}"><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Restore</button></form></td></tr>
-            {% empty %}<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No graduated students in the archive.</td></tr>{% endfor %}
-          </tbody>
-        </table></div>
+
+<div class="max-h-[480px] overflow-auto">
+  <table class="w-full text-left text-sm">
+
+    <thead class="theme-bg text-white sticky top-0 z-10">
+      <tr>
+
+        <!-- STUDENT ID -->
+        <th class="px-4 py-3 font-bold">
+          <div class="sort-header">
+            <span>Student ID</span>
+            <details class="sort-menu">
+              <summary>↕</summary>
+              <div class="sort-dropdown">
+                <button type="button" class="sort-option" data-sort-column="0" data-sort-direction="asc">↑ Sort A to Z</button>
+                <button type="button" class="sort-option" data-sort-column="0" data-sort-direction="desc">↓ Sort Z to A</button>
+              </div>
+            </details>
+          </div>
+        </th>
+
+        <!-- NAME -->
+        <th class="px-4 py-3 font-bold">
+          <div class="sort-header">
+            <span>Name</span>
+            <details class="sort-menu">
+              <summary>↕</summary>
+              <div class="sort-dropdown">
+                <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="asc">↑ Sort A to Z</button>
+                <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="desc">↓ Sort Z to A</button>
+              </div>
+            </details>
+          </div>
+        </th>
+
+        <!-- PROGRAM -->
+        <th class="px-4 py-3 font-bold">
+          <div class="sort-header">
+            <span>Program</span>
+            <details class="sort-menu">
+              <summary>↕</summary>
+              <div class="sort-dropdown">
+                <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="asc">↑ Sort A to Z</button>
+                <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="desc">↓ Sort Z to A</button>
+              </div>
+            </details>
+          </div>
+        </th>
+
+        <!-- SCHOOL -->
+        <th class="px-4 py-3 font-bold">
+          <div class="sort-header">
+            <span>School</span>
+            <details class="sort-menu">
+              <summary>↕</summary>
+              <div class="sort-dropdown">
+                <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="asc">↑ Sort A to Z</button>
+                <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="desc">↓ Sort Z to A</button>
+              </div>
+            </details>
+          </div>
+        </th>
+
+        <!-- YEAR LEVEL -->
+        <th class="px-4 py-3 font-bold">
+          <div class="sort-header">
+            <span>Year Level</span>
+            <details class="sort-menu">
+              <summary>↕</summary>
+              <div class="sort-dropdown">
+                <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="asc">↑ Sort A to Z</button>
+                <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="desc">↓ Sort Z to A</button>
+              </div>
+            </details>
+          </div>
+        </th>
+
+        <!-- GRADUATION DATE -->
+        <th class="px-4 py-3 font-bold">
+          <div class="sort-header">
+            <span>Graduation Date</span>
+            <details class="sort-menu">
+              <summary>↕</summary>
+              <div class="sort-dropdown">
+                <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="asc">↑ Sort Oldest to Newest</button>
+                <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="desc">↓ Sort Newest to Oldest</button>
+              </div>
+            </details>
+          </div>
+        </th>
+
+        <!-- ARCHIVED AT -->
+        <th class="px-4 py-3 font-bold">
+          <div class="sort-header">
+            <span>Archived At</span>
+            <details class="sort-menu">
+              <summary>↕</summary>
+              <div class="sort-dropdown">
+                <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="asc">↑ Sort Oldest to Newest</button>
+                <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="desc">↓ Sort Newest to Oldest</button>
+              </div>
+            </details>
+          </div>
+        </th>
+
+        <th class="px-4 py-3 font-bold text-center">
+          Action
+        </th>
+
+      </tr>
+    </thead>
+
+    <tbody id="archiveTableBody" class="divide-y divide-slate-200">
+
+      {% for archived in archived_students %}
+      <tr class="hover:bg-slate-50">
+
+        <td class="px-4 py-3 font-medium">
+          {{ archived.student_id }}
+        </td>
+
+        <td class="px-4 py-3">
+          {{ archived.first_name }} {{ archived.last_name }}
+        </td>
+
+        <td class="px-4 py-3">
+          {{ archived.course|default:"—" }}
+        </td>
+
+        <td class="px-4 py-3">
+          {{ archived.program|default:"—" }}
+        </td>
+
+        <td class="px-4 py-3">
+          {{ archived.year_level|default:"—" }}
+        </td>
+
+        <td class="px-4 py-3"
+            data-sort-value="{{ archived.graduation_date|date:'Y-m-d'|default:'' }}">
+          {{ archived.graduation_date|date:"M d, Y"|default:"—" }}
+        </td>
+
+        <td class="px-4 py-3"
+            data-sort-value="{{ archived.archived_at|date:'Y-m-d H:i:s'|default:'' }}">
+          {{ archived.archived_at|date:"M d, Y"|default:"—" }}
+        </td>
+
+        <td class="px-4 py-3 text-center">
+          <form method="POST"
+                action="{% url 'student_archive' %}"
+                onsubmit="return confirm('Restore this student to Active status?');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="restore">
+            <input type="hidden" name="archived_id" value="{{ archived.id }}">
+
+            <button type="submit"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+              Restore
+            </button>
+          </form>
+        </td>
+
+      </tr>
+
+      {% empty %}
+      <tr>
+        <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+          No graduated students in the archive.
+        </td>
+      </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>
+</div>
+
+        <!-- PAGINATION -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+          <p id="archivePaginationInfo" class="text-sm text-slate-500">
+            Showing 0 of 0 students
+          </p>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              id="archivePrevPage"
+              class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+              disabled
+            >
+              Previous
+            </button>
+
+            <span id="archivePageInfo" class="text-sm text-slate-600">
+              Page 1 of 1
+            </span>
+
+            <button
+              type="button"
+              id="archiveNextPage"
+              class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+              disabled
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
+
     </div>
   </main>
   <script>
-    const archiveSearch = document.getElementById("archiveSearch");
-    archiveSearch?.addEventListener("input", function () {
-      const searchValue = archiveSearch.value.toLowerCase();
-      document.querySelectorAll("#archiveTableBody tr").forEach(function (row) {
-        row.style.display = row.textContent.toLowerCase().includes(searchValue) ? "" : "none";
-      });
+    /* STUDENT ARCHIVE SEARCH AND PAGINATION */
+const archiveSearch = document.getElementById("archiveSearch");
+const archiveTableBody = document.getElementById("archiveTableBody");
+
+let archiveRows = archiveTableBody
+  ? Array.from(archiveTableBody.querySelectorAll("tr")).filter(function (row) {
+      return !row.querySelector("td[colspan]");
+    })
+  : [];
+
+const archiveEmptyRow = archiveTableBody
+  ? archiveTableBody.querySelector("tr td[colspan]")?.closest("tr")
+  : null;
+
+const archivePaginationInfo = document.getElementById("archivePaginationInfo");
+const archivePageInfo = document.getElementById("archivePageInfo");
+const archivePrevPage = document.getElementById("archivePrevPage");
+const archiveNextPage = document.getElementById("archiveNextPage");
+
+const archivePerPage = 10;
+let currentArchivePage = 1;
+let filteredArchiveRows = [...archiveRows];
+
+/* ==============================
+   STUDENT ARCHIVE TABLE SORTING
+   ============================== */
+
+document.querySelectorAll(".sort-option").forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const columnIndex = parseInt(
+      this.dataset.sortColumn,
+      10
+    );
+
+    const direction = this.dataset.sortDirection;
+
+    archiveRows.sort(function(rowA, rowB) {
+
+      const cellA = rowA.children[columnIndex];
+      const cellB = rowB.children[columnIndex];
+
+      const valueA = (
+        cellA.dataset.sortValue || cellA.innerText
+      ).trim();
+
+      const valueB = (
+        cellB.dataset.sortValue || cellB.innerText
+      ).trim();
+
+      let comparison;
+
+      // Handle dates and numbers
+      if (columnIndex === 5 || columnIndex === 6) {
+
+        comparison = valueA.localeCompare(valueB);
+
+      } else {
+
+        const numberA = Number(valueA);
+        const numberB = Number(valueB);
+
+        if (
+          valueA !== "" &&
+          valueB !== "" &&
+          Number.isFinite(numberA) &&
+          Number.isFinite(numberB)
+        ) {
+          comparison = numberA - numberB;
+        } else {
+          comparison = valueA.localeCompare(
+            valueB,
+            undefined,
+            {
+              numeric: true,
+              sensitivity: "base"
+            }
+          );
+        }
+
+      }
+
+      return direction === "asc"
+        ? comparison
+        : -comparison;
+
     });
+
+    // Reorder the actual table rows
+    archiveRows.forEach(function(row) {
+      archiveTableBody.appendChild(row);
+    });
+
+    // Close all sorting dropdowns
+    document.querySelectorAll(".sort-menu").forEach(function(menu) {
+      menu.open = false;
+    });
+
+    // Reapply the current search
+    const searchValue = archiveSearch
+      ? archiveSearch.value.toLowerCase().trim()
+      : "";
+
+    filteredArchiveRows = archiveRows.filter(function(row) {
+      return row.textContent.toLowerCase().includes(searchValue);
+    });
+
+    // Return to the first page
+    currentArchivePage = 1;
+
+    updateArchivePagination();
+
+  });
+
+});
+
+/* MESSAGE WHEN SEARCH HAS NO MATCHES */
+const noArchiveResultsRow = document.createElement("tr");
+
+noArchiveResultsRow.innerHTML = `
+  <td colspan="8" class="px-4 py-8 text-center text-slate-500">
+    No matching archived students found.
+  </td>
+`;
+
+function updateArchivePagination() {
+  const totalRecords = filteredArchiveRows.length;
+
+  /* HANDLE EMPTY ARCHIVE */
+  if (archiveEmptyRow) {
+    archiveEmptyRow.style.display =
+      archiveRows.length === 0 ? "" : "none";
+  }
+
+  /* HANDLE NO SEARCH RESULTS */
+  if (archiveTableBody && archiveRows.length > 0) {
+    if (totalRecords === 0) {
+      archiveTableBody.appendChild(noArchiveResultsRow);
+      noArchiveResultsRow.style.display = "";
+    } else {
+      noArchiveResultsRow.remove();
+    }
+  }
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / archivePerPage)
+  );
+
+  if (currentArchivePage > totalPages) {
+    currentArchivePage = totalPages;
+  }
+
+  const startIndex = (currentArchivePage - 1) * archivePerPage;
+  const endIndex = Math.min(
+    startIndex + archivePerPage,
+    totalRecords
+  );
+
+  /* HIDE ALL ARCHIVED STUDENT ROWS */
+  archiveRows.forEach(function (row) {
+    row.style.display = "none";
+  });
+
+  /* DISPLAY CURRENT PAGE */
+  filteredArchiveRows
+    .slice(startIndex, endIndex)
+    .forEach(function (row) {
+      row.style.display = "";
+    });
+
+  /* UPDATE PAGINATION INFORMATION */
+  if (archivePaginationInfo) {
+    archivePaginationInfo.textContent =
+      totalRecords === 0
+        ? "Showing 0 of 0 students"
+        : `Showing ${startIndex + 1}-${endIndex} of ${totalRecords} students`;
+  }
+
+  if (archivePageInfo) {
+    archivePageInfo.textContent =
+      `Page ${currentArchivePage} of ${totalPages}`;
+  }
+
+  /* ENABLE OR DISABLE BUTTONS */
+  if (archivePrevPage) {
+    archivePrevPage.disabled = currentArchivePage === 1;
+  }
+
+  if (archiveNextPage) {
+    archiveNextPage.disabled =
+      currentArchivePage === totalPages || totalRecords === 0;
+  }
+}
+
+/* SEARCH ARCHIVED STUDENTS */
+archiveSearch?.addEventListener("input", function () {
+  const searchValue = archiveSearch.value.toLowerCase().trim();
+
+  filteredArchiveRows = archiveRows.filter(function (row) {
+    return row.textContent.toLowerCase().includes(searchValue);
+  });
+
+  currentArchivePage = 1;
+  updateArchivePagination();
+});
+
+/* PREVIOUS PAGE */
+archivePrevPage?.addEventListener("click", function () {
+  if (currentArchivePage > 1) {
+    currentArchivePage--;
+    updateArchivePagination();
+  }
+});
+
+/* NEXT PAGE */
+archiveNextPage?.addEventListener("click", function () {
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredArchiveRows.length / archivePerPage)
+  );
+
+  if (currentArchivePage < totalPages) {
+    currentArchivePage++;
+    updateArchivePagination();
+  }
+});
+
+/* INITIAL PAGINATION */
+updateArchivePagination();
   </script>
+  
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
 </body>
 </html>

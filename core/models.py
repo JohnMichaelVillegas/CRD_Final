@@ -1,3 +1,4 @@
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -19,11 +20,11 @@ class Student(models.Model):
     sex = models.CharField(max_length=20, blank=True)
 
     STATUS_CHOICES = [
-    ("Active", "Active"),
-    ("LOA", "LOA"),
-    ("AWOL", "AWOL"),
-    ("Graduated", "Graduated"),
-]
+        ("Active", "Active"),
+        ("LOA", "LOA"),
+        ("AWOL", "AWOL"),
+        ("Graduated", "Graduated"),
+    ]
 
     status = models.CharField(
         max_length=20,
@@ -84,7 +85,6 @@ class ArchivedStudent(models.Model):
         return f"{self.student_id} - {self.first_name} {self.last_name}"
 
 
-
 class Offense(models.Model):
 
     PRIOR_WARNING_CATEGORY_CHOICES = [
@@ -130,21 +130,21 @@ class Offense(models.Model):
 class CaseRecord(models.Model):
 
     CASE_STATUS_CHOICES = [
-    ("Reported", "Reported"),
-    ("Preliminary", "Preliminary"),
-    ("Notice of Complaint Sent", "Notice of Complaint Sent"),
-    ("Under Review", "Under Review"),
+        ("Reported", "Reported"),
+        ("Preliminary", "Preliminary"),
+        ("Notice of Complaint Sent", "Notice of Complaint Sent"),
+        ("Under Review", "Under Review"),
 
-    ("Resolved by DO", "Resolved by DO"),
-    ("Resolved by Director", "Resolved by Director"),
-    ("Resolved by Other", "Resolved by Other"),
+        ("Resolved by DO", "Resolved by DO"),
+        ("Resolved by Director", "Resolved by Director"),
+        ("Resolved by Other", "Resolved by Other"),
 
-    ("Resolved by CRD Director", "Resolved by CRD Director"),
-    ("Resolved by Discipline Board", "Resolved by Discipline Board"),
-    ("Resolved by CODI", "Resolved by CODI"),
+        ("Resolved by CRD Director", "Resolved by CRD Director"),
+        ("Resolved by Discipline Board", "Resolved by Discipline Board"),
+        ("Resolved by CODI", "Resolved by CODI"),
 
-    ("Resolved", "Resolved"),
-]
+        ("Resolved", "Resolved"),
+    ]
 
     RESOLUTION_AUTHORITY_CHOICES = [
         ("", "Not yet resolved"),
@@ -223,7 +223,7 @@ class CaseRecord(models.Model):
         blank=True,
         related_name="handled_cases"
     )
-    
+
     resolution_authority = models.CharField(
         max_length=100,
         choices=RESOLUTION_AUTHORITY_CHOICES,
@@ -323,6 +323,32 @@ class CaseDiaryEntry(models.Model):
         return f"Diary entry - {self.case.case_number}"
 
 
+# NEW MODEL: CASE DETAILS HISTORY
+class CaseDetailsHistory(models.Model):
+    case = models.ForeignKey(
+        CaseRecord,
+        on_delete=models.CASCADE,
+        related_name="details_history"
+    )
+
+    details = models.TextField()
+
+    date_added = models.DateTimeField(auto_now_add=True)
+
+    added_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ["date_added", "id"]
+
+    def __str__(self):
+        return f"Case Details History - {self.case.case_number}"
+
+
 class CaseAttachment(models.Model):
     case = models.ForeignKey(
         CaseRecord,
@@ -396,7 +422,6 @@ class AuditLog(models.Model):
         return self.action
 
 
-
 class UserProfile(models.Model):
     PERMISSION_CHOICES = [
         ("student_records", "Student Records"),
@@ -458,7 +483,7 @@ class UserProfile(models.Model):
         default=""
     )
 
-    is_activated = models.BooleanField(default=True)    
+    is_activated = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.username

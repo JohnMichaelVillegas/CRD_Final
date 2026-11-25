@@ -40,6 +40,73 @@
       border-color: var(--theme-color) !important;
     }
 
+    /* ARCHIVE RECORDS TABLE SORTING */
+
+.sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.sort-menu {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sort-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 5px;
+  user-select: none;
+}
+
+.sort-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.sort-menu summary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  min-width: 190px;
+  background: white;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.sort-menu[open] .sort-dropdown {
+  display: block;
+}
+
+.sort-option {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+.sort-option:hover {
+  background: #f1f5f9;
+}
+
   </style>
 
 </head>
@@ -299,20 +366,117 @@
       <div class="max-h-[480px] overflow-auto">
         <table class="w-full text-sm text-left">
           <thead class="text-white theme-bg sticky top-0 z-10">
-            <tr>
-              <th class="px-4 py-3">Case ID</th>
-              <th class="px-4 py-3">Student ID</th>
-              <th class="px-4 py-3">Name</th>
-              <th class="px-4 py-3">Program</th>
-              <th class="px-4 py-3">Violation</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3">Date Reported</th>
-              <th class="px-4 py-3">Archived Date</th>
-              <th class="px-4 py-3">Action</th>
-            </tr>
-          </thead>
+  <tr>
 
-          <tbody>
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Case ID
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="0" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="0" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Student ID
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="1" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="1" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Name
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="2" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="2" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Program
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="3" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="3" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Violation
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="4" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="4" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Status
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="5" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="5" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Date Reported
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="6" data-sort-direction="asc">Oldest first</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="6" data-sort-direction="desc">Newest first</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Archived Date
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="7" data-sort-direction="asc">Oldest first</button>
+            <button type="button" class="sort-option" data-sort-table="archivedRecordsTableBody" data-sort-column="7" data-sort-direction="desc">Newest first</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">Action</th>
+  </tr>
+</thead>
+
+          <tbody id="archivedRecordsTableBody">
             {% for record in archived_records %}
               <tr class="border-b hover:bg-slate-50">
                 <td class="px-4 py-3 font-medium">{{ record.case_id }}</td>
@@ -325,8 +489,18 @@
                     {{ record.status }}
                   </span>
                 </td>
-                <td class="px-4 py-3">{{ record.date_reported|date:"M. d, Y" }}</td>
-                <td class="px-4 py-3">{{ record.archived_at|date:"M. d, Y" }}</td>
+                <td
+  class="px-4 py-3"
+  data-sort-value="{{ record.date_reported|date:'Y-m-d' }}"
+>
+  {{ record.date_reported|date:"M. d, Y" }}
+</td>
+                <td
+  class="px-4 py-3"
+  data-sort-value="{{ record.archived_at|date:'Y-m-d' }}"
+>
+  {{ record.archived_at|date:"M. d, Y" }}
+</td>
                 <td class="px-4 py-3">
                   <form method="POST">
                     {% csrf_token %}
@@ -348,6 +522,37 @@
             {% endfor %}
           </tbody>
         </table>
+      </div>
+
+      <!-- ARCHIVED RECORDS PAGINATION -->
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+        <p id="archivedPaginationInfo" class="text-sm text-slate-500">
+          Showing 0 of 0 archived records
+        </p>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="archivedPrevPage"
+            class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+            disabled
+          >
+            Previous
+          </button>
+
+          <span id="archivedPageInfo" class="text-sm text-slate-600">
+            Page 1 of 1
+          </span>
+
+          <button
+            type="button"
+            id="archivedNextPage"
+            class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+            disabled
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
 
@@ -375,17 +580,101 @@
       <div class="max-h-[480px] overflow-auto">
         <table class="w-full text-sm text-left">
           <thead class="text-white theme-bg sticky top-0 z-10">
-            <tr>
-              <th class="px-4 py-3">Case ID</th>
-              <th class="px-4 py-3">Student ID</th>
-              <th class="px-4 py-3">Name</th>
-              <th class="px-4 py-3">Program</th>
-              <th class="px-4 py-3">Violation</th>
-              <th class="px-4 py-3">Status</th>
-              <th class="px-4 py-3">Date</th>
-              <th class="px-4 py-3">Action</th>
-            </tr>
-          </thead>
+  <tr>
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Case ID
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="0" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="0" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Student ID
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="1" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="1" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Name
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="2" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="2" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Program
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="3" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="3" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Violation
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="4" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="4" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Status
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="5" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="5" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">
+      <div class="sort-header">
+        Date
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="6" data-sort-direction="asc">Oldest first</button>
+            <button type="button" class="sort-option" data-sort-table="archiveTableBody" data-sort-column="6" data-sort-direction="desc">Newest first</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="px-4 py-3">Action</th>
+  </tr>
+</thead>
 
           <tbody id="archiveTableBody">
             {% for record in case_records %}
@@ -406,7 +695,12 @@
                     <span class="px-2 py-1 rounded-lg bg-blue-100 text-blue-700">Under Review</span>
                   {% endif %}
                 </td>
-                <td class="px-4 py-3">{{ record.date_reported|date:"M. d, Y" }}</td>
+                <td
+  class="px-4 py-3"
+  data-sort-value="{{ record.date_reported|date:'Y-m-d' }}"
+>
+  {{ record.date_reported|date:"M. d, Y" }}
+</td>
                 <td class="px-4 py-3">
                   {% if record.status == "Resolved" %}
                     <form method="POST">
@@ -433,6 +727,37 @@
           </tbody>
         </table>
       </div>
+
+      <!-- CASE RECORDS PAGINATION -->
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+        <p id="casePaginationInfo" class="text-sm text-slate-500">
+          Showing 0 of 0 case records
+        </p>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="casePrevPage"
+            class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+            disabled
+          >
+            Previous
+          </button>
+
+          <span id="casePageInfo" class="text-sm text-slate-600">
+            Page 1 of 1
+          </span>
+
+          <button
+            type="button"
+            id="caseNextPage"
+            class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+            disabled
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -442,38 +767,250 @@
 
   <script>
 
-    document
-      .getElementById("archiveSearch")
-      .addEventListener("keyup", function() {
+    /* ==========================================
+   ARCHIVE RECORDS AND CASE RECORDS PAGINATION
+========================================== */
 
-        let searchValue =
-          this.value.toLowerCase();
+/* REUSABLE PAGINATION FUNCTION */
+function setupArchivePagination(config) {
 
-        let rows =
-          document.querySelectorAll(
-            "#archiveTableBody tr"
-          );
+  const tableBody = document.getElementById(config.tableBodyId);
+  const searchInput = config.searchId
+    ? document.getElementById(config.searchId)
+    : null;
 
+  if (!tableBody) return;
 
-        rows.forEach(function(row) {
+  const rows = Array.from(
+    tableBody.querySelectorAll("tr")
+  ).filter(function(row) {
+    return !row.querySelector("td[colspan]");
+  });
 
-          let rowText =
-            row.textContent.toLowerCase();
+  const emptyRow = tableBody.querySelector("tr td[colspan]")?.closest("tr");
 
+  const info = document.getElementById(config.infoId);
+  const pageInfo = document.getElementById(config.pageInfoId);
+  const prevButton = document.getElementById(config.prevId);
+  const nextButton = document.getElementById(config.nextId);
 
-          if (rowText.includes(searchValue)) {
+  const rowsPerPage = 10;
 
-            row.style.display = "";
+  let currentPage = 1;
+  let filteredRows = [...rows];
 
-          } else {
+  let searchValue = "";
 
-            row.style.display = "none";
+  /* NO SEARCH MATCH MESSAGE */
+  const noResultsRow = document.createElement("tr");
 
-          }
+  noResultsRow.innerHTML = `
+    <td colspan="${config.columnCount}"
+        class="px-4 py-8 text-center text-slate-500">
+      ${config.noResultsMessage}
+    </td>
+  `;
 
-        });
+  function updatePagination() {
 
+    const totalRecords = filteredRows.length;
+
+    const totalPages = Math.max(
+      1,
+      Math.ceil(totalRecords / rowsPerPage)
+    );
+
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    /* DATABASE EMPTY MESSAGE */
+    if (emptyRow) {
+      emptyRow.style.display =
+        rows.length === 0 ? "" : "none";
+    }
+
+    /* SEARCH WITH NO MATCHES */
+    if (rows.length > 0) {
+      if (totalRecords === 0) {
+        tableBody.appendChild(noResultsRow);
+        noResultsRow.style.display = "";
+      } else {
+        noResultsRow.remove();
+      }
+    }
+
+    const startIndex = (currentPage - 1) * rowsPerPage;
+
+    const endIndex = Math.min(
+      startIndex + rowsPerPage,
+      totalRecords
+    );
+
+    /* HIDE ALL ROWS */
+    rows.forEach(function(row) {
+      row.style.display = "none";
+    });
+
+    /* SHOW CURRENT PAGE */
+    filteredRows
+      .slice(startIndex, endIndex)
+      .forEach(function(row) {
+        row.style.display = "";
       });
+
+    /* UPDATE RECORD COUNT */
+    if (info) {
+      info.textContent = totalRecords === 0
+        ? "Showing 0 of 0 records"
+        : `Showing ${startIndex + 1}-${endIndex} of ${totalRecords} records`;
+    }
+
+    /* UPDATE PAGE NUMBER */
+    if (pageInfo) {
+      pageInfo.textContent =
+        `Page ${currentPage} of ${totalPages}`;
+    }
+
+    /* BUTTON STATES */
+    if (prevButton) {
+      prevButton.disabled = currentPage === 1;
+    }
+
+    if (nextButton) {
+      nextButton.disabled =
+        currentPage === totalPages || totalRecords === 0;
+    }
+  }
+
+  /* SEARCH */
+searchInput?.addEventListener("input", function() {
+
+  searchValue = this.value.toLowerCase().trim();
+
+  filteredRows = rows.filter(function(row) {
+    return row.textContent.toLowerCase().includes(searchValue);
+  });
+
+  currentPage = 1;
+  updatePagination();
+});
+
+/* SORTING */
+document.querySelectorAll(
+  `.sort-option[data-sort-table="${config.tableBodyId}"]`
+).forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const columnIndex = parseInt(
+      this.dataset.sortColumn,
+      10
+    );
+
+    const direction = this.dataset.sortDirection;
+
+    rows.sort(function(rowA, rowB) {
+
+      const cellA = rowA.children[columnIndex];
+      const cellB = rowB.children[columnIndex];
+
+      const valueA = (
+        cellA.dataset.sortValue || cellA.innerText
+      ).trim();
+
+      const valueB = (
+        cellB.dataset.sortValue || cellB.innerText
+      ).trim();
+
+      const comparison = valueA.localeCompare(
+        valueB,
+        undefined,
+        {
+          numeric: true,
+          sensitivity: "base"
+        }
+      );
+
+      return direction === "asc"
+        ? comparison
+        : -comparison;
+
+    });
+
+    /* REORDER TABLE ROWS */
+rows.forEach(function(row) {
+  tableBody.appendChild(row);
+});
+
+    /* REAPPLY SEARCH AFTER SORTING */
+    filteredRows = rows.filter(function(row) {
+      return row.textContent.toLowerCase().includes(searchValue);
+    });
+
+    /* CLOSE OPEN SORT MENUS */
+    document.querySelectorAll(".sort-menu").forEach(function(menu) {
+      menu.open = false;
+    });
+
+    currentPage = 1;
+    updatePagination();
+
+  });
+
+});
+
+  /* PREVIOUS PAGE */
+  prevButton?.addEventListener("click", function() {
+
+    if (currentPage > 1) {
+      currentPage--;
+      updatePagination();
+    }
+
+  });
+
+  /* NEXT PAGE */
+  nextButton?.addEventListener("click", function() {
+
+    const totalPages = Math.max(
+      1,
+      Math.ceil(filteredRows.length / rowsPerPage)
+    );
+
+    if (currentPage < totalPages) {
+      currentPage++;
+      updatePagination();
+    }
+
+  });
+
+  /* INITIAL DISPLAY */
+  updatePagination();
+}
+
+/* FIRST TABLE: ARCHIVED RECORDS */
+setupArchivePagination({
+  tableBodyId: "archivedRecordsTableBody",
+  infoId: "archivedPaginationInfo",
+  pageInfoId: "archivedPageInfo",
+  prevId: "archivedPrevPage",
+  nextId: "archivedNextPage",
+  columnCount: 9,
+  noResultsMessage: "No matching archived records found."
+});
+
+/* SECOND TABLE: CASE RECORDS */
+setupArchivePagination({
+  tableBodyId: "archiveTableBody",
+  searchId: "archiveSearch",
+  infoId: "casePaginationInfo",
+  pageInfoId: "casePageInfo",
+  prevId: "casePrevPage",
+  nextId: "caseNextPage",
+  columnCount: 8,
+  noResultsMessage: "No matching case records found."
+});
 
   </script>
 

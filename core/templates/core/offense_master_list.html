@@ -37,6 +37,74 @@
             border-color: var(--theme-color) !important;
         }
 
+
+/* OFFENSE MASTER LIST SORTING */
+
+.sort-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    white-space: nowrap;
+}
+
+.sort-menu {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.sort-menu summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 5px;
+    user-select: none;
+}
+
+.sort-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.sort-menu summary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    min-width: 190px;
+    background: white;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.sort-menu[open] .sort-dropdown {
+    display: block;
+}
+
+.sort-option {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    text-align: left;
+    font-size: 14px;
+    white-space: nowrap;
+    cursor: pointer;
+    color: #1e293b;
+}
+
+.sort-option:hover {
+    background: #f1f5f9;
+}
+
     </style>
 
 </head>
@@ -683,47 +751,106 @@
 
                 <div class="max-h-[300px] overflow-auto">
 
-                    <table class="w-full text-sm text-left">
+                    <table class="min-w-[1100px] w-full text-sm text-left">
 
 
                         <!-- TABLE HEADER -->
 
-                        <thead class="text-white theme-bg sticky top-0 z-10">
+                        
+<thead class="text-white theme-bg sticky top-0 z-10">
+    <tr>
 
-                            <tr>
+        <!-- OFFENSE CODE -->
+        <th class="px-4 py-3">
+            <div class="sort-header">
+                <span>Offense Code</span>
+                <details class="sort-menu">
+                    <summary>↕</summary>
+                    <div class="sort-dropdown">
+                        <button type="button" class="sort-option" data-sort-column="0" data-sort-direction="asc">↑ Sort A to Z</button>
+                        <button type="button" class="sort-option" data-sort-column="0" data-sort-direction="desc">↓ Sort Z to A</button>
+                    </div>
+                </details>
+            </div>
+        </th>
 
-                                <th class="px-4 py-3">
-                                    Offense Code
-                                </th>
+        <!-- OFFENSE NAME -->
+        <th class="px-4 py-3">
+            <div class="sort-header">
+                <span>Offense Name</span>
+                <details class="sort-menu">
+                    <summary>↕</summary>
+                    <div class="sort-dropdown">
+                        <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="asc">↑ Sort A to Z</button>
+                        <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="desc">↓ Sort Z to A</button>
+                    </div>
+                </details>
+            </div>
+        </th>
 
-                                <th class="px-4 py-3">
-                                    Offense Name
-                                </th>
+        <!-- SEVERITY -->
+        <th class="px-4 py-3">
+            <div class="sort-header">
+                <span>Severity</span>
+                <details class="sort-menu">
+                    <summary>↕</summary>
+                    <div class="sort-dropdown">
+                        <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="asc">↑ Sort A to Z</button>
+                        <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="desc">↓ Sort Z to A</button>
+                    </div>
+                </details>
+            </div>
+        </th>
 
-                                <th class="px-4 py-3">
-                                    Severity
-                                </th>
+        <!-- ACCUMULATION RULES -->
+        <th class="px-4 py-3">
+            <div class="sort-header">
+                <span>Accumulation Rules</span>
+                <details class="sort-menu">
+                    <summary>↕</summary>
+                    <div class="sort-dropdown">
+                        <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="asc">↑ Sort A to Z</button>
+                        <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="desc">↓ Sort Z to A</button>
+                    </div>
+                </details>
+            </div>
+        </th>
 
-                                <th class="px-4 py-3">
-                                    Accumulation Rules
-                                </th>
+        <!-- STATUS -->
+        <th class="px-4 py-3">
+            <div class="sort-header">
+                <span>Status</span>
+                <details class="sort-menu">
+                    <summary>↕</summary>
+                    <div class="sort-dropdown">
+                        <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="asc">↑ Sort A to Z</button>
+                        <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="desc">↓ Sort Z to A</button>
+                    </div>
+                </details>
+            </div>
+        </th>
 
-                                <th class="px-4 py-3">
-                                    Status
-                                </th>
+        <!-- LAST UPDATED -->
+        <th class="px-4 py-3">
+            <div class="sort-header">
+                <span>Last Updated</span>
+                <details class="sort-menu">
+                    <summary>↕</summary>
+                    <div class="sort-dropdown">
+                        <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="asc">↑ Oldest to Newest</button>
+                        <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="desc">↓ Newest to Oldest</button>
+                    </div>
+                </details>
+            </div>
+        </th>
 
-                                <th class="px-4 py-3">
-                                    Last Updated
-                                </th>
+        <!-- ACTIONS: NOT SORTABLE -->
+        <th class="px-4 py-3 whitespace-nowrap">
+            Actions
+        </th>
 
-                                <th class="px-4 py-3">
-                                    Actions
-                                </th>
-
-                            </tr>
-
-                        </thead>
-
+    </tr>
+</thead>
 
 
                         <!-- TABLE BODY -->
@@ -828,11 +955,12 @@
 
                                     <!-- LAST UPDATED -->
 
-                                    <td class="px-4 py-3">
-
-                                        {{ offense.last_updated|date:"M. d, Y" }}
-
-                                    </td>
+                                    <td
+    class="px-4 py-3"
+    data-sort-value="{{ offense.last_updated|date:'Y-m-d'|default:'' }}"
+>
+    {{ offense.last_updated|date:"M. d, Y" }}
+</td>   
 
 
 
@@ -1173,6 +1301,67 @@
         );
 
         
+/* ==============================
+   OFFENSE TABLE SORTING
+   ============================== */
+
+document.querySelectorAll(".sort-option").forEach(function(button) {
+
+    button.addEventListener("click", function() {
+
+        const columnIndex = parseInt(
+            this.dataset.sortColumn,
+            10
+        );
+
+        const direction = this.dataset.sortDirection;
+
+        const tableBody = document.getElementById("offenseTableBody");
+
+        const rows = Array.from(
+            tableBody.querySelectorAll("tr")
+        ).filter(row => row.querySelectorAll("td").length === 7);
+
+        rows.sort(function(rowA, rowB) {
+
+            const cellA = rowA.children[columnIndex];
+            const cellB = rowB.children[columnIndex];
+
+            const valueA = (
+                cellA.dataset.sortValue || cellA.innerText
+            ).trim();
+
+            const valueB = (
+                cellB.dataset.sortValue || cellB.innerText
+            ).trim();
+
+            const comparison = valueA.localeCompare(
+                valueB,
+                undefined,
+                {
+                    numeric: true,
+                    sensitivity: "base"
+                }
+            );
+
+            return direction === "asc"
+                ? comparison
+                : -comparison;
+
+        });
+
+        rows.forEach(function(row) {
+            tableBody.appendChild(row);
+        });
+
+        // Close dropdowns after sorting.
+        document.querySelectorAll(".sort-menu").forEach(function(menu) {
+            menu.open = false;
+        });
+
+    });
+
+});
 
 
 function openAccumulationModal() {

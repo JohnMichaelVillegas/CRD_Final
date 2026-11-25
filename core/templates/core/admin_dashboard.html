@@ -91,6 +91,73 @@
         padding: 0 !important;
       }
     }
+
+    /* DASHBOARD TABLE SORTING */
+
+.sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.sort-menu {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sort-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 5px;
+  user-select: none;
+}
+
+.sort-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.sort-menu summary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  min-width: 190px;
+  background: white;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.sort-menu[open] .sort-dropdown {
+  display: block;
+}
+
+.sort-option {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+.sort-option:hover {
+  background: #f1f5f9;
+}
   </style>
 </head>
 
@@ -535,22 +602,144 @@
 
           <!-- TABLE VIEW -->
 
-          <div id="tableView" class="max-h-[600px] overflow-auto w-full max-w-full rounded-lg">
+          <div id="tableView">
 
-            <table class="dashboard-table text-left text-sm">
+            <div class="w-full max-w-full overflow-x-auto rounded-lg">
+
+  <table class="dashboard-table text-left text-sm">
 
               <thead class="theme-bg text-white sticky top-0 z-10">
-                <tr>
-                  <th class="font-bold">Case #</th>
-                  <th class="font-bold">Student</th>
-                  <th class="font-bold">Offense</th>
-                  <th class="font-bold">Classification</th>
-                  <th class="font-bold">Status</th>
-                  <th class="font-bold">Date</th>
-                  <th class="font-bold">Term</th>
-                  <th class="font-bold">School Year</th>
-                </tr>
-              </thead>
+  <tr>
+
+    <!-- CASE NUMBER -->
+    <th class="font-bold">
+      <div class="sort-header">
+        Case #
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button
+  type="button"
+  class="sort-option"
+  data-sort-column="0"
+  data-sort-direction="asc"
+>
+  ↥ Sort Oldest to Newest
+</button>
+
+<button
+  type="button"
+  class="sort-option"
+  data-sort-column="0"
+  data-sort-direction="desc"
+>
+  ↧ Sort Newest to Oldest
+</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- STUDENT -->
+    <th class="font-bold">
+      <div class="sort-header">
+        Student
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- OFFENSE -->
+    <th class="font-bold">
+      <div class="sort-header">
+        Offense
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- CLASSIFICATION -->
+    <th class="font-bold">
+      <div class="sort-header">
+        Classification
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- STATUS -->
+    <th class="font-bold">
+      <div class="sort-header">
+        Status
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- DATE -->
+    <th class="font-bold">
+      <div class="sort-header">
+        Date
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="asc">Oldest first</button>
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="desc">Newest first</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- TERM -->
+    <th class="font-bold">
+      <div class="sort-header">
+        Term
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="asc">Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="desc">Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- SCHOOL YEAR -->
+    <th class="font-bold">
+      <div class="sort-header">
+        School Year
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="7" data-sort-direction="asc">Oldest first</button>
+            <button type="button" class="sort-option" data-sort-column="7" data-sort-direction="desc">Newest first</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+  </tr>
+</thead>
 
               <tbody id="incidentTableBody" class="divide-y divide-slate-200">
 
@@ -606,9 +795,12 @@
                       {% endif %}
                     </td>
 
-                    <td class="text-slate-700 whitespace-nowrap">
-                      {{ report.date_reported|date:"M d, Y"|default:"-" }}
-                    </td>
+                    <td
+  class="text-slate-700 whitespace-nowrap"
+  data-sort-value="{{ report.date_reported|date:'Y-m-d' }}"
+>
+  {{ report.date_reported|date:"M d, Y"|default:"-" }}
+</td>
 
                     <td class="text-slate-700 whitespace-nowrap">
                       {{ report.term|default:"-" }}
@@ -633,9 +825,63 @@
               </tbody>
             </table>
 
+</div>
+
             <p id="noFilteredRecords" class="hidden px-4 py-6 text-center text-slate-500">
               No records match the selected filters.
             </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+
+  <p id="incidentRecordInfo" class="text-sm text-slate-600">
+    Showing 0 to 0 of 0 entries
+  </p>
+
+  <div class="flex items-center justify-center gap-3 flex-wrap">
+
+    <div class="flex items-center gap-2">
+      <label for="incidentPageSelect" class="text-sm text-slate-700">
+        Page:
+      </label>
+
+      <select
+        id="incidentPageSelect"
+        class="border border-slate-300 rounded-lg px-3 py-2 bg-white"
+      >
+      </select>
+    </div>
+
+    <button
+      type="button"
+      id="incidentPreviousPage"
+      class="px-3 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="Previous page"
+    >
+      &#10094;
+    </button>
+
+    <button
+      type="button"
+      id="incidentNextPage"
+      class="px-3 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="Next page"
+    >
+      &#10095;
+    </button>
+
+    <select
+      id="incidentPerPage"
+      class="border border-slate-300 rounded-lg px-3 py-2 bg-white"
+      aria-label="Records per page"
+    >
+      <option value="10">10 per page</option>
+      <option value="25">25 per page</option>
+      <option value="50">50 per page</option>
+      <option value="100">100 per page</option>
+    </select>
+
+  </div>
+</div>
 
           </div>
 
@@ -761,8 +1007,196 @@
     const calendarMonthTitle = document.getElementById("calendarMonthTitle");
 
     const rows = Array.from(
-      tableBody.querySelectorAll("tr[data-report-row='true']")
-    );
+  tableBody.querySelectorAll("tr[data-report-row='true']")
+);
+
+let filteredRows = [...rows];
+let currentIncidentPage = 1;
+let incidentsPerPage = 10;
+
+const incidentPageSelect =
+  document.getElementById("incidentPageSelect");
+
+const incidentPerPage =
+  document.getElementById("incidentPerPage");
+
+const incidentPreviousPage =
+  document.getElementById("incidentPreviousPage");
+
+const incidentNextPage =
+  document.getElementById("incidentNextPage");
+
+const incidentRecordInfo =
+  document.getElementById("incidentRecordInfo");
+
+
+/* INCIDENT REPORTS TABLE SORTING */
+
+document.querySelectorAll(".sort-option").forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const columnIndex = parseInt(this.dataset.sortColumn, 10);
+    const direction = this.dataset.sortDirection;
+
+    rows.sort(function(rowA, rowB) {
+
+      const cellA = rowA.children[columnIndex];
+      const cellB = rowB.children[columnIndex];
+
+      const valueA = (
+        cellA.dataset.sortValue || cellA.innerText
+      ).trim();
+
+      const valueB = (
+        cellB.dataset.sortValue || cellB.innerText
+      ).trim();
+
+      const comparison = valueA.localeCompare(
+        valueB,
+        undefined,
+        {
+          numeric: true,
+          sensitivity: "base"
+        }
+      );
+
+      return direction === "asc"
+        ? comparison
+        : -comparison;
+
+    });
+
+    rows.forEach(function(row) {
+      tableBody.appendChild(row);
+    });
+
+    document.querySelectorAll(".sort-menu").forEach(function(menu) {
+      menu.open = false;
+    });
+
+    applyDashboardFilter();
+
+  });
+
+});
+
+
+/* INCIDENT REPORTS PAGINATION */
+
+function updateIncidentPagination() {
+
+  const totalRecords = filteredRows.length;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / incidentsPerPage)
+  );
+
+  if (currentIncidentPage > totalPages) {
+    currentIncidentPage = totalPages;
+  }
+
+  const startIndex =
+    (currentIncidentPage - 1) * incidentsPerPage;
+
+  const endIndex = Math.min(
+    startIndex + incidentsPerPage,
+    totalRecords
+  );
+
+  rows.forEach(function(row) {
+    row.style.display = "none";
+  });
+
+  filteredRows.forEach(function(row, index) {
+
+    if (index >= startIndex && index < endIndex) {
+      row.style.display = "";
+    }
+
+  });
+
+  if (incidentPageSelect) {
+
+    incidentPageSelect.innerHTML = "";
+
+    for (let page = 1; page <= totalPages; page++) {
+
+      const option = document.createElement("option");
+
+      option.value = page;
+      option.textContent = page + " of " + totalPages;
+      option.selected = page === currentIncidentPage;
+
+      incidentPageSelect.appendChild(option);
+
+    }
+
+  }
+
+  if (incidentRecordInfo) {
+
+    const firstRecord =
+      totalRecords === 0 ? 0 : startIndex + 1;
+
+    incidentRecordInfo.textContent =
+      `Showing ${firstRecord} to ${endIndex} of ${totalRecords} entries`;
+
+  }
+
+  if (incidentPreviousPage) {
+    incidentPreviousPage.disabled =
+      currentIncidentPage === 1;
+  }
+
+  if (incidentNextPage) {
+    incidentNextPage.disabled =
+      currentIncidentPage === totalPages;
+  }
+
+  noFilteredRecords.classList.toggle(
+    "hidden",
+    totalRecords > 0
+  );
+
+}
+
+
+/* PAGINATION BUTTON EVENTS */
+
+incidentPerPage?.addEventListener("change", function() {
+
+  incidentsPerPage = parseInt(this.value, 10) || 10;
+  currentIncidentPage = 1;
+
+  updateIncidentPagination();
+
+});
+
+incidentPageSelect?.addEventListener("change", function() {
+
+  currentIncidentPage = parseInt(this.value, 10) || 1;
+
+  updateIncidentPagination();
+
+});
+
+incidentPreviousPage?.addEventListener("click", function() {
+
+  if (currentIncidentPage > 1) {
+    currentIncidentPage--;
+    updateIncidentPagination();
+  }
+
+});
+
+incidentNextPage?.addEventListener("click", function() {
+
+  currentIncidentPage++;
+  updateIncidentPagination();
+
+});
 
     let calendarDate = new Date();
     calendarDate = new Date(
@@ -782,11 +1216,9 @@
       return resolvedStatuses.includes(status);
     }
 
-    function getVisibleRows() {
-      return rows.filter(function(row) {
-        return row.style.display !== "none";
-      });
-    }
+  function getVisibleRows() {
+    return filteredRows;
+  }
 
   function updateAnalytics() {
     const visibleRows = getVisibleRows();
@@ -823,59 +1255,51 @@
 }
 
     function applyDashboardFilter() {
-      const schoolYear = schoolYearFilter.value.trim().toLowerCase();
-      const term = termFilter.value.trim().toLowerCase();
-      const status = statusFilter.value;
-      const dateFrom = dateFromFilter.value;
-      const dateTo = dateToFilter.value;
+  const schoolYear = schoolYearFilter.value.trim().toLowerCase();
+  const term = termFilter.value.trim().toLowerCase();
+  const status = statusFilter.value;
+  const dateFrom = dateFromFilter.value;
+  const dateTo = dateToFilter.value;
 
-      let visibleCount = 0;
+  filteredRows = rows.filter(function(row) {
+    const rowSchoolYear = (row.dataset.schoolYear || "").trim().toLowerCase();
+    const rowTerm = (row.dataset.term || "").trim().toLowerCase();
+    const rowStatus = row.dataset.status || "";
+    const rowDate = row.dataset.date || "";
 
-      rows.forEach(function(row) {
-        const rowSchoolYear = (row.dataset.schoolYear || "").trim().toLowerCase();
-        const rowTerm = (row.dataset.term || "").trim().toLowerCase();
-        const rowStatus = row.dataset.status || "";
-        const rowDate = row.dataset.date || "";
-
-        let showRow = true;
-
-        if (schoolYear && rowSchoolYear !== schoolYear) {
-          showRow = false;
-        }
-
-        if (term && rowTerm !== term) {
-          showRow = false;
-        }
-
-        if (status === "Resolved") {
-          if (!isResolved(rowStatus)) {
-            showRow = false;
-          }
-        } else if (status && rowStatus !== status) {
-          showRow = false;
-        }
-
-        if (dateFrom && (!rowDate || rowDate < dateFrom)) {
-          showRow = false;
-        }
-
-        if (dateTo && (!rowDate || rowDate > dateTo)) {
-          showRow = false;
-        }
-
-        row.style.display = showRow ? "" : "none";
-
-        if (showRow) {
-          visibleCount++;
-        }
-      });
-
-      noFilteredRecords.classList.toggle("hidden", visibleCount > 0);
-
-      updateAnalytics();
-      renderCalendar();
-    
+    if (schoolYear && rowSchoolYear !== schoolYear) {
+      return false;
     }
+
+    if (term && rowTerm !== term) {
+      return false;
+    }
+
+    if (status === "Resolved") {
+      if (!isResolved(rowStatus)) {
+        return false;
+      }
+    } else if (status && rowStatus !== status) {
+      return false;
+    }
+
+    if (dateFrom && (!rowDate || rowDate < dateFrom)) {
+      return false;
+    }
+
+    if (dateTo && (!rowDate || rowDate > dateTo)) {
+      return false;
+    }
+
+    return true;
+  });
+
+  currentIncidentPage = 1;
+
+  updateIncidentPagination();
+  updateAnalytics();
+  renderCalendar();
+}
 
     function renderCalendar() {
       calendarGrid.innerHTML = "";
@@ -976,20 +1400,19 @@
     }
 
     function resetDashboardFilters() {
-      schoolYearFilter.value = "";
-      termFilter.value = "";
-      statusFilter.value = "";
-      dateFromFilter.value = "";
-      dateToFilter.value = "";
+  schoolYearFilter.value = "";
+  termFilter.value = "";
+  statusFilter.value = "";
+  dateFromFilter.value = "";
+  dateToFilter.value = "";
 
-      rows.forEach(function(row) {
-        row.style.display = "";
-      });
+  filteredRows = [...rows];
+  currentIncidentPage = 1;
 
-      noFilteredRecords.classList.add("hidden");
-
-      renderCalendar();
-    }
+  updateIncidentPagination();
+  updateAnalytics();
+  renderCalendar();
+}
 
     tableViewBtn.addEventListener("click", showTableView);
     calendarViewBtn.addEventListener("click", showCalendarView);
@@ -1029,7 +1452,8 @@
       }
     });
 
-    renderCalendar();
+    applyDashboardFilter();
+
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>

@@ -21,6 +21,7 @@
     rel="stylesheet"
   >
 
+   
   <style>
 
     :root {
@@ -164,8 +165,8 @@
 
 /* CASE TABLE SCROLLING */
 .case-table-container {
-  max-height: 460px;
-  overflow-y: auto;
+  max-height: none;
+  overflow-y: visible;
   overflow-x: auto;
 }
 
@@ -178,6 +179,100 @@
   padding: 12px 10px;
   line-height: 1.3;
   background-color: var(--theme-color);
+}
+
+/* TABLE COLUMN SORTING */
+
+.sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+}
+
+.sort-menu {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sort-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.sort-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.sort-menu summary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+  .sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+}
+
+.sort-menu {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sort-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.sort-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.sort-menu summary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown {
+  display: none;
+  position: fixed;
+  min-width: 190px;
+  background: white;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.sort-menu[open] .sort-dropdown {
+  display: block;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  background: white;
+  border: none;
+}
+
+.sort-option:hover {
+  background: #f1f5f9;
 }
 
 </style>
@@ -1455,21 +1550,160 @@
     <table class="case-table text-left text-sm">
 
       <thead class="theme-bg text-white">
-        <tr>
-          <th class="case-id-column font-bold">Case ID</th>
-          <th class="student-id-column font-bold">Student ID</th>
-          <th class="count-column font-bold">Offense Count</th>
-          <th class="name-column font-bold">Name</th>
-          <th class="handler-column font-bold">Person Handling Case</th>
-          <th class="program-column font-bold">Course</th>
-          <th class="violation-column font-bold">Violation</th>
-          <th class="severity-column font-bold">Severity</th>
-          <th class="record-status-column font-bold">Record Status</th>
-          <th class="status-column font-bold">Status</th>
-          <th class="date-column font-bold">Date</th>
-          <th class="actions-column font-bold">Actions</th>
-        </tr>
-      </thead>
+  <tr>
+
+    <th class="case-id-column font-bold">
+      <div class="sort-header">
+        Case ID
+        <details class="sort-menu">
+          <summary title="Sort Case ID">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="0" data-sort-direction="asc">
+  ↥ Sort Oldest to Newest
+</button>
+
+<button type="button" class="sort-option" data-sort-column="0" data-sort-direction="desc">
+  ↧ Sort Newest to Oldest
+</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="student-id-column font-bold">
+      <div class="sort-header">
+        Student ID
+        <details class="sort-menu">
+          <summary title="Sort Student ID">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="count-column font-bold">
+      <div class="sort-header">
+        Offense Count
+        <details class="sort-menu">
+          <summary title="Sort Offense Count">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="name-column font-bold">
+      <div class="sort-header">
+        Name
+        <details class="sort-menu">
+          <summary title="Sort Name">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="handler-column font-bold">
+      <div class="sort-header">
+        Person Handling Case
+        <details class="sort-menu">
+          <summary title="Sort Person Handling Case">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="program-column font-bold">
+      <div class="sort-header">
+        Course
+        <details class="sort-menu">
+          <summary title="Sort Course">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="violation-column font-bold">
+      <div class="sort-header">
+        Violation
+        <details class="sort-menu">
+          <summary title="Sort Violation">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="severity-column font-bold">
+      <div class="sort-header">
+        Severity
+        <details class="sort-menu">
+          <summary title="Sort Severity">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="7" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="7" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="record-status-column font-bold">
+      <div class="sort-header">
+        Record Status
+        <details class="sort-menu">
+          <summary title="Sort Record Status">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="8" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="8" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="status-column font-bold">
+      <div class="sort-header">
+        Status
+        <details class="sort-menu">
+          <summary title="Sort Status">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="9" data-sort-direction="asc">↥ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="9" data-sort-direction="desc">↧ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="date-column font-bold">
+      <div class="sort-header">
+        Date
+        <details class="sort-menu">
+          <summary title="Sort Date">↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="10" data-sort-direction="asc">↥ Sort Oldest to Newest</button>
+            <button type="button" class="sort-option" data-sort-column="10" data-sort-direction="desc">↧ Sort Newest to Oldest</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <th class="actions-column font-bold">Actions</th>
+
+  </tr>
+</thead>
 
       <tbody id="caseTableBody" class="divide-y divide-slate-200">
 
@@ -1570,9 +1804,12 @@
           </td>
 
           <!-- DATE -->
-          <td class="date-column whitespace-nowrap">
-            {{ record.date_filed|date:"M. d, Y" }}
-          </td>
+          <td
+  class="date-column whitespace-nowrap"
+  data-sort-value="{{ record.date_filed|date:'Y-m-d' }}"
+>
+  {{ record.date_filed|date:"M. d, Y" }}
+</td>
 
           <!-- ACTIONS -->
 <td class="actions-column">
@@ -1584,7 +1821,7 @@
       class="px-3 py-2 theme-bg text-white rounded-lg text-sm font-medium theme-hover whitespace-nowrap"
     >
       {% if request.user.is_superuser %}
-        View Details
+        View
       {% else %}
         View
       {% endif %}
@@ -1618,6 +1855,62 @@
       </tbody>
 
     </table>
+
+  </div>
+
+  <!-- PAGINATION CONTROLS -->
+  <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+
+    <!-- RECORD COUNT -->
+    <p id="caseRecordInfo" class="text-sm text-slate-600">
+      Showing 0 to 0 of 0 entries
+    </p>
+
+    <!-- PAGE AND RECORDS PER PAGE -->
+    <div class="flex items-center justify-center gap-3 flex-wrap">
+
+      <div class="flex items-center gap-2">
+        <label for="casePageSelect" class="text-sm text-slate-700">
+          Page:
+        </label>
+
+        <select
+          id="casePageSelect"
+          class="border border-slate-300 rounded-lg px-3 py-2 bg-white theme-ring"
+        >
+        </select>
+      </div>
+
+      <button
+        type="button"
+        id="casePreviousPage"
+        class="px-3 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="Previous page"
+      >
+        &#10094;
+      </button>
+
+      <button
+        type="button"
+        id="caseNextPage"
+        class="px-3 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+        aria-label="Next page"
+      >
+        &#10095;
+      </button>
+
+      <select
+        id="casePerPage"
+        class="border border-slate-300 rounded-lg px-3 py-2 bg-white theme-ring"
+        aria-label="Records per page"
+      >
+        <option value="10">10 per page</option>
+        <option value="25">25 per page</option>
+        <option value="50">50 per page</option>
+        <option value="100">100 per page</option>
+      </select>
+
+    </div>
 
   </div>
 
@@ -1985,44 +2278,358 @@ columnToggles.forEach(function(checkbox) {
 });
 
 updateColumnVisibility();
+/* ==============================
+   CASE SEARCH AND PAGINATION
+   ============================== */
 
-    /* ==============================
-       CASE SEARCH
-       ============================== */
+const caseSearch =
+  document.getElementById("caseSearch");
 
-    const caseSearch =
-      document.getElementById("caseSearch");
+const caseTableBody =
+  document.getElementById("caseTableBody");
 
+const casePageSelect =
+  document.getElementById("casePageSelect");
 
-    caseSearch?.addEventListener(
-      "keyup",
-      function() {
+const casePerPage =
+  document.getElementById("casePerPage");
 
-        const searchValue =
-          this.value.toLowerCase();
+const casePreviousPage =
+  document.getElementById("casePreviousPage");
 
+const caseNextPage =
+  document.getElementById("caseNextPage");
 
-        const rows =
-          document.querySelectorAll(
-            "#caseTableBody tr"
-          );
+const caseRecordInfo =
+  document.getElementById("caseRecordInfo");
 
+let currentCasePage = 1;
+let casesPerPage = 10;
 
-        rows.forEach(function(row) {
+let caseRows = caseTableBody
+  ? Array.from(caseTableBody.querySelectorAll("tr"))
+      .filter(row => !row.querySelector("td[colspan]"))
+  : [];
 
-          const rowText =
-            row.textContent.toLowerCase();
+  /* ==============================
+   SORT DROPDOWN POSITIONING
+   ============================== */
 
+document.querySelectorAll(".sort-menu").forEach(function(menu) {
 
-          row.style.display =
-            rowText.includes(searchValue)
-              ? ""
-              : "none";
+  menu.addEventListener("toggle", function() {
 
-        });
+    // Close all other sorting menus.
+    if (menu.open) {
+      document.querySelectorAll(".sort-menu").forEach(function(otherMenu) {
 
+        if (otherMenu !== menu) {
+          otherMenu.open = false;
+        }
+
+      });
+    }
+
+    if (!menu.open) {
+      return;
+    }
+
+    // Position the currently opened dropdown.
+    const summary = menu.querySelector("summary");
+    const dropdown = menu.querySelector(".sort-dropdown");
+
+    const rect = summary.getBoundingClientRect();
+
+    dropdown.style.top = (rect.bottom + 5) + "px";
+
+    dropdown.style.left = Math.max(
+      8,
+      Math.min(
+        rect.right - dropdown.offsetWidth,
+        window.innerWidth - dropdown.offsetWidth - 8
+      )
+    ) + "px";
+
+  });
+
+});
+
+  /* ==============================
+   CASE TABLE SORTING
+   ============================== */
+
+document.querySelectorAll(".sort-option").forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const columnIndex = parseInt(
+      this.dataset.sortColumn,
+      10
+    );
+
+    const direction = this.dataset.sortDirection;
+
+    // Sort the case records based on the selected column.
+    caseRows.sort(function(rowA, rowB) {
+
+      const cellA = rowA.children[columnIndex];
+      const cellB = rowB.children[columnIndex];
+
+      const valueA = (
+  cellA.dataset.sortValue || cellA.innerText
+).trim();
+
+const valueB = (
+  cellB.dataset.sortValue || cellB.innerText
+).trim();
+
+let comparison;
+
+// Special sorting for Case ID.
+if (columnIndex === 0) {
+
+  const getSequence = function(caseId) {
+    const match = caseId.trim().match(/^\d{4}-\d+-(\d+)[A-Za-z]+$/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  comparison = getSequence(valueA) - getSequence(valueB);
+
+} else {
+
+  const numberA = Number(valueA);
+  const numberB = Number(valueB);
+
+  // Sort numbers numerically.
+  if (
+    valueA !== "" &&
+    valueB !== "" &&
+    Number.isFinite(numberA) &&
+    Number.isFinite(numberB)
+  ) {
+    comparison = numberA - numberB;
+
+  } else {
+
+    // Sort text alphabetically.
+    comparison = valueA.localeCompare(
+      valueB,
+      undefined,
+      {
+        numeric: true,
+        sensitivity: "base"
       }
     );
+
+  }
+
+}
+
+      return direction === "asc"
+        ? comparison
+        : -comparison;
+
+    });
+
+    // Rearrange the actual table rows.
+    caseRows.forEach(function(row) {
+      caseTableBody.appendChild(row);
+    });
+
+    // Close the sorting menu.
+    document.querySelectorAll(".sort-menu").forEach(function(menu) {
+      menu.open = false;
+    });
+
+    // Return to the first page after sorting.
+    currentCasePage = 1;
+
+    // Refresh pagination and search results.
+    updateCasePagination();
+
+  });
+
+});
+const databaseEmptyRow = caseTableBody
+  ? caseTableBody.querySelector("tr td[colspan]")?.closest("tr")
+  : null;
+
+function updateCasePagination() {
+
+  if (!caseTableBody) {
+    return;
+  }
+
+  const searchValue =
+    caseSearch ? caseSearch.value.toLowerCase().trim() : "";
+
+  // Filter records based on search
+  const filteredRows = caseRows.filter(function(row) {
+    return row.textContent.toLowerCase().includes(searchValue);
+  });
+
+  const totalRecords = filteredRows.length;
+
+  if (databaseEmptyRow) {
+  databaseEmptyRow.style.display =
+    caseRows.length === 0 ? "" : "none";
+}
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / casesPerPage)
+  );
+
+  // Keep current page within valid range
+  if (currentCasePage > totalPages) {
+    currentCasePage = totalPages;
+  }
+
+  // Calculate records to display
+  const startIndex =
+    (currentCasePage - 1) * casesPerPage;
+
+  const endIndex =
+    Math.min(startIndex + casesPerPage, totalRecords);
+
+  // Hide all records first
+  caseRows.forEach(function(row) {
+    row.style.display = "none";
+  });
+
+  // Display only records for the current page
+  filteredRows.forEach(function(row, index) {
+
+    if (index >= startIndex && index < endIndex) {
+      row.style.display = "";
+    }
+
+  });
+
+  // Show empty result message when no records match
+  let emptyRow = document.getElementById("caseSearchEmpty");
+
+  if (totalRecords === 0 && caseRows.length > 0) {
+
+    if (!emptyRow) {
+
+      emptyRow = document.createElement("tr");
+      emptyRow.id = "caseSearchEmpty";
+
+      emptyRow.innerHTML = `
+        <td colspan="12" class="px-4 py-8 text-center text-slate-500">
+          No matching case records found.
+        </td>
+      `;
+
+      caseTableBody.appendChild(emptyRow);
+    }
+
+    emptyRow.style.display = "";
+
+  } else if (emptyRow) {
+
+    emptyRow.style.display = "none";
+
+  }
+
+  // Update page selector
+  if (casePageSelect) {
+
+    casePageSelect.innerHTML = "";
+
+    for (let page = 1; page <= totalPages; page++) {
+
+      const option = document.createElement("option");
+
+      option.value = page;
+      option.textContent = page + " of " + totalPages;
+
+      if (page === currentCasePage) {
+        option.selected = true;
+      }
+
+      casePageSelect.appendChild(option);
+
+    }
+
+  }
+
+  // Update record count
+  if (caseRecordInfo) {
+
+    const firstRecord =
+      totalRecords === 0 ? 0 : startIndex + 1;
+
+    caseRecordInfo.textContent =
+      `Showing ${firstRecord} to ${endIndex} of ${totalRecords} entries`;
+
+  }
+
+  // Enable or disable navigation buttons
+  if (casePreviousPage) {
+    casePreviousPage.disabled =
+      currentCasePage === 1;
+  }
+
+  if (caseNextPage) {
+    caseNextPage.disabled =
+      currentCasePage === totalPages;
+  }
+
+}
+
+// Search records
+caseSearch?.addEventListener("input", function() {
+
+  currentCasePage = 1;
+  updateCasePagination();
+
+});
+
+// Change records per page
+casePerPage?.addEventListener("change", function() {
+
+  casesPerPage = parseInt(this.value, 10) || 10;
+  currentCasePage = 1;
+
+  updateCasePagination();
+
+});
+
+// Select a specific page
+casePageSelect?.addEventListener("change", function() {
+
+  currentCasePage = parseInt(this.value, 10) || 1;
+
+  updateCasePagination();
+
+});
+
+// Previous page
+casePreviousPage?.addEventListener("click", function() {
+
+  if (currentCasePage > 1) {
+
+    currentCasePage--;
+
+    updateCasePagination();
+
+  }
+
+});
+
+// Next page
+caseNextPage?.addEventListener("click", function() {
+
+  currentCasePage++;
+
+  updateCasePagination();
+
+});
+
+// Initial pagination
+updateCasePagination();
 
     const caseRecordForm = document.querySelector(
   'main form[method="POST"][enctype="multipart/form-data"]'

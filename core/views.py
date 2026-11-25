@@ -16,11 +16,12 @@ import requests
 import secrets
 from django.contrib.auth.hashers import make_password, check_password
 from django.urls import reverse
+from django.core.files.base import ContentFile
 
 from .models import (
     Student, ArchivedStudent, Offense, CaseRecord, ArchivedRecord,
     AuditLog, AccumulationRule, UserProfile, SystemSettings,
-    CaseSanction, CaseDiaryEntry, CaseAttachment,
+    CaseSanction, CaseDiaryEntry, CaseAttachment, CaseDetailsHistory,
 )
 
 def validate_case_uploads(uploaded_files):
@@ -1769,6 +1770,14 @@ def case_record(request):
                 case.school_year = school_year
                 case.year_level = year_level
                 case.status = status
+
+                if case.remarks != remarks and case.remarks.strip():
+                    CaseDetailsHistory.objects.create(
+                        case=case,
+                        details=case.remarks,
+                        added_by=request.user,
+                )
+
                 case.remarks = remarks
                 case.campus = campus
                 case.incident_location = incident_location
@@ -1781,9 +1790,37 @@ def case_record(request):
                 case.sanction_remarks = sanction_remarks
 
                 if date_filed:
-                    case.date_filed = date_filed
-
+                    case.date_filed = date_filed# Preserve previous evidence before replacing it.
                 if evidence:
+
+                    if case.evidence:
+                        old_file_name = os.path.basename(case.evidence.name)
+
+                        try:
+                            with case.evidence.open("rb") as old_file:
+                                old_file_content = old_file.read()
+
+                            old_attachment = CaseAttachment(
+                                case=case,
+                                file_name=old_file_name,
+                                uploaded_by=None,
+                            )
+
+                            old_attachment.file.save(
+                                old_file_name,
+                                ContentFile(old_file_content),
+                                save=True,
+                            )
+
+                        except Exception:
+                            messages.error(
+                                request,
+                                "The previous evidence file could not be preserved. "
+                                "The existing evidence was not replaced."
+                            )
+                            return redirect("case_record")
+
+                    # Replace with the newly uploaded evidence.
                     case.evidence = evidence
 
                 case.save()
@@ -3861,6 +3898,7 @@ def case_record_details(request, case_id):
         "sanctions": case.sanctions.all().order_by("-date_added"),
         "diary_entries": case.diary_entries.order_by("-entry_date"),
         "attachments": case.attachments.order_by("-date_added"),
+        "case_details_history": case.details_history.all().order_by("-date_added"),
         "can_edit_cases": can_edit_cases,
         "can_add_case_information": (
             is_main_admin(request.user)

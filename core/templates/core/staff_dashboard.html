@@ -61,6 +61,71 @@
       );
     }
 
+    /* STAFF DASHBOARD TABLE SORTING */
+
+.sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+}
+
+.sort-menu {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sort-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.sort-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.sort-menu summary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown {
+  display: none;
+  position: fixed;
+  min-width: 190px;
+  background: white;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.sort-menu[open] .sort-dropdown {
+  display: block;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  background: white;
+  border: none;
+  color: #1e293b;
+}
+
+.sort-option:hover {
+  background: #f1f5f9;
+}
   </style>
 
 </head>
@@ -347,35 +412,114 @@
           <table class="w-full text-left text-sm">
 
             <thead class="theme-bg text-white sticky top-0 z-10">
+  <tr>
 
-              <tr>
+    <!-- CASE NUMBER -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        Case #
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option"
+  data-sort-column="0" data-sort-direction="asc">
+  ↥ Sort Oldest to Newest
+</button>
 
-                <th class="px-4 py-3 font-bold">
-                  Case #
-                </th>
+<button type="button" class="sort-option"
+  data-sort-column="0" data-sort-direction="desc">
+  ↧ Sort Newest to Oldest
+</button>
+          </div>
+        </details>
+      </div>
+    </th>
 
-                <th class="px-4 py-3 font-bold">
-                  Student
-                </th>
+    <!-- STUDENT -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        Student
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option"
+              data-sort-column="1" data-sort-direction="asc">
+              Sort A to Z
+            </button>
+            <button type="button" class="sort-option"
+              data-sort-column="1" data-sort-direction="desc">
+              Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
 
-                <th class="px-4 py-3 font-bold">
-                  Offense
-                </th>
+    <!-- OFFENSE -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        Offense
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option"
+              data-sort-column="2" data-sort-direction="asc">
+              Sort A to Z
+            </button>
+            <button type="button" class="sort-option"
+              data-sort-column="2" data-sort-direction="desc">
+              Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
 
-                <th class="px-4 py-3 font-bold">
-                  Status
-                </th>
+    <!-- STATUS -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        Status
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option"
+              data-sort-column="3" data-sort-direction="asc">
+              Sort A to Z
+            </button>
+            <button type="button" class="sort-option"
+              data-sort-column="3" data-sort-direction="desc">
+              Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
 
-                <th class="px-4 py-3 font-bold">
-                  Date
-                </th>
+    <!-- DATE -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        Date
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option"
+              data-sort-column="4" data-sort-direction="asc">
+              Oldest First
+            </button>
+            <button type="button" class="sort-option"
+              data-sort-column="4" data-sort-direction="desc">
+              Newest First
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
 
-              </tr>
+  </tr>
+</thead>
 
-            </thead>
 
-
-            <tbody class="divide-y divide-slate-200">
+            <tbody id="recentCasesTableBody" class="divide-y divide-slate-200">
 
               {% for case in recent_cases %}
 
@@ -426,9 +570,12 @@
 
                 </td>
 
-                <td class="px-4 py-3">
-                  {{ case.date_reported|date:"M. d, Y" }}
-                </td>
+                <td
+  class="px-4 py-3"
+  data-sort-value="{{ case.date_reported|date:'Y-m-d' }}"
+>
+  {{ case.date_reported|date:"M. d, Y" }}
+</td>
 
               </tr>
 
@@ -439,6 +586,61 @@
           </table>
 
         </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+
+  <!-- RECORD COUNT -->
+  <p id="recentCaseRecordInfo" class="text-sm text-slate-600">
+    Showing 0 to 0 of 0 entries
+  </p>
+
+  <!-- PAGE AND RECORDS PER PAGE -->
+  <div class="flex items-center justify-center gap-3 flex-wrap">
+
+    <div class="flex items-center gap-2">
+      <label for="recentCasePageSelect" class="text-sm text-slate-700">
+        Page:
+      </label>
+
+      <select
+        id="recentCasePageSelect"
+        class="border border-slate-300 rounded-lg px-3 py-2 bg-white"
+      >
+      </select>
+    </div>
+
+    <button
+      type="button"
+      id="recentCasePreviousPage"
+      class="px-3 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="Previous page"
+    >
+      &#10094;
+    </button>
+
+    <button
+      type="button"
+      id="recentCaseNextPage"
+      class="px-3 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      aria-label="Next page"
+    >
+      &#10095;
+    </button>
+
+    <select
+      id="recentCasePerPage"
+      class="border border-slate-300 rounded-lg px-3 py-2 bg-white"
+      aria-label="Records per page"
+    >
+      <option value="10">10 per page</option>
+      <option value="25">25 per page</option>
+      <option value="50">50 per page</option>
+      <option value="100">100 per page</option>
+    </select>
+
+  </div>
+
+</div>
 
         {% else %}
 
@@ -457,7 +659,258 @@
     </div>
 
   </main>
+  <script>
 
+const recentCaseTableBody =
+  document.getElementById("recentCasesTableBody");
+
+const recentCasePageSelect =
+  document.getElementById("recentCasePageSelect");
+
+const recentCasePerPage =
+  document.getElementById("recentCasePerPage");
+
+const recentCasePreviousPage =
+  document.getElementById("recentCasePreviousPage");
+
+const recentCaseNextPage =
+  document.getElementById("recentCaseNextPage");
+
+const recentCaseRecordInfo =
+  document.getElementById("recentCaseRecordInfo");
+
+let recentCaseRows = recentCaseTableBody
+  ? Array.from(recentCaseTableBody.querySelectorAll("tr"))
+  : [];
+
+let recentCaseCurrentPage = 1;
+let recentCasesPerPage = 10;
+
+
+/* ==============================
+   SORT DROPDOWN POSITIONING
+   ============================== */
+
+document.querySelectorAll(".sort-menu").forEach(function(menu) {
+
+  menu.addEventListener("toggle", function() {
+
+    if (menu.open) {
+      document.querySelectorAll(".sort-menu").forEach(function(otherMenu) {
+        if (otherMenu !== menu) {
+          otherMenu.open = false;
+        }
+      });
+    }
+
+    if (!menu.open) return;
+
+    const summary = menu.querySelector("summary");
+    const dropdown = menu.querySelector(".sort-dropdown");
+    const rect = summary.getBoundingClientRect();
+
+    dropdown.style.top = (rect.bottom + 5) + "px";
+
+    dropdown.style.left = Math.max(
+      8,
+      Math.min(
+        rect.right - dropdown.offsetWidth,
+        window.innerWidth - dropdown.offsetWidth - 8
+      )
+    ) + "px";
+
+  });
+
+});
+
+
+/* ==============================
+   CASE TABLE SORTING
+   ============================== */
+
+document.querySelectorAll(".sort-option").forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const columnIndex = parseInt(this.dataset.sortColumn, 10);
+    const direction = this.dataset.sortDirection;
+
+    recentCaseRows.sort(function(rowA, rowB) {
+
+      const cellA = rowA.children[columnIndex];
+      const cellB = rowB.children[columnIndex];
+
+      const valueA = (
+        cellA.dataset.sortValue || cellA.innerText
+      ).trim();
+
+      const valueB = (
+        cellB.dataset.sortValue || cellB.innerText
+      ).trim();
+
+      let comparison;
+
+      if (columnIndex === 0) {
+
+        const getSequence = function(caseId) {
+          const match = caseId.trim().match(
+            /^\d{4}-\d+-(\d+)[A-Za-z]+$/
+          );
+
+          return match ? parseInt(match[1], 10) : 0;
+        };
+
+        comparison = getSequence(valueA) - getSequence(valueB);
+
+      } else {
+
+        comparison = valueA.localeCompare(
+          valueB,
+          undefined,
+          {
+            numeric: true,
+            sensitivity: "base"
+          }
+        );
+
+      }
+
+      return direction === "asc"
+        ? comparison
+        : -comparison;
+
+    });
+
+    recentCaseRows.forEach(function(row) {
+      recentCaseTableBody.appendChild(row);
+    });
+
+    document.querySelectorAll(".sort-menu").forEach(function(menu) {
+      menu.open = false;
+    });
+
+    recentCaseCurrentPage = 1;
+    updateRecentCasePagination();
+
+  });
+
+});
+
+
+/* ==============================
+   UPDATE PAGINATION
+   ============================== */
+
+function updateRecentCasePagination() {
+
+  if (!recentCaseTableBody) return;
+
+  const totalRecords = recentCaseRows.length;
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / recentCasesPerPage)
+  );
+
+  if (recentCaseCurrentPage > totalPages) {
+    recentCaseCurrentPage = totalPages;
+  }
+
+  const startIndex =
+    (recentCaseCurrentPage - 1) * recentCasesPerPage;
+
+  const endIndex = Math.min(
+    startIndex + recentCasesPerPage,
+    totalRecords
+  );
+
+  recentCaseRows.forEach(function(row, index) {
+    row.style.display =
+      index >= startIndex && index < endIndex ? "" : "none";
+  });
+
+  if (recentCasePageSelect) {
+
+    recentCasePageSelect.innerHTML = "";
+
+    for (let page = 1; page <= totalPages; page++) {
+
+      const option = document.createElement("option");
+
+      option.value = page;
+      option.textContent = page + " of " + totalPages;
+      option.selected = page === recentCaseCurrentPage;
+
+      recentCasePageSelect.appendChild(option);
+
+    }
+
+  }
+
+  if (recentCaseRecordInfo) {
+
+    const firstRecord =
+      totalRecords === 0 ? 0 : startIndex + 1;
+
+    recentCaseRecordInfo.textContent =
+      `Showing ${firstRecord} to ${endIndex} of ${totalRecords} entries`;
+
+  }
+
+  if (recentCasePreviousPage) {
+    recentCasePreviousPage.disabled =
+      recentCaseCurrentPage === 1;
+  }
+
+  if (recentCaseNextPage) {
+    recentCaseNextPage.disabled =
+      recentCaseCurrentPage === totalPages;
+  }
+
+}
+
+
+/* ==============================
+   PAGINATION EVENTS
+   ============================== */
+
+recentCasePerPage?.addEventListener("change", function() {
+
+  recentCasesPerPage = parseInt(this.value, 10) || 10;
+  recentCaseCurrentPage = 1;
+
+  updateRecentCasePagination();
+
+});
+
+recentCasePageSelect?.addEventListener("change", function() {
+
+  recentCaseCurrentPage = parseInt(this.value, 10) || 1;
+
+  updateRecentCasePagination();
+
+});
+
+recentCasePreviousPage?.addEventListener("click", function() {
+
+  if (recentCaseCurrentPage > 1) {
+    recentCaseCurrentPage--;
+    updateRecentCasePagination();
+  }
+
+});
+
+recentCaseNextPage?.addEventListener("click", function() {
+
+  recentCaseCurrentPage++;
+  updateRecentCasePagination();
+
+});
+
+// Initial pagination.
+updateRecentCasePagination();
+
+</script>
 
   <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
 

@@ -61,6 +61,65 @@
       );
     }
 
+    /* STUDENT TABLE SORTING */
+.sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+}
+
+.sort-menu {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sort-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 5px;
+}
+
+.sort-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.sort-menu summary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  min-width: 170px;
+  background: white;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.sort-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sort-option:hover {
+  background: #f1f5f9;
+}
+
   </style>
 
 </head>
@@ -292,16 +351,129 @@
         <div class="max-h-[300px] overflow-y-auto overflow-x-auto">
           <table class="w-full text-left text-sm">
             <thead class="theme-bg text-white sticky top-0 z-8">
-              <tr>
-                <th class="px-4 py-3 font-bold">Student ID</th>
-                <th class="px-4 py-3 font-bold">Name</th>
-                <th class="px-4 py-3 font-bold">Program</th>
-                <th class="px-4 py-3 font-bold">School</th>
-                <th class="px-4 py-3 font-bold">Year Level</th>
-                <th class="px-4 py-3 font-bold">Status</th>
-                <th class="px-4 py-3 font-bold text-center">Action</th>
-              </tr>
-            </thead>
+  <tr>
+
+    <!-- STUDENT ID -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        <span>Student ID</span>
+
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="0" data-sort-direction="asc">
+              ↥ Sort Oldest To Newest
+            </button>
+            <button type="button" class="sort-option" data-sort-column="0" data-sort-direction="desc">
+              ↧ Sort Newest To Oldest
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- NAME -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        <span>Name</span>
+
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="asc">
+              ↥ Sort A to Z
+            </button>
+            <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="desc">
+              ↧ Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- PROGRAM -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        <span>Program</span>
+
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="asc">
+              ↥ Sort A to Z
+            </button>
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="desc">
+              ↧ Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- SCHOOL -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        <span>School</span>
+
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="asc">
+              ↥ Sort A to Z
+            </button>
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="desc">
+              ↧ Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- YEAR LEVEL -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        <span>Year Level</span>
+
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="asc">
+              ↥ Sort A to Z
+            </button>
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="desc">
+              ↧ Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- STATUS -->
+    <th class="px-4 py-3 font-bold">
+      <div class="sort-header">
+        <span>Status</span>
+
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="asc">
+              ↥ Sort A to Z
+            </button>
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="desc">
+              ↧ Sort Z to A
+            </button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- ACTION -->
+    <th class="px-4 py-3 font-bold text-center">
+      Action
+    </th>
+
+  </tr>
+</thead>
 
             <tbody id="studentTableBody" class="divide-y divide-slate-200">
               {% for student in students %}
@@ -368,7 +540,7 @@
   data-image="{% if student.image %}{{ student.image.url|escapejs }}{% endif %}"
   >
 
-                      View Details
+                      View
                     </button>
 
                     <!-- EDIT: ADMIN ONLY -->
@@ -418,6 +590,37 @@
               {% endfor %}
             </tbody>
           </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+          <p id="studentPaginationInfo" class="text-sm text-slate-500">
+            Showing 0 of 0 students
+          </p>
+
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              id="studentPrevPage"
+              class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+              disabled
+            >
+              Previous
+            </button>
+
+            <span id="studentPageInfo" class="text-sm text-slate-600">
+              Page 1 of 1
+            </span>
+
+            <button
+              type="button"
+              id="studentNextPage"
+              class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+              disabled
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 
@@ -474,7 +677,6 @@
     value="{{ add_form_data.student_id|default:'' }}"
     class="w-full border border-slate-300 rounded-xl p-3 theme-ring"
     required
->
 >
         </div>
 
@@ -1307,18 +1509,220 @@
 
   <!-- JAVASCRIPT -->
   <script>
-    /* SEARCH */
-    const studentSearch = document.getElementById("studentSearch");
+    /* STUDENT SEARCH AND PAGINATION */
+const studentSearch = document.getElementById("studentSearch");
+const studentTableBody = document.getElementById("studentTableBody");
 
-    studentSearch?.addEventListener("input", function () {
-      const searchValue = studentSearch.value.toLowerCase();
-      const rows = document.querySelectorAll("#studentTableBody tr");
+let studentRows = studentTableBody
+  ? Array.from(studentTableBody.querySelectorAll("tr")).filter(function (row) {
+      return !row.querySelector("td[colspan]");
+    })
+  : [];
 
-      rows.forEach(function (row) {
-        const rowText = row.textContent.toLowerCase();
-        row.style.display = rowText.includes(searchValue) ? "" : "none";
-      });
+const databaseEmptyRow = studentTableBody
+  ? studentTableBody.querySelector("tr td[colspan]")?.closest("tr")
+  : null;
+
+const studentPaginationInfo = document.getElementById("studentPaginationInfo");
+const studentPageInfo = document.getElementById("studentPageInfo");
+const studentPrevPage = document.getElementById("studentPrevPage");
+const studentNextPage = document.getElementById("studentNextPage");
+
+const studentsPerPage = 10;
+let currentStudentPage = 1;
+let filteredStudentRows = [...studentRows];
+
+/* ==============================
+   STUDENT TABLE SORTING
+   ============================== */
+
+document.querySelectorAll(".sort-option").forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const columnIndex = parseInt(
+      this.dataset.sortColumn,
+      10
+    );
+
+    const direction = this.dataset.sortDirection;
+
+    studentRows.sort(function(rowA, rowB) {
+
+      const valueA = rowA.children[columnIndex].innerText.trim();
+      const valueB = rowB.children[columnIndex].innerText.trim();
+
+      let comparison;
+
+      const numberA = Number(valueA);
+      const numberB = Number(valueB);
+
+      if (
+        valueA !== "" &&
+        valueB !== "" &&
+        Number.isFinite(numberA) &&
+        Number.isFinite(numberB)
+      ) {
+        comparison = numberA - numberB;
+      } else {
+        comparison = valueA.localeCompare(
+          valueB,
+          undefined,
+          {
+            numeric: true,
+            sensitivity: "base"
+          }
+        );
+      }
+
+      return direction === "asc"
+        ? comparison
+        : -comparison;
+
     });
+
+    // Reorder the actual table rows
+    studentRows.forEach(function(row) {
+      studentTableBody.appendChild(row);
+    });
+
+    // Close all sorting dropdowns
+    document.querySelectorAll(".sort-menu").forEach(function(menu) {
+      menu.open = false;
+    });
+
+    // Reapply the current search
+    const searchValue = studentSearch
+      ? studentSearch.value.toLowerCase().trim()
+      : "";
+
+    filteredStudentRows = studentRows.filter(function(row) {
+      return row.textContent.toLowerCase().includes(searchValue);
+    });
+
+    // Return to the first page
+    currentStudentPage = 1;
+
+    updateStudentPagination();
+
+  });
+
+});
+
+/* MESSAGE WHEN SEARCH HAS NO MATCHES */
+const noStudentResultsRow = document.createElement("tr");
+
+noStudentResultsRow.innerHTML = `
+  <td colspan="7" class="px-4 py-8 text-center text-slate-500">
+    No matching student records found.
+  </td>
+`;
+
+function updateStudentPagination() {
+  const totalRecords = filteredStudentRows.length;
+
+  /* HANDLE EMPTY DATABASE */
+  if (databaseEmptyRow) {
+    databaseEmptyRow.style.display =
+      studentRows.length === 0 ? "" : "none";
+  }
+
+  /* HANDLE NO SEARCH RESULTS */
+  if (studentTableBody && studentRows.length > 0) {
+    if (totalRecords === 0) {
+      studentTableBody.appendChild(noStudentResultsRow);
+      noStudentResultsRow.style.display = "";
+    } else {
+      noStudentResultsRow.remove();
+    }
+  }
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / studentsPerPage)
+  );
+
+  if (currentStudentPage > totalPages) {
+    currentStudentPage = totalPages;
+  }
+
+  const startIndex = (currentStudentPage - 1) * studentsPerPage;
+  const endIndex = Math.min(
+    startIndex + studentsPerPage,
+    totalRecords
+  );
+
+  /* HIDE ALL STUDENT ROWS FIRST */
+  studentRows.forEach(function (row) {
+    row.style.display = "none";
+  });
+
+  /* DISPLAY ONLY THE ROWS FOR THE CURRENT PAGE */
+  filteredStudentRows
+    .slice(startIndex, endIndex)
+    .forEach(function (row) {
+      row.style.display = "";
+    });
+
+  /* UPDATE PAGINATION INFORMATION */
+  if (studentPaginationInfo) {
+    studentPaginationInfo.textContent =
+      totalRecords === 0
+        ? "Showing 0 of 0 students"
+        : `Showing ${startIndex + 1}-${endIndex} of ${totalRecords} students`;
+  }
+
+  if (studentPageInfo) {
+    studentPageInfo.textContent =
+      `Page ${currentStudentPage} of ${totalPages}`;
+  }
+
+  /* ENABLE OR DISABLE BUTTONS */
+  if (studentPrevPage) {
+    studentPrevPage.disabled = currentStudentPage === 1;
+  }
+
+  if (studentNextPage) {
+    studentNextPage.disabled =
+      currentStudentPage === totalPages || totalRecords === 0;
+  }
+}
+
+/* SEARCH STUDENTS */
+studentSearch?.addEventListener("input", function () {
+  const searchValue = studentSearch.value.toLowerCase().trim();
+
+  filteredStudentRows = studentRows.filter(function (row) {
+    return row.textContent.toLowerCase().includes(searchValue);
+  });
+
+  currentStudentPage = 1;
+  updateStudentPagination();
+});
+
+/* PREVIOUS PAGE */
+studentPrevPage?.addEventListener("click", function () {
+  if (currentStudentPage > 1) {
+    currentStudentPage--;
+    updateStudentPagination();
+  }
+});
+
+/* NEXT PAGE */
+studentNextPage?.addEventListener("click", function () {
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredStudentRows.length / studentsPerPage)
+  );
+
+  if (currentStudentPage < totalPages) {
+    currentStudentPage++;
+    updateStudentPagination();
+  }
+});
+
+/* INITIAL PAGINATION */
+updateStudentPagination();
 
     /* ADD STUDENT MODAL */
     function openAddStudentModal() {

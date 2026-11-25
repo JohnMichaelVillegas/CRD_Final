@@ -550,29 +550,15 @@
 
                     <table class="audit-table text-left text-sm text-slate-700">
 
-                        <thead class="theme-bg text-white sticky top-0 z-10">
-                            <tr>
-                                <th class="date-column font-bold">
-                                    Date and Time
-                                </th>
-
-                                <th class="user-column font-bold">
-                                    User
-                                </th>
-
-                                <th class="action-column font-bold">
-                                    Action
-                                </th>
-
-                                <th class="font-bold">
-                                    Description
-                                </th>
-
-                                <th class="page-column font-bold">
-                                    Page
-                                </th>
-                            </tr>
-                        </thead>
+<thead class="theme-bg text-white sticky top-0 z-10">
+    <tr>
+        <th class="date-column font-bold">Date and Time</th>
+        <th class="user-column font-bold">User</th>
+        <th class="page-column font-bold">Page</th>
+        <th class="action-column font-bold">Action</th>
+        <th class="font-bold">Description</th>
+    </tr>
+</thead>
 
                         <tbody
                             id="auditTableBody"
@@ -581,60 +567,42 @@
 
                             {% for log in audit_logs %}
 
-                            <tr
-                                class="audit-row hover:bg-slate-50"
-                                data-date="{{ log.date_created|localtime|date:'Y-m-d' }}"
-                            >
+                            <tr class="audit-row" data-date="{{ log.date_created|date:'Y-m-d' }}">
 
-                                    <!-- DATE AND TIME -->
+    <!-- DATE AND TIME -->
+    <td>
+        {{ log.date_created|localtime|date:"M d, Y h:i A" }}
+    </td>
 
-                                    <td class="date-cell">
-                                        {{ log.date_created|localtime|date:"M d, Y h:i A" }}
-                                    </td>
+    <!-- USER -->
+    <td>
+        {% if log.user %}
+            {{ log.user.username }}
+        {% else %}
+            System
+        {% endif %}
+    </td>
 
-                                    <!-- USER -->
+    <!-- PAGE -->
+    <td>
+        {% if log.page %}
+            {{ log.page }}
+        {% else %}
+            Not specified
+        {% endif %}
+    </td>
 
-                                    <td>
-                                        {% if log.user %}
-                                            {{ log.user.username }}
-                                        {% else %}
-                                            System
-                                        {% endif %}
-                                    </td>
+    <!-- ACTION -->
+    <td>
+        {{ log.action }}
+    </td>
 
-                                    <!-- ACTION -->
+    <!-- DESCRIPTION -->
+    <td>
+        {{ log.description }}
+    </td>
 
-                                    <td class="font-medium">
-                                        {{ log.action }}
-                                    </td>
-
-                                    <!-- DESCRIPTION -->
-
-                                    <td>
-                                        {{ log.description }}
-                                    </td>
-
-                                    <!-- PAGE -->
-
-                                    <td class="page-cell">
-
-                                        {% if log.page %}
-
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {{ log.page }}
-                                            </span>
-
-                                        {% else %}
-
-                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
-                                                Not specified
-                                            </span>
-
-                                        {% endif %}
-
-                                    </td>
-
-                                </tr>
+</tr>
 
                             {% empty %}
 
@@ -660,128 +628,286 @@
                 </div>
 
 
-                <!-- TABLE FOOTER -->
+                <!-- AUDIT LOG PAGINATION -->
 
-                <div class="mt-4 flex flex-col sm:flex-row justify-between gap-2 text-sm text-slate-500">
+                <div class="mt-4 flex flex-col sm:flex-row justify-between items-center gap-4">
 
-                    <p>
-                        Total records:
-                        <span id="auditCount" class="font-semibold text-slate-700">
-                            {{ audit_logs|length }}
-                        </span>
+                    <p id="auditPaginationInfo" class="text-sm text-slate-500">
+                        Showing 0 to 0 of 0 entries
                     </p>
 
+                    <div class="flex flex-wrap items-center justify-center gap-2 text-sm">
+
+                        <label for="auditPageSelect" class="text-slate-600">
+                            Page:
+                        </label>
+
+                        <select
+                            id="auditPageSelect"
+                            class="border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                        >
+                            <option value="1">1 of 1</option>
+                        </select>
+
+                        <button
+                            type="button"
+                            id="auditPrevPage"
+                            class="border border-slate-300 rounded-lg px-3 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                            disabled
+                            aria-label="Previous page"
+                        >
+                            &lt;
+                        </button>
+
+                        <button
+                            type="button"
+                            id="auditNextPage"
+                            class="border border-slate-300 rounded-lg px-3 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                            disabled
+                            aria-label="Next page"
+                        >
+                            &gt;
+                        </button>
+
+                        <select
+                            id="auditPageSize"
+                            class="border border-slate-300 rounded-lg px-3 py-2 bg-white"
+                        >
+                            <option value="10" selected>10 per page</option>
+                            <option value="25">25 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                        </select>
+
+                    </div>
+
+                </div>
+
+                <!-- TABLE FOOTER -->
+
+                <div class="mt-3 flex justify-end text-sm text-slate-500">
                     <p>
                         Audit history is displayed with the newest entries first.
                     </p>
-
                 </div>
 
             </div>
         </div>
     </main>
 
-
-    <!-- AUDIT LOG FILTER FUNCTION -->
+<!-- AUDIT LOG PAGINATION SCRIPT -->
 
 <script>
-    const auditRows = document.querySelectorAll(".audit-row");
-    const auditCount = document.getElementById("auditCount");
-    const noSearchResults = document.getElementById("noSearchResults");
 
-    const filterUser = document.getElementById("filterUser");
-    const filterAction = document.getElementById("filterAction");
-    const filterPage = document.getElementById("filterPage");
-    const filterDateFrom = document.getElementById("filterDateFrom");
-    const filterDateTo = document.getElementById("filterDateTo");
+    const auditRows = Array.from(
+    document.querySelectorAll(".audit-row")
+);
 
-    const applyButton = document.getElementById("applyAuditFilter");
-    const resetButton = document.getElementById("resetAuditFilter");
+const emptyAuditRow = document.getElementById("emptyAuditRow");
+const noSearchResults = document.getElementById("noSearchResults");
 
-    // APPLY FILTERS
-    applyButton.addEventListener("click", function () {
+const filterUser = document.getElementById("filterUser");
+const filterAction = document.getElementById("filterAction");
+const filterPage = document.getElementById("filterPage");
+const filterDateFrom = document.getElementById("filterDateFrom");
+const filterDateTo = document.getElementById("filterDateTo");
 
-        const selectedUser = filterUser.value.toLowerCase();
-        const selectedAction = filterAction.value.toLowerCase();
-        const selectedPage = filterPage.value.toLowerCase();
-        const dateFrom = filterDateFrom.value;
-        const dateTo = filterDateTo.value;
+const applyButton = document.getElementById("applyAuditFilter");
+const resetButton = document.getElementById("resetAuditFilter");
 
-        let visibleCount = 0;
+const paginationInfo = document.getElementById("auditPaginationInfo");
+const pageSelect = document.getElementById("auditPageSelect");
+const pageSizeSelect = document.getElementById("auditPageSize");
+const prevButton = document.getElementById("auditPrevPage");
+const nextButton = document.getElementById("auditNextPage");
 
-        auditRows.forEach(function (row) {
+let filteredRows = [...auditRows];
+let currentPage = 1;
+let rowsPerPage = 10;
 
-            const cells = row.querySelectorAll("td");
 
-            const rowUser = cells[1].textContent.trim().toLowerCase();
-            const rowAction = cells[2].textContent.trim().toLowerCase();
-            const rowPage = cells[4].textContent.trim().toLowerCase();
-            const rowDate = row.dataset.date;
+// UPDATE PAGINATION
+function updatePagination() {
 
-            const matchesUser =
-                !selectedUser || rowUser === selectedUser;
+    const totalRecords = filteredRows.length;
 
-            const matchesAction =
-                !selectedAction || rowAction === selectedAction;
+    const totalPages = Math.max(
+        1,
+        Math.ceil(totalRecords / rowsPerPage)
+    );
 
-            const matchesPage =
-                !selectedPage || rowPage === selectedPage;
+    if (currentPage > totalPages) {
+        currentPage = totalPages;
+    }
 
-            const matchesDateFrom =
-                !dateFrom || rowDate >= dateFrom;
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = Math.min(startIndex + rowsPerPage, totalRecords);
 
-            const matchesDateTo =
-                !dateTo || rowDate <= dateTo;
+    // HIDE ALL ROWS FIRST
+    auditRows.forEach(row => {
+        row.style.display = "none";
+    });
 
-            const matches =
-                matchesUser &&
-                matchesAction &&
-                matchesPage &&
-                matchesDateFrom &&
-                matchesDateTo;
+    // SHOW ONLY THE CURRENT PAGE
+    filteredRows.slice(startIndex, endIndex).forEach(row => {
+        row.style.display = "";
+    });
 
-            row.style.display = matches ? "" : "none";
+    // EMPTY DATABASE MESSAGE
+    if (emptyAuditRow) {
+        emptyAuditRow.style.display =
+            auditRows.length === 0 ? "" : "none";
+    }
 
-            if (matches) {
-                visibleCount++;
+    // NO MATCHING RESULTS MESSAGE
+    if (noSearchResults) {
+        noSearchResults.classList.toggle(
+            "hidden",
+            totalRecords > 0 || auditRows.length === 0
+        );
+    }
+
+    // RECORD COUNT
+    if (paginationInfo) {
+        paginationInfo.textContent = totalRecords === 0
+            ? "Showing 0 to 0 of 0 entries"
+            : `Showing ${startIndex + 1} to ${endIndex} of ${totalRecords} entries`;
+    }
+
+    // PAGE DROPDOWN
+    if (pageSelect) {
+
+        pageSelect.innerHTML = "";
+
+        for (let page = 1; page <= totalPages; page++) {
+
+            const option = document.createElement("option");
+
+            option.value = page;
+            option.textContent = `${page} of ${totalPages}`;
+
+            if (page === currentPage) {
+                option.selected = true;
             }
 
-        });
-
-        auditCount.textContent = visibleCount;
-
-        if (noSearchResults) {
-            noSearchResults.classList.toggle(
-                "hidden",
-                visibleCount > 0 || auditRows.length === 0
-            );
+            pageSelect.appendChild(option);
         }
+    }
 
+    // PREVIOUS AND NEXT BUTTONS
+    if (prevButton) {
+        prevButton.disabled = currentPage === 1;
+    }
+
+    if (nextButton) {
+        nextButton.disabled =
+            currentPage === totalPages || totalRecords === 0;
+    }
+}
+
+
+// APPLY FILTERS
+function applyAuditFilters() {
+
+    const selectedUser = filterUser.value.trim().toLowerCase();
+    const selectedAction = filterAction.value.trim().toLowerCase();
+    const selectedPage = filterPage.value.trim().toLowerCase();
+
+    const dateFrom = filterDateFrom.value;
+    const dateTo = filterDateTo.value;
+
+    filteredRows = auditRows.filter(row => {
+
+        const cells = row.querySelectorAll("td");
+
+        const rowUser = cells[1].textContent.trim();
+        const rowPage = cells[2].textContent.trim();
+        const rowAction = cells[3].textContent.trim();
+        const rowDate = row.dataset.date;
+
+        return (
+            (!selectedUser || rowUser === selectedUser) &&
+            (!selectedAction || rowAction === selectedAction) &&
+            (!selectedPage || rowPage === selectedPage) &&
+            (!dateFrom || rowDate >= dateFrom) &&
+            (!dateTo || rowDate <= dateTo)
+        );
     });
 
-    // RESET FILTERS
-    resetButton.addEventListener("click", function () {
+    currentPage = 1;
+    updatePagination();
+}
 
-        filterUser.value = "";
-        filterAction.value = "";
-        filterPage.value = "";
-        filterDateFrom.value = "";
-        filterDateTo.value = "";
 
-        auditRows.forEach(function (row) {
-            row.style.display = "";
-        });
+// APPLY FILTER BUTTON
+applyButton?.addEventListener("click", applyAuditFilters);
 
-        auditCount.textContent = auditRows.length;
 
-        if (noSearchResults) {
-            noSearchResults.classList.add("hidden");
-        }
+// RESET FILTER BUTTON
+resetButton?.addEventListener("click", function() {
 
-    });
+    filterUser.value = "";
+    filterAction.value = "";
+    filterPage.value = "";
+    filterDateFrom.value = "";
+    filterDateTo.value = "";
+
+    filteredRows = [...auditRows];
+    currentPage = 1;
+
+    updatePagination();
+});
+
+
+// PREVIOUS PAGE
+prevButton?.addEventListener("click", function() {
+
+    if (currentPage > 1) {
+        currentPage--;
+        updatePagination();
+    }
+});
+
+
+// NEXT PAGE
+nextButton?.addEventListener("click", function() {
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(filteredRows.length / rowsPerPage)
+    );
+
+    if (currentPage < totalPages) {
+        currentPage++;
+        updatePagination();
+    }
+});
+
+
+// SELECT PAGE
+pageSelect?.addEventListener("change", function() {
+
+    currentPage = Number(this.value);
+    updatePagination();
+});
+
+
+// CHANGE RECORDS PER PAGE
+pageSizeSelect?.addEventListener("change", function() {
+
+    rowsPerPage = Number(this.value);
+    currentPage = 1;
+
+    updatePagination();
+});
+
+
+// INITIAL DISPLAY
+updatePagination();
+
 </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.1/dist/flowbite.min.js"></script>
 
 </body>
 </html>

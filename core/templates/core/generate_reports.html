@@ -9,27 +9,117 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root {
-      --theme-color: {{ settings.theme_color|default:"#15803d" }};
-      --theme-color-dark: #166534;
-    }
-    .theme-bg { background-color: var(--theme-color); }
-    .theme-text { color: var(--theme-color); }
-    .theme-border { border-color: var(--theme-color); }
-    .hero-gradient {
-      background: linear-gradient(135deg, var(--theme-color), var(--theme-color-dark));
-    }
-    .filter-control {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 0.75rem;
-      padding: 0.75rem;
-      background: white;
-    }
-    @media print {
-      aside, nav, .no-print { display: none !important; }
-      main { margin: 0 !important; padding: 0 !important; }
-    }
+
+:root {
+  --theme-color: {{ settings.theme_color|default:"#15803d" }};
+  --theme-color-dark: #166534;
+}
+
+.theme-bg {
+  background-color: var(--theme-color);
+}
+
+.theme-text {
+  color: var(--theme-color);
+}
+
+.theme-border {
+  border-color: var(--theme-color);
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, var(--theme-color), var(--theme-color-dark));
+}
+
+.filter-control {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+}
+
+/* REPORT TABLE SORTING */
+
+.sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.sort-menu {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sort-menu summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 5px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.sort-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.sort-menu summary:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.sort-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  min-width: 190px;
+  background: white;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.sort-menu[open] .sort-dropdown {
+  display: block;
+}
+
+.sort-option {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  color: #1e293b;
+}
+
+.sort-option:hover {
+  background: #f1f5f9;
+}
+
+@media print {
+  aside,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
   </style>
 </head>
 
@@ -348,22 +438,157 @@
       </div>
 
       <div class="max-h-[600px] overflow-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="theme-bg text-white sticky top-0 z-10">
-            <tr>
-              <th class="px-4 py-3">Select</th>
-              <th class="px-4 py-3">Case #</th>
-              <th class="px-4 py-3">Student</th>
-              <th class="px-4 py-3">Sex</th>
-              <th class="px-4 py-3">Offense</th>
-              <th class="px-4 py-3">Classification</th>
-              <th class="px-4 py-3">Record Status</th>
-              <th class="px-4 py-3">Case Status</th>
-              <th class="px-4 py-3">Date</th>
-              <th class="px-4 py-3">Term</th>
-              <th class="px-4 py-3">School Year</th>
-            </tr>
-          </thead>
+        <table class="min-w-[1400px] w-full text-left text-sm">
+          
+<thead class="theme-bg text-white sticky top-0 z-10">
+  <tr>
+
+    <!-- SELECT -->
+    <th class="px-4 py-3 whitespace-nowrap">Select</th>
+
+    <!-- CASE NUMBER -->
+    <th class="px-4 py-3 whitespace-nowrap text-center">
+  <div class="sort-header justify-center">
+    <span>Case #</span>
+    <details class="sort-menu">
+      <summary>↕</summary>
+      <div class="sort-dropdown">
+        <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="asc">↑ Sort A to Z</button>
+        <button type="button" class="sort-option" data-sort-column="1" data-sort-direction="desc">↓ Sort Z to A</button>
+      </div>
+    </details>
+  </div>
+</th>
+
+    <!-- STUDENT -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Student</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="2" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- SEX -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Sex</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="3" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- OFFENSE -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Offense</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="4" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- CLASSIFICATION -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Classification</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="5" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- RECORD STATUS -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Record Status</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="6" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- CASE STATUS -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Case Status</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="7" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="7" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- DATE -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Date</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="8" data-sort-direction="asc">↑ Oldest to Newest</button>
+            <button type="button" class="sort-option" data-sort-column="8" data-sort-direction="desc">↓ Newest to Oldest</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- TERM -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>Term</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="9" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="9" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+    <!-- SCHOOL YEAR -->
+    <th class="px-4 py-3 whitespace-nowrap">
+      <div class="sort-header">
+        <span>School Year</span>
+        <details class="sort-menu">
+          <summary>↕</summary>
+          <div class="sort-dropdown">
+            <button type="button" class="sort-option" data-sort-column="10" data-sort-direction="asc">↑ Sort A to Z</button>
+            <button type="button" class="sort-option" data-sort-column="10" data-sort-direction="desc">↓ Sort Z to A</button>
+          </div>
+        </details>
+      </div>
+    </th>
+
+  </tr>
+</thead>
+
           <tbody id="reportTableBody" class="divide-y divide-slate-200">
             {% for case in case_records %}
               <tr
@@ -383,14 +608,19 @@
                 <td class="px-4 py-3 text-center">
                   <input type="checkbox" class="case-checkbox w-5 h-5" value="{{ case.id }}">
                 </td>
-                <td class="px-4 py-3">{{ case.case_number }}</td>
+                <td class="px-4 py-3 text-center align-middle whitespace-nowrap">{{ case.case_number }}</td>
                 <td class="px-4 py-3">{{ case.student.student_id }} - {{ case.student.first_name }} {{ case.student.last_name }}</td>
                 <td class="px-4 py-3">{{ case.student.sex|default:"—" }}</td>
                 <td class="px-4 py-3">{{ case.offense.offense_name }}</td>
                 <td class="px-4 py-3">{{ case.classification_override|default:case.offense.severity }}</td>
                 <td class="px-4 py-3">{% if case.is_active %}Active{% else %}Inactive{% endif %}</td>
                 <td class="px-4 py-3">{{ case.status }}</td>
-                <td class="px-4 py-3">{{ case.date_reported|date:"M d, Y" }}</td>
+                <td
+                    class="px-4 py-3"
+                    data-sort-value="{{ case.date_reported|date:'Y-m-d'|default:'' }}"
+                >
+                    {{ case.date_reported|date:"M d, Y" }}
+                </td>
                 <td class="px-4 py-3">{{ case.term|default:"—" }}</td>
                 <td class="px-4 py-3">{{ case.school_year|default:"—" }}</td>
               </tr>
@@ -399,6 +629,37 @@
             {% endfor %}
           </tbody>
         </table>
+      </div>
+
+      <!-- PAGINATION -->
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+        <p id="reportPaginationInfo" class="text-sm text-slate-500">
+          Showing 0 of 0 case records
+        </p>
+
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            id="reportPrevPage"
+            class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+            disabled
+          >
+            Previous
+          </button>
+
+          <span id="reportPageInfo" class="text-sm text-slate-600">
+            Page 1 of 1
+          </span>
+
+          <button
+            type="button"
+            id="reportNextPage"
+            class="px-4 py-2 border border-slate-300 rounded-lg text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-100"
+            disabled
+          >
+            Next
+          </button>
+        </div>
       </div>
     </section>
 
@@ -446,6 +707,137 @@ By signing, I confirm that I understand these provisions and consequences and co
 <script>
 const tableBody = document.getElementById("reportTableBody");
 
+let filteredRows = [];
+let currentReportPage = 1;
+const reportsPerPage = 10;
+
+const reportPaginationInfo = document.getElementById("reportPaginationInfo");
+const reportPageInfo = document.getElementById("reportPageInfo");
+const reportPrevPage = document.getElementById("reportPrevPage");
+const reportNextPage = document.getElementById("reportNextPage");
+
+const reportEmptyRow = tableBody
+  ? tableBody.querySelector("tr:not([data-case-row='true'])")
+  : null;
+
+const noReportResultsRow = document.createElement("tr");
+
+noReportResultsRow.innerHTML = `
+  <td colspan="11" class="px-4 py-6 text-center text-slate-500">
+    No matching case records found.
+  </td>
+`;
+
+
+/* ==============================
+   REPORT TABLE SORTING
+   ============================== */
+
+document.querySelectorAll(".sort-option").forEach(function(button) {
+
+  button.addEventListener("click", function() {
+
+    const columnIndex = parseInt(
+      this.dataset.sortColumn,
+      10
+    );
+
+    const direction = this.dataset.sortDirection;
+
+    // Preserve the currently filtered records.
+    const currentlyFiltered = new Set(filteredRows);
+
+    // Sort all actual case records.
+    const rows = allRows();
+
+    rows.sort(function(rowA, rowB) {
+
+      const cellA = rowA.children[columnIndex];
+      const cellB = rowB.children[columnIndex];
+
+      const valueA = (
+        cellA.dataset.sortValue || cellA.innerText
+      ).trim();
+
+      const valueB = (
+        cellB.dataset.sortValue || cellB.innerText
+      ).trim();
+
+      let comparison;
+
+      // Special sorting for Case Number.
+      if (columnIndex === 1) {
+
+        const getSequence = function(caseNumber) {
+          const match = caseNumber.trim().match(/^\d{4}-\d+-(\d+)[A-Za-z]+$/);
+          return match ? parseInt(match[1], 10) : 0;
+        };
+
+        comparison = getSequence(valueA) - getSequence(valueB);
+
+      } else if (columnIndex === 8) {
+
+        // Date sorting.
+        comparison = valueA.localeCompare(valueB);
+
+      } else {
+
+        const numberA = Number(valueA);
+        const numberB = Number(valueB);
+
+        if (
+          valueA !== "" &&
+          valueB !== "" &&
+          Number.isFinite(numberA) &&
+          Number.isFinite(numberB)
+        ) {
+          comparison = numberA - numberB;
+
+        } else {
+
+          comparison = valueA.localeCompare(
+            valueB,
+            undefined,
+            {
+              numeric: true,
+              sensitivity: "base"
+            }
+          );
+
+        }
+      }
+
+      return direction === "asc"
+        ? comparison
+        : -comparison;
+
+    });
+
+    // Reorder the actual table rows.
+    rows.forEach(function(row) {
+      tableBody.appendChild(row);
+    });
+
+    // Close sorting dropdowns.
+    document.querySelectorAll(".sort-menu").forEach(function(menu) {
+      menu.open = false;
+    });
+
+    // Keep only records that matched the previous filters.
+    filteredRows = rows.filter(function(row) {
+      return currentlyFiltered.has(row);
+    });
+
+    // Return to the first page.
+    currentReportPage = 1;
+
+    updateReportPagination();
+    updateSelectAllButton();
+
+  });
+
+});
+
 const filterIds = [
   "studentFilter", "offenseFilter", "classificationFilter", "sexFilter",
   "schoolYearFilter", "termFilter", "statusFilter", "activeFilter", "dateFilter"
@@ -478,8 +870,100 @@ function allRows() {
   );
 }
 
+function updateReportPagination() {
+
+  const totalRecords = filteredRows.length;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalRecords / reportsPerPage)
+  );
+
+  if (currentReportPage > totalPages) {
+    currentReportPage = totalPages;
+  }
+
+  /* HANDLE EMPTY DATABASE */
+  if (reportEmptyRow) {
+    reportEmptyRow.style.display =
+      allRows().length === 0 ? "" : "none";
+  }
+
+  /* HANDLE NO FILTER RESULTS */
+  if (tableBody && allRows().length > 0) {
+    if (totalRecords === 0) {
+      tableBody.appendChild(noReportResultsRow);
+      noReportResultsRow.style.display = "";
+    } else {
+      noReportResultsRow.remove();
+    }
+  }
+
+  const startIndex = (currentReportPage - 1) * reportsPerPage;
+  const endIndex = Math.min(
+    startIndex + reportsPerPage,
+    totalRecords
+  );
+
+  /* HIDE ALL CASE RECORDS */
+  allRows().forEach(row => {
+    row.style.display = "none";
+  });
+
+  /* DISPLAY ONLY THE CURRENT PAGE */
+  filteredRows
+    .slice(startIndex, endIndex)
+    .forEach(row => {
+      row.style.display = "";
+    });
+
+  /* UPDATE RECORD COUNT */
+  if (reportPaginationInfo) {
+    reportPaginationInfo.textContent =
+      totalRecords === 0
+        ? "Showing 0 of 0 case records"
+        : `Showing ${startIndex + 1}-${endIndex} of ${totalRecords} case records`;
+  }
+
+  /* UPDATE PAGE NUMBER */
+  if (reportPageInfo) {
+    reportPageInfo.textContent =
+      `Page ${currentReportPage} of ${totalPages}`;
+  }
+
+  /* BUTTON STATES */
+  if (reportPrevPage) {
+    reportPrevPage.disabled = currentReportPage === 1;
+  }
+
+  if (reportNextPage) {
+    reportNextPage.disabled =
+      currentReportPage === totalPages || totalRecords === 0;
+  }
+}
+
+/* PREVIOUS PAGE */
+reportPrevPage?.addEventListener("click", function () {
+  if (currentReportPage > 1) {
+    currentReportPage--;
+    updateReportPagination();
+  }
+});
+
+/* NEXT PAGE */
+reportNextPage?.addEventListener("click", function () {
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredRows.length / reportsPerPage)
+  );
+
+  if (currentReportPage < totalPages) {
+    currentReportPage++;
+    updateReportPagination();
+  }
+});
+
 function visibleRows() {
-  return allRows().filter(row => row.style.display !== "none");
+  return filteredRows;
 }
 
 function countValues(rows, key) {
@@ -659,7 +1143,7 @@ function applyFilters() {
     filters[id] = element.value.trim().toLowerCase();
   });
 
-  allRows().forEach(row => {
+  filteredRows = allRows().filter(row => {
 
     const matches =
       (!filters.studentFilter || row.dataset.student === filters.studentFilter) &&
@@ -672,15 +1156,18 @@ function applyFilters() {
       (!filters.activeFilter || row.dataset.active.toLowerCase() === filters.activeFilter) &&
       (!filters.dateFilter || row.dataset.date === filters.dateFilter);
 
-    row.style.display = matches ? "" : "none";
-
     if (!matches) {
       row.querySelector(".case-checkbox").checked = false;
     }
+
+    return matches;
   });
 
+  currentReportPage = 1;
+
+  updateReportPagination();
   updateSelectAllButton();
-  updateSummary(visibleRows());
+  updateSummary(filteredRows);
   createGraph();
 }
 
@@ -701,13 +1188,16 @@ if (resetFilterBtn) {
       if (filter) filter.value = "";
     });
 
-    allRows().forEach(row => {
-      row.style.display = "";
+     allRows().forEach(row => {
       row.querySelector(".case-checkbox").checked = false;
     });
 
+    filteredRows = allRows();
+    currentReportPage = 1;
+
+    updateReportPagination();
     updateSelectAllButton();
-    updateSummary(visibleRows());
+    updateSummary(filteredRows);
     createGraph();
   });
 }
@@ -784,6 +1274,11 @@ if (printReportBtn) {
 }
 
 // Initial display
+if (tableBody) {
+  filteredRows = allRows();
+  updateReportPagination();
+}
+
 updateSummary(visibleRows());
 createGraph();
 
